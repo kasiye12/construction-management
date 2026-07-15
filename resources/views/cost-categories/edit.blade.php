@@ -4,22 +4,24 @@
 
 @section('content')
 <div class="page-header">
-    <h2>➕ Edit Cost Category</h2>
+    <h2>✏️ Edit Cost Category</h2>
 </div>
 
 <div class="row">
     <div class="col-md-8">
         <div class="table-card">
-            <form action="{{ route('cost-categories.update, $costCategory') }}" method="POST">
+            <form action="{{ route('cost-categories.update', $costCategory) }}" method="POST">
                 @csrf
-                @method("PUT")
+                @method('PUT')
                 
                 <div class="mb-3">
                     <label for="project_id" class="form-label">Project</label>
                     <select class="form-select" id="project_id" name="project_id" required>
                         <option value="">Select Project</option>
                         @foreach($projects as $project)
-                            <option value="{{ $project->id }}">{{ $project->name }}</option>
+                            <option value="{{ $project->id }}" {{ $costCategory->project_id == $project->id ? 'selected' : '' }}>
+                                {{ $project->name }}
+                            </option>
                         @endforeach
                     </select>
                 </div>
@@ -27,15 +29,15 @@
                 <div class="row">
                     <div class="col-md-4 mb-3">
                         <label for="code" class="form-label">Code</label>
-                        <input type="text" class="form-control" id="code" name="code" placeholder="A, B, C...">
+                        <input type="text" class="form-control" id="code" name="code" value="{{ old('code', $costCategory->code) }}">
                     </div>
                     <div class="col-md-8 mb-3">
                         <label for="name" class="form-label">Name</label>
-                        <input type="text" class="form-control" id="name" name="name" required>
+                        <input type="text" class="form-control" id="name" name="name" value="{{ old('name', $costCategory->name) }}" required>
                     </div>
                 </div>
                 
-                <button type="submit" class="btn btn-primary">Create</button>
+                <button type="submit" class="btn btn-primary">Update Category</button>
                 <a href="{{ route('cost-categories.index') }}" class="btn btn-secondary">Cancel</a>
             </form>
         </div>

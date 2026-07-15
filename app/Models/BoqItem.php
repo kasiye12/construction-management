@@ -32,6 +32,10 @@ class BoqItem extends Model
     public function laborResources() { return $this->hasMany(LaborResource::class); }
     public function materialResources() { return $this->hasMany(MaterialResource::class); }
     public function equipmentResources() { return $this->hasMany(EquipmentResource::class); }
+    public function actualCosts()
+    {
+        return $this->hasMany(ActualCost::class, 'boq_item_id');
+    }
     public function ipcItems() { return $this->hasMany(IpcItem::class); }
 
     public function getTotalBudgetCostAttribute() {

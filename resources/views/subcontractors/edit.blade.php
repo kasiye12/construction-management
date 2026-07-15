@@ -4,12 +4,13 @@
 
 @section('content')
 <div class="page-header">
-    <h2>➕ Edit Subcontractor</h2>
+    <h2>✏️ Edit Subcontractor</h2>
     <nav aria-label="breadcrumb">
         <ol class="breadcrumb">
             <li class="breadcrumb-item"><a href="{{ route('dashboard') }}">Dashboard</a></li>
             <li class="breadcrumb-item"><a href="{{ route('subcontractors.index') }}">Subcontractors</a></li>
-            <li class="breadcrumb-item active">Create</li>
+            <li class="breadcrumb-item"><a href="{{ route('subcontractors.show', $subcontractor) }}">{{ $subcontractor->name }}</a></li>
+            <li class="breadcrumb-item active">Edit</li>
         </ol>
     </nav>
 </div>
@@ -17,17 +18,15 @@
 <div class="row">
     <div class="col-md-8">
         <div class="table-card">
-            <form action="{{ route('subcontractors.update, $subcontractor') }}" method="POST">
+            <form action="{{ route('subcontractors.update', $subcontractor) }}" method="POST">
                 @csrf
-                @method("PUT")
+                @method('PUT')
                 
                 <div class="mb-3">
                     <label for="name" class="form-label">Company Name <span class="text-danger">*</span></label>
                     <input type="text" class="form-control @error('name') is-invalid @enderror" 
                            id="name" name="name" value="{{ old('name', $subcontractor->name) }}" required>
-                    @error('name')
-                        <div class="invalid-feedback">{{ $message }}</div>
-                    @enderror
+                    @error('name')<div class="invalid-feedback">{{ $message }}</div>@enderror
                 </div>
                 
                 <div class="row">
@@ -64,15 +63,15 @@
                 <div class="mb-3">
                     <div class="form-check">
                         <input class="form-check-input" type="checkbox" id="is_active" name="is_active" 
-                               value="1" {{ old('is_active', true) ? 'checked' : '' }}>
+                               value="1" {{ old('is_active', $subcontractor->is_active) ? 'checked' : '' }}>
                         <label class="form-check-label" for="is_active">Active</label>
                     </div>
                 </div>
                 
                 <div class="d-flex justify-content-between">
-                    <a href="{{ route('subcontractors.index') }}" class="btn btn-secondary">Cancel</a>
+                    <a href="{{ route('subcontractors.show', $subcontractor) }}" class="btn btn-secondary">Cancel</a>
                     <button type="submit" class="btn btn-primary btn-custom">
-                        <i class="fas fa-save me-2"></i>Edit Subcontractor
+                        <i class="fas fa-save me-2"></i>Update Subcontractor
                     </button>
                 </div>
             </form>

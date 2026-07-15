@@ -28,41 +28,25 @@
         text-align: left;
         font-size: 11px;
     }
-    .report-table .item-row {
-        background-color: #FFF;
-    }
-    .report-table .sub-row {
-        background-color: #F5F5F5;
-        font-size: 9px;
-    }
-    .report-table .total-row {
-        background-color: #E2EFDA;
-        font-weight: bold;
-        font-size: 10px;
-    }
-    .report-table .profit {
-        color: green;
-        font-weight: bold;
-    }
-    .report-table .loss {
-        color: red;
-        font-weight: bold;
-    }
-    .report-table .amount-cell {
-        text-align: right;
-        font-family: 'Courier New', monospace;
-    }
-    .report-container {
-        overflow-x: auto;
-        margin: 0;
-        padding: 10px;
-    }
+    .report-table .item-row { background-color: #FFF; }
+    .report-table .sub-row { background-color: #F5F5F5; font-size: 9px; }
+    .report-table .total-row { background-color: #E2EFDA; font-weight: bold; font-size: 10px; }
+    .report-table .profit { color: green; font-weight: bold; }
+    .report-table .loss { color: red; font-weight: bold; }
+    .report-table .amount-cell { text-align: right; font-family: 'Courier New', monospace; }
+    .report-container { overflow-x: auto; margin: 0; padding: 10px; }
     .filter-bar {
         background: white;
-        padding: 15px;
-        border-radius: 8px;
+        padding: 20px;
+        border-radius: 12px;
         margin-bottom: 20px;
-        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        box-shadow: 0 2px 15px rgba(0,0,0,0.08);
+    }
+    .filter-bar .form-label {
+        font-weight: 600;
+        font-size: 0.8rem;
+        color: #555;
+        margin-bottom: 4px;
     }
 </style>
 @endpush
@@ -76,13 +60,22 @@
                 @if($selectedProject)
                     Project: <strong>{{ $selectedProject->name }}</strong>
                 @else
-                    All Projects Summary
+                    <strong>All Projects</strong> Summary
+                @endif
+                @if(request('date_from') || request('date_to'))
+                    | Period: {{ request('date_from', 'Any') }} - {{ request('date_to', 'Any') }}
+                @endif
+                @if(request('status'))
+                    | Status: <strong>{{ ucfirst(request('status')) }}</strong>
                 @endif
             </p>
         </div>
         <div>
-            <a href="{{ route('reports.30-column.pdf', ['project_id' => $projectId]) }}" class="btn btn-danger">
-                <i class="fas fa-file-pdf me-2"></i>Download PDF
+            <a href="{{ route('reports.30-column.pdf', request()->query()) }}" class="btn btn-danger">
+                <i class="fas fa-file-pdf me-2"></i>PDF
+            </a>
+            <a href="{{ route('reports.30-column.excel', request()->query()) }}" class="btn btn-success ms-2">
+                <i class="fas fa-file-excel me-2"></i>Excel
             </a>
             <button onclick="window.print()" class="btn btn-secondary ms-2">
                 <i class="fas fa-print me-2"></i>Print
@@ -90,24 +83,71 @@
         </div>
     </div>
 
-    <!-- Filter -->
+    <!-- Filters -->
     <div class="filter-bar">
-        <form method="GET" action="{{ route('reports.30-column') }}" class="row align-items-end">
-            <div class="col-md-4">
-                <label class="form-label fw-bold">Select Project</label>
-                <select name="project_id" class="form-select" onchange="this.form.submit()">
-                    <option value="">-- All Projects --</option>
+        <form method="GET" action="{{ route('reports.30-column') }}" class="row align-items-end g-3">
+            <!-- Project Filter -->
+            <div class="col-md-3">
+                <label class="form-label">📁 Project</label>
+                <select name="project_id" class="form-select">
+                    <option value="">All Projects</option>
                     @foreach($projects as $project)
-                        <option value="{{ $project->id }}" {{ $projectId == $project->id ? 'selected' : '' }}>
+                        <option value="{{ $project->id }}" {{ request('project_id') == $project->id ? 'selected' : '' }}>
                             {{ $project->name }}
                         </option>
                     @endforeach
                 </select>
             </div>
-            @if($projectId)
-            <div class="col-md-4">
-                <a href="{{ route('reports.30-column') }}" class="btn btn-outline-secondary mt-4">
-                    Clear Filter
+            
+            <!-- Cost Category Filter -->
+            <div class="col-md-2">
+                <label class="form-label">📂 Category</label>
+                <select name="category_id" class="form-select">
+                    <option value="">All Categories</option>
+                    @if($selectedProject)
+                        @foreach($selectedProject->costCategories as $cat)
+                            <option value="{{ $cat->id }}" {{ request('category_id') == $cat->id ? 'selected' : '' }}>
+                                {{ $cat->code }} - {{ $cat->name }}
+                            </option>
+                        @endforeach
+                    @endif
+                </select>
+            </div>
+            
+            <!-- Status Filter -->
+            <div class="col-md-2">
+                <label class="form-label">📊 Status</label>
+                <select name="status" class="form-select">
+                    <option value="">All Status</option>
+                    <option value="pending" {{ request('status') == 'pending' ? 'selected' : '' }}>Pending</option>
+                    <option value="in_progress" {{ request('status') == 'in_progress' ? 'selected' : '' }}>In Progress</option>
+                    <option value="completed" {{ request('status') == 'completed' ? 'selected' : '' }}>Completed</option>
+                </select>
+            </div>
+            
+            <!-- Date From -->
+            <div class="col-md-2">
+                <label class="form-label">📅 Start Date From</label>
+                <input type="date" name="date_from" class="form-control" value="{{ request('date_from') }}">
+            </div>
+            
+            <!-- Date To -->
+            <div class="col-md-2">
+                <label class="form-label">📅 Start Date To</label>
+                <input type="date" name="date_to" class="form-control" value="{{ request('date_to') }}">
+            </div>
+            
+            <!-- Buttons -->
+            <div class="col-md-1">
+                <button type="submit" class="btn btn-primary w-100">
+                    <i class="fas fa-filter"></i> Filter
+                </button>
+            </div>
+            
+            @if(request()->anyFilled(['project_id', 'category_id', 'status', 'date_from', 'date_to']))
+            <div class="col-md-1">
+                <a href="{{ route('reports.30-column') }}" class="btn btn-outline-danger w-100">
+                    <i class="fas fa-times"></i> Clear
                 </a>
             </div>
             @endif
@@ -138,21 +178,9 @@
                     <th rowspan="2">STATUS</th>
                 </tr>
                 <tr>
-                    <th>TRADE</th>
-                    <th>NUMBER</th>
-                    <th>TOTAL<br>HOUR</th>
-                    <th>WAGE/<br>DAY</th>
-                    <th>AMOUNT</th>
-                    <th>Description</th>
-                    <th>UNIT</th>
-                    <th>QUANTITY</th>
-                    <th>UNIT<br>RATE</th>
-                    <th>DESCRIPTION</th>
-                    <th>DURATION</th>
-                    <th>NUMBER</th>
-                    <th>TOTAL<br>HOUR</th>
-                    <th>RATE</th>
-                    <th>AMOUNT</th>
+                    <th>TRADE</th><th>NUMBER</th><th>TOTAL<br>HOUR</th><th>WAGE/<br>DAY</th><th>AMOUNT</th>
+                    <th>Description</th><th>UNIT</th><th>QUANTITY</th><th>UNIT<br>RATE</th>
+                    <th>DESCRIPTION</th><th>DURATION</th><th>NUMBER</th><th>TOTAL<br>HOUR</th><th>RATE</th><th>AMOUNT</th>
                 </tr>
             </thead>
             <tbody>
@@ -251,7 +279,6 @@
                         @endfor
                     @endforeach
                     
-                    <!-- Category Subtotal -->
                     <tr class="total-row">
                         <td colspan="6" style="text-align: right;"><strong>Subtotal - {{ $categoryName }}:</strong></td>
                         <td class="amount-cell"><strong>{{ number_format($catRevenue, 2) }}</strong></td>
@@ -268,14 +295,13 @@
                 @empty
                     <tr>
                         <td colspan="30" class="text-center py-4">
-                            <h4>No data found</h4>
-                            <p>Please add BOQ items with resources to generate the report.</p>
+                            <h4>📭 No data found</h4>
+                            <p>Try adjusting your filters or add BOQ items with resources.</p>
                         </td>
                     </tr>
                 @endforelse
                 
                 @if($groupedItems->count() > 0)
-                <!-- GRAND TOTAL -->
                 <tr style="background-color: #002060; color: white; font-weight: bold; font-size: 11px;">
                     <td colspan="6" style="text-align: right;">GRAND TOTAL:</td>
                     <td class="amount-cell">{{ number_format($grandTotalRevenue, 2) }}</td>

@@ -6,6 +6,8 @@ use App\Models\Project;
 use App\Models\Subcontractor;
 use App\Models\BoqItem;
 use App\Models\IpcItem;
+use App\Models\Notification;
+use App\Services\WorkflowService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -15,12 +17,8 @@ class IpcController extends Controller
     {
         $projectId = $request->get('project_id');
         $projects = Project::all();
-        
         $query = Ipc::with(['project', 'subcontractor']);
-        if ($projectId) {
-            $query->where('project_id', $projectId);
-        }
-        
+        if ($projectId) $query->where('project_id', $projectId);
         $ipcs = $query->orderBy('ipc_date', 'desc')->paginate(15);
         return view('ipcs.index', compact('ipcs', 'projects', 'projectId'));
     }
@@ -29,20 +27,8 @@ class IpcController extends Controller
     {
         $projectId = $request->get('project_id');
         $projects = Project::all();
-        $subcontractors = collect();
-        $boqItems = collect();
-        
-        if ($projectId) {
-            $project = Project::find($projectId);
-            if ($project) {
-                $subcontractors = $project->subcontractors;
-                $boqItems = BoqItem::where('project_id', $projectId)
-                                  ->where('is_parent', false)
-                                  ->orderBy('item_number')
-                                  ->get();
-            }
-        }
-        
+        $subcontractors = $projectId ? Project::find($projectId)?->subcontractors : Subcontractor::where('is_active', true)->get();
+        $boqItems = $projectId ? BoqItem::where('project_id', $projectId)->where('is_parent', false)->orderBy('item_number')->get() : collect();
         return view('ipcs.create', compact('projects', 'subcontractors', 'boqItems', 'projectId'));
     }
 
@@ -52,19 +38,13 @@ class IpcController extends Controller
             'project_id' => 'required|exists:projects,id',
             'subcontractor_id' => 'required|exists:subcontractors,id',
             'ipc_number' => 'required|string|max:50',
-            'issue_number' => 'required|integer|min:1',
             'ipc_date' => 'required|date',
             'period_start_date' => 'required|date',
             'period_end_date' => 'required|date|after:period_start_date',
             'retention_percentage' => 'nullable|numeric|min:0|max:100',
-            'remarks' => 'nullable|string',
             'items' => 'required|array',
             'items.*.boq_item_id' => 'required|exists:boq_items,id',
-            'items.*.contract_quantity' => 'required|numeric|min:0',
-            'items.*.contract_amount' => 'required|numeric|min:0',
-            'items.*.previous_quantity' => 'required|numeric|min:0',
-            'items.*.previous_amount' => 'required|numeric|min:0',
-            'items.*.current_quantity' => 'required|numeric|min:0'
+            'items.*.current_quantity' => 'required|numeric|min:0',
         ]);
 
         DB::beginTransaction();
@@ -73,104 +53,126 @@ class IpcController extends Controller
                 'project_id' => $validated['project_id'],
                 'subcontractor_id' => $validated['subcontractor_id'],
                 'ipc_number' => $validated['ipc_number'],
-                'issue_number' => $validated['issue_number'],
                 'ipc_date' => $validated['ipc_date'],
                 'period_start_date' => $validated['period_start_date'],
                 'period_end_date' => $validated['period_end_date'],
                 'retention_percentage' => $validated['retention_percentage'] ?? 5,
-                'remarks' => $validated['remarks'] ?? null
+                'status' => WorkflowService::STATUS_DRAFT
             ]);
 
-            $totalCurrentAmount = 0;
-            $totalPreviousAmount = 0;
-
+            $total = 0;
             foreach ($validated['items'] as $itemData) {
                 $boqItem = BoqItem::find($itemData['boq_item_id']);
-                $currentAmount = $itemData['current_quantity'] * $boqItem->unit_rate;
-                $toDateQuantity = $itemData['previous_quantity'] + $itemData['current_quantity'];
-                $toDateAmount = $itemData['previous_amount'] + $currentAmount;
-                $percentageComplete = $itemData['contract_quantity'] > 0 ? 
-                    ($toDateQuantity / $itemData['contract_quantity']) * 100 : 0;
-
+                $amount = $itemData['current_quantity'] * $boqItem->unit_rate;
                 IpcItem::create([
                     'ipc_id' => $ipc->id,
                     'boq_item_id' => $itemData['boq_item_id'],
-                    'contract_quantity' => $itemData['contract_quantity'],
-                    'contract_amount' => $itemData['contract_amount'],
-                    'previous_quantity' => $itemData['previous_quantity'],
-                    'previous_amount' => $itemData['previous_amount'],
+                    'contract_quantity' => $boqItem->quantity,
+                    'contract_amount' => $boqItem->revenue_amount,
+                    'previous_quantity' => 0, 'previous_amount' => 0,
                     'current_quantity' => $itemData['current_quantity'],
-                    'current_amount' => $currentAmount,
-                    'to_date_quantity' => $toDateQuantity,
-                    'to_date_amount' => $toDateAmount,
-                    'percentage_complete' => $percentageComplete,
-                    'remark' => $itemData['remark'] ?? null
+                    'current_amount' => $amount,
+                    'to_date_quantity' => $itemData['current_quantity'],
+                    'to_date_amount' => $amount,
+                    'percentage_complete' => $boqItem->quantity > 0 ? ($itemData['current_quantity']/$boqItem->quantity)*100 : 0,
                 ]);
-
-                $totalCurrentAmount += $currentAmount;
-                $totalPreviousAmount += $itemData['previous_amount'];
+                $total += $amount;
             }
 
-            $ipc->total_previous_amount = $totalPreviousAmount;
-            $ipc->total_current_amount = $totalCurrentAmount;
-            $ipc->total_to_date_amount = $totalPreviousAmount + $totalCurrentAmount;
-            $ipc->retention_amount = $ipc->total_to_date_amount * ($ipc->retention_percentage / 100);
-            $ipc->net_payment_amount = $ipc->total_to_date_amount - $ipc->retention_amount;
-            $ipc->save();
+            $ipc->update([
+                'total_current_amount' => $total,
+                'retention_amount' => $total * ($ipc->retention_percentage/100),
+                'net_payment_amount' => $total - ($total * ($ipc->retention_percentage/100)),
+            ]);
 
             DB::commit();
             return redirect()->route('ipcs.show', $ipc)->with('success', 'IPC created successfully.');
         } catch (\Exception $e) {
             DB::rollback();
-            return back()->with('error', 'Error: ' . $e->getMessage())->withInput();
+            return back()->with('error', $e->getMessage())->withInput();
         }
     }
 
     public function show(Ipc $ipc)
     {
         $ipc->load(['project', 'subcontractor', 'ipcItems.boqItem']);
-        return view('ipcs.show', compact('ipc'));
+        $users = \App\Models\User::where('is_active', true)->orderBy('name')->get();
+        $availableActions = WorkflowService::getAvailableActions($ipc, auth()->user());
+        
+        return view('ipcs.show', compact('ipc', 'users', 'availableActions'));
     }
 
-    public function edit(Ipc $ipc)
-    {
-        $projects = Project::all();
-        $subcontractors = Subcontractor::all();
-        $ipc->load('ipcItems.boqItem');
-        return view('ipcs.edit', compact('ipc', 'projects', 'subcontractors'));
-    }
+    public function edit(Ipc $ipc) { return view('ipcs.edit', compact('ipc')); }
 
     public function update(Request $request, Ipc $ipc)
     {
-        $validated = $request->validate([
-            'project_id' => 'required|exists:projects,id',
-            'subcontractor_id' => 'required|exists:subcontractors,id',
-            'ipc_number' => 'required|string|max:50',
-            'ipc_date' => 'required|date',
-            'retention_percentage' => 'nullable|numeric|min:0|max:100',
-            'status' => 'required|in:draft,submitted,approved,paid',
-            'remarks' => 'nullable|string'
-        ]);
-
-        $ipc->update($validated);
-        return redirect()->route('ipcs.show', $ipc)->with('success', 'IPC updated successfully.');
+        $ipc->update($request->validate(['status' => 'required|string', 'remarks' => 'nullable|string']));
+        return redirect()->route('ipcs.show', $ipc)->with('success', 'IPC updated.');
     }
 
-    public function destroy(Ipc $ipc)
+    public function destroy(Ipc $ipc) { $ipc->delete(); return redirect()->route('ipcs.index')->with('success', 'IPC deleted.'); }
+    public function print(Ipc $ipc) { return view('ipcs.print', compact('ipc')); }
+
+    // Workflow Actions
+    public function prepare(Ipc $ipc)
     {
-        $ipc->delete();
-        return redirect()->route('ipcs.index')->with('success', 'IPC deleted successfully.');
+        if (!WorkflowService::canTransition($ipc->status, WorkflowService::STATUS_PREPARED)) {
+            return back()->with('error', 'Cannot prepare in current status.');
+        }
+        WorkflowService::transition($ipc, WorkflowService::STATUS_PREPARED, auth()->user());
+        return back()->with('success', 'Certificate marked as prepared.');
     }
 
-    public function print(Ipc $ipc)
+    public function check(Ipc $ipc)
     {
-        $ipc->load(['project', 'subcontractor', 'ipcItems.boqItem']);
-        return view('ipcs.print', compact('ipc'));
+        if (!WorkflowService::canTransition($ipc->status, WorkflowService::STATUS_CHECKED)) {
+            return back()->with('error', 'Cannot check in current status.');
+        }
+        WorkflowService::transition($ipc, WorkflowService::STATUS_CHECKED, auth()->user());
+        return back()->with('success', 'Certificate marked as checked.');
+    }
+
+    public function submit(Ipc $ipc)
+    {
+        if (!WorkflowService::canTransition($ipc->status, WorkflowService::STATUS_SUBMITTED)) {
+            return back()->with('error', 'Cannot submit in current status.');
+        }
+        WorkflowService::transition($ipc, WorkflowService::STATUS_SUBMITTED, auth()->user());
+        return back()->with('success', 'Certificate submitted for approval.');
     }
 
     public function approve(Ipc $ipc)
     {
-        $ipc->update(['status' => 'approved']);
-        return redirect()->route('ipcs.show', $ipc)->with('success', 'IPC approved successfully.');
+        if (!WorkflowService::canTransition($ipc->status, WorkflowService::STATUS_APPROVED)) {
+            return back()->with('error', 'Cannot approve in current status.');
+        }
+        WorkflowService::transition($ipc, WorkflowService::STATUS_APPROVED, auth()->user());
+        return back()->with('success', 'Certificate approved successfully.');
+    }
+
+    public function reject(Ipc $ipc)
+    {
+        if (!WorkflowService::canTransition($ipc->status, WorkflowService::STATUS_REJECTED)) {
+            return back()->with('error', 'Cannot reject in current status.');
+        }
+        WorkflowService::transition($ipc, WorkflowService::STATUS_REJECTED, auth()->user());
+        return back()->with('success', 'Certificate rejected.');
+    }
+
+    public function markPaid(Ipc $ipc)
+    {
+        if (!WorkflowService::canTransition($ipc->status, WorkflowService::STATUS_PAID)) {
+            return back()->with('error', 'Cannot mark as paid in current status.');
+        }
+        WorkflowService::transition($ipc, WorkflowService::STATUS_PAID, auth()->user());
+        return back()->with('success', 'Certificate marked as paid.');
+    }
+
+    public function downloadCertificate(Ipc $ipc)
+    {
+        $ipc->load(['project', 'subcontractor', 'ipcItems.boqItem']);
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('ipcs.certificate-pdf', compact('ipc'));
+        $pdf->setPaper('A4');
+        return $pdf->download('Certificate-' . $ipc->ipc_number . '.pdf');
     }
 }

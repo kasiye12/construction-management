@@ -33,7 +33,7 @@ class CostCategoryController extends Controller
             'project_id' => 'required|exists:projects,id',
             'code' => 'nullable|string|max:10',
             'name' => 'required|string|max:255',
-            'description' => 'nullable|string',
+            'description' => 'nullable|string|max:500',
             'display_order' => 'integer|min:0'
         ]);
 
@@ -59,7 +59,7 @@ class CostCategoryController extends Controller
             'project_id' => 'required|exists:projects,id',
             'code' => 'nullable|string|max:10',
             'name' => 'required|string|max:255',
-            'description' => 'nullable|string',
+            'description' => 'nullable|string|max:500',
             'display_order' => 'integer|min:0'
         ]);
 

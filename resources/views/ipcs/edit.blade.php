@@ -4,7 +4,15 @@
 
 @section('content')
 <div class="page-header">
-    <h2>✏️ Edit IPC</h2>
+    <h2>✏️ Edit IPC: {{ $ipc->ipc_number }}</h2>
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{{ route('dashboard') }}">Dashboard</a></li>
+            <li class="breadcrumb-item"><a href="{{ route('ipcs.index') }}">IPCs</a></li>
+            <li class="breadcrumb-item"><a href="{{ route('ipcs.show', $ipc) }}">{{ $ipc->ipc_number }}</a></li>
+            <li class="breadcrumb-item active">Edit</li>
+        </ol>
+    </nav>
 </div>
 
 <div class="row">
@@ -32,6 +40,15 @@
                 <button type="submit" class="btn btn-primary">Update IPC</button>
                 <a href="{{ route('ipcs.show', $ipc) }}" class="btn btn-secondary">Cancel</a>
             </form>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="table-card">
+            <h6>IPC Summary</h6><hr>
+            <p>Project: {{ $ipc->project->name ?? 'N/A' }}</p>
+            <p>Subcontractor: {{ $ipc->subcontractor->name ?? 'N/A' }}</p>
+            <p>Net Payment: {{ number_format($ipc->net_payment_amount, 2) }} ETB</p>
         </div>
     </div>
 </div>

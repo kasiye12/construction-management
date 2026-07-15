@@ -4,242 +4,334 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>@yield('title', 'Construction Management System')</title>
+    <title>@yield('title', 'CMS Pro - Construction Management')</title>
     
-    <!-- Bootstrap CSS -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Font Awesome -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <!-- DataTables -->
     <link href="https://cdn.datatables.net/1.11.5/css/dataTables.bootstrap5.min.css" rel="stylesheet">
     
     <style>
         :root {
-            --sidebar-width: 250px;
+            --sidebar-width: 260px;
+            --topbar-height: 64px;
+            --primary: #4f46e5;
+            --primary-dark: #3730a3;
+            --gray-50: #f9fafb;
+            --gray-100: #f3f4f6;
+            --gray-200: #e5e7eb;
+            --gray-600: #4b5563;
+            --gray-700: #374151;
+            --gray-800: #1f2937;
+            --gray-900: #111827;
         }
+        
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #f4f6f9;
+            font-family: 'Inter', sans-serif;
+            background: var(--gray-50);
+            color: var(--gray-800);
+            font-size: 0.875rem;
+            -webkit-font-smoothing: antialiased;
         }
         
+        /* SIDEBAR */
         .sidebar {
-            position: fixed;
-            top: 0;
-            bottom: 0;
-            left: 0;
+            position: fixed; top: 0; left: 0; bottom: 0;
             width: var(--sidebar-width);
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            box-shadow: 2px 0 10px rgba(0,0,0,0.1);
-            z-index: 1000;
+            background: var(--gray-900);
+            z-index: 1040;
             overflow-y: auto;
+            display: flex; flex-direction: column;
+        }
+        .sidebar::-webkit-scrollbar { width: 4px; }
+        .sidebar::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 4px; }
+        
+        .sidebar-brand {
+            padding: 20px; text-align: center;
+            border-bottom: 1px solid rgba(255,255,255,0.08);
+        }
+        .sidebar-brand .logo {
+            width: 44px; height: 44px;
+            background: var(--primary);
+            border-radius: 12px;
+            display: inline-flex; align-items: center; justify-content: center;
+            font-size: 1.4rem; margin-bottom: 8px;
+        }
+        .sidebar-brand h4 { color: white; font-size: 0.95rem; font-weight: 700; margin: 0; }
+        .sidebar-brand span { color: rgba(255,255,255,0.4); font-size: 0.65rem; text-transform: uppercase; letter-spacing: 1.5px; }
+        
+        .sidebar-nav { flex: 1; padding: 12px; }
+        .sidebar-label {
+            color: rgba(255,255,255,0.3); font-size: 0.6rem;
+            text-transform: uppercase; letter-spacing: 2px;
+            padding: 16px 12px 6px; font-weight: 600;
+        }
+        .sidebar-label:first-child { padding-top: 4px; }
+        
+        .sidebar a {
+            color: rgba(255,255,255,0.55);
+            padding: 10px 12px; margin: 1px 0;
+            border-radius: 8px; font-size: 0.8rem;
+            font-weight: 500; display: flex; align-items: center;
+            gap: 10px; text-decoration: none; transition: all 0.15s ease;
+        }
+        .sidebar a:hover { color: white; background: rgba(255,255,255,0.06); }
+        .sidebar a.active { color: white; background: var(--primary); font-weight: 600; box-shadow: 0 2px 8px rgba(79,70,229,0.3); }
+        .sidebar a i { width: 20px; text-align: center; font-size: 0.85rem; }
+        .sidebar a .badge { margin-left: auto; font-size: 0.6rem; padding: 3px 7px; }
+        
+        .sidebar-footer {
+            padding: 14px; text-align: center;
+            color: rgba(255,255,255,0.25); font-size: 0.65rem;
+            border-top: 1px solid rgba(255,255,255,0.08);
         }
         
-        .sidebar .brand {
-            padding: 20px;
-            text-align: center;
-            border-bottom: 1px solid rgba(255,255,255,0.2);
+        /* TOPBAR */
+        .topbar {
+            position: fixed; top: 0; left: var(--sidebar-width); right: 0;
+            height: var(--topbar-height); background: white;
+            border-bottom: 1px solid var(--gray-200);
+            z-index: 1030; display: flex; align-items: center; padding: 0 20px; gap: 12px;
         }
-        
-        .sidebar .brand h4 {
-            color: white;
-            font-weight: 700;
-            margin: 0;
-            font-size: 1.2rem;
+        .topbar .btn-icon {
+            width: 38px; height: 38px; border-radius: 10px;
+            border: 1px solid var(--gray-200); background: white;
+            color: var(--gray-600); display: flex; align-items: center;
+            justify-content: center; cursor: pointer; position: relative;
         }
-        
-        .sidebar .brand p {
-            color: rgba(255,255,255,0.7);
-            font-size: 0.8rem;
-            margin: 5px 0 0 0;
-        }
-        
-        .sidebar .nav-link {
-            color: rgba(255,255,255,0.8);
-            padding: 12px 20px;
-            margin: 4px 10px;
+        .topbar .btn-icon:hover { background: var(--gray-50); }
+        .topbar .btn-icon .badge {
+            position: absolute; top: -4px; right: -4px;
+            font-size: 0.55rem; min-width: 16px; height: 16px;
+            display: flex; align-items: center; justify-content: center;
             border-radius: 8px;
-            transition: all 0.3s ease;
         }
-        
-        .sidebar .nav-link:hover {
-            color: white;
-            background: rgba(255,255,255,0.1);
-            transform: translateX(5px);
+        .topbar .user-btn {
+            display: flex; align-items: center; gap: 8px;
+            padding: 4px 12px 4px 4px; border-radius: 30px;
+            border: none; background: transparent; cursor: pointer;
         }
-        
-        .sidebar .nav-link.active {
-            color: white;
-            background: rgba(255,255,255,0.2);
-            font-weight: 600;
+        .topbar .user-btn:hover { background: var(--gray-100); }
+        .topbar .user-avatar {
+            width: 34px; height: 34px; border-radius: 50%;
+            background: var(--primary); color: white;
+            display: flex; align-items: center; justify-content: center;
+            font-weight: 600; font-size: 0.8rem;
         }
+        .topbar .user-name { font-weight: 600; font-size: 0.78rem; }
+        .topbar .user-role { font-size: 0.68rem; color: var(--gray-600); }
         
-        .sidebar .nav-link i {
-            width: 20px;
-            margin-right: 10px;
-        }
-        
+        /* MAIN CONTENT */
         .main-content {
             margin-left: var(--sidebar-width);
-            padding: 30px;
-            min-height: 100vh;
+            margin-top: var(--topbar-height);
+            padding: 24px 28px;
+            min-height: calc(100vh - var(--topbar-height));
         }
         
-        .card-stats {
-            border: none;
-            border-radius: 15px;
-            box-shadow: 0 0 20px rgba(0,0,0,0.08);
-            transition: transform 0.3s ease;
-            margin-bottom: 20px;
+        /* CARDS & TABLES */
+        .card { border: 1px solid var(--gray-200); border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.04); background: white; }
+        .card-header { background: white; border-bottom: 1px solid var(--gray-200); padding: 14px 18px; border-radius: 12px 12px 0 0; }
+        .card-body { padding: 18px; }
+        .table th { font-weight: 600; font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.5px; color: var(--gray-600); background: var(--gray-50); }
+        .table td { vertical-align: middle; font-size: 0.8rem; }
+        .badge { font-weight: 500; border-radius: 6px; padding: 4px 10px; }
+        .btn { border-radius: 8px; font-weight: 500; font-size: 0.8rem; padding: 7px 14px; }
+        .btn-primary { background: var(--primary); border-color: var(--primary); }
+        .btn-primary:hover { background: var(--primary-dark); border-color: var(--primary-dark); }
+        
+        /* MOBILE */
+        @media (max-width: 768px) {
+            .sidebar { transform: translateX(-100%); }
+            .sidebar.open { transform: translateX(0); }
+            .topbar { left: 0; }
+            .main-content { margin-left: 0; padding: 14px; }
         }
         
-        .card-stats:hover {
-            transform: translateY(-5px);
-        }
-        
-        .card-stats .card-body {
-            padding: 25px;
-        }
-        
-        .card-stats .icon-box {
-            width: 60px;
-            height: 60px;
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.8rem;
-        }
-        
-        .bg-primary-light { background-color: rgba(102, 126, 234, 0.1); color: #667eea; }
-        .bg-success-light { background-color: rgba(40, 167, 69, 0.1); color: #28a745; }
-        .bg-warning-light { background-color: rgba(255, 193, 7, 0.1); color: #ffc107; }
-        .bg-danger-light { background-color: rgba(220, 53, 69, 0.1); color: #dc3545; }
-        .bg-info-light { background-color: rgba(23, 162, 184, 0.1); color: #17a2b8; }
-        
-        .table-card {
-            background: white;
-            border-radius: 15px;
-            box-shadow: 0 0 20px rgba(0,0,0,0.08);
-            padding: 25px;
-        }
-        
-        .btn-custom {
-            border-radius: 8px;
-            padding: 8px 20px;
-            font-weight: 500;
-            transition: all 0.3s ease;
-        }
-        
-        .btn-custom:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-        }
-        
-        .page-header {
-            margin-bottom: 30px;
-        }
-        
-        .page-header h2 {
-            font-weight: 700;
-            color: #2c3e50;
-            margin-bottom: 10px;
-        }
-        
-        .breadcrumb {
-            background: transparent;
-            padding: 0;
-        }
-        
-        .badge-status {
-            padding: 5px 12px;
-            border-radius: 20px;
-            font-weight: 500;
-            font-size: 0.85rem;
-        }
-        
-        .profit-badge {
-            background-color: #d4edda;
-            color: #155724;
-        }
-        
-        .loss-badge {
-            background-color: #f8d7da;
-            color: #721c24;
-        }
-        
-        .resource-card {
-            border: 1px solid #e0e0e0;
-            border-radius: 10px;
-            padding: 15px;
-            margin-bottom: 15px;
-            transition: all 0.3s ease;
-        }
-        
-        .resource-card:hover {
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        @media print {
+            .sidebar, .topbar, .btn, .no-print { display: none !important; }
+            .main-content { margin: 0 !important; padding: 0 !important; }
         }
     </style>
+    @stack('styles')
 </head>
 <body>
-    <!-- Sidebar -->
-    <nav class="sidebar">
-        <div class="brand">
-            <h4>🏗️ CMS</h4>
-            <p>Construction Management</p>
+    <!-- SIDEBAR -->
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-brand">
+            <div class="logo">🏗️</div>
+            <h4>CMS Pro</h4>
+            <span>Construction Management</span>
         </div>
         
-        <ul class="nav flex-column mt-3">
-            <li class="nav-item">
-                <a class="nav-link {{ request()->routeIs('dashboard') ? 'active' : '' }}" 
-                   href="{{ route('dashboard') }}">
-                    <i class="fas fa-th-large"></i> Dashboard
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link {{ request()->routeIs('projects.*') ? 'active' : '' }}" 
-                   href="{{ route('projects.index') }}">
-                    <i class="fas fa-building"></i> Projects
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link {{ request()->routeIs('subcontractors.*') ? 'active' : '' }}" 
-                   href="{{ route('subcontractors.index') }}">
-                    <i class="fas fa-users"></i> Subcontractors
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link {{ request()->routeIs('cost-categories.*') ? 'active' : '' }}" 
-                   href="{{ route('cost-categories.index') }}">
-                    <i class="fas fa-sitemap"></i> Cost Categories
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link {{ request()->routeIs('boq-items.*') ? 'active' : '' }}" 
-                   href="{{ route('boq-items.index') }}">
-                    <i class="fas fa-list-ol"></i> BOQ Items
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link {{ request()->routeIs('ipcs.*') ? 'active' : '' }}" 
-                   href="{{ route('ipcs.index') }}">
-                    <i class="fas fa-file-invoice"></i> IPCs
-                </a>
-            </li>
-        </ul>
+        <nav class="sidebar-nav">
+            <!-- MAIN -->
+            <div class="sidebar-label">Main</div>
+            <a href="{{ route('dashboard') }}" class="{{ request()->routeIs('dashboard') ? 'active' : '' }}">
+                <i class="fas fa-th-large"></i> Dashboard
+            </a>
+            <a href="{{ route('projects.index') }}" class="{{ request()->routeIs('projects.*') && !request()->routeIs('projects.team*') && !request()->routeIs('projects.subcontractors*') ? 'active' : '' }}">
+                <i class="fas fa-hard-hat"></i> Projects
+                <span class="badge bg-light text-dark">{{ \App\Models\Project::where('status','active')->count() }}</span>
+            </a>
+            
+            <!-- ENGINEERING -->
+            <div class="sidebar-label">Engineering</div>
+            <a href="{{ route('boq-items.index') }}" class="{{ request()->routeIs('boq-items.*') ? 'active' : '' }}">
+                <i class="fas fa-calculator"></i> BOQ & Costing
+            </a>
+            <a href="{{ route('ipcs.index') }}" class="{{ request()->routeIs('ipcs.*') ? 'active' : '' }}">
+                <i class="fas fa-file-invoice-dollar"></i> Payment Certificates
+                @php $pendingCount = \App\Models\Ipc::where('status','submitted')->count(); @endphp
+                @if($pendingCount > 0)<span class="badge bg-warning text-dark">{{ $pendingCount }}</span>@endif
+            </a>
+            <a href="{{ route('actual-costs.index') }}" class="{{ request()->routeIs('actual-costs.*') ? 'active' : '' }}">
+                <i class="fas fa-receipt"></i> Actual Costs
+            </a>
+            <a href="{{ route('gantt.index') }}" class="{{ request()->routeIs('gantt.*') ? 'active' : '' }}">
+                <i class="fas fa-chart-gantt"></i> Gantt Chart
+            </a>
+            
+            <!-- MANAGEMENT -->
+            <div class="sidebar-label">Management</div>
+            <a href="{{ route('subcontractors.index') }}" class="{{ request()->routeIs('subcontractors.*') ? 'active' : '' }}">
+                <i class="fas fa-users"></i> Subcontractors
+            </a>
+            <a href="{{ route('cost-categories.index') }}" class="{{ request()->routeIs('cost-categories.*') ? 'active' : '' }}">
+                <i class="fas fa-sitemap"></i> Cost Categories
+            </a>
+            
+            <!-- REPORTS -->
+            <div class="sidebar-label">Reports</div>
+            <a href="{{ route('reports.30-column') }}" class="{{ request()->routeIs('reports.*') ? 'active' : '' }}">
+                <i class="fas fa-table"></i> 30-Column Report
+            </a>
+            <a href="{{ route('actual-costs.variance') }}" class="{{ request()->routeIs('actual-costs.variance') ? 'active' : '' }}">
+                <i class="fas fa-chart-bar"></i> Variance Report
+            </a>
+            
+            <!-- ADMINISTRATION -->
+            @if(auth()->check() && auth()->user()->hasAnyPermission(['users.view','roles.view']))
+            <div class="sidebar-label">Administration</div>
+            @if(auth()->user()->hasPermission('users.view'))
+            <a href="{{ route('admin.users.index') }}" class="{{ request()->routeIs('admin.users.*') ? 'active' : '' }}">
+                <i class="fas fa-user-cog"></i> Users
+            </a>
+            @endif
+            @if(auth()->user()->hasPermission('roles.view'))
+            <a href="{{ route('admin.roles.index') }}" class="{{ request()->routeIs('admin.roles.*') ? 'active' : '' }}">
+                <i class="fas fa-shield-alt"></i> Roles
+            </a>
+            @endif
+            <a href="{{ route('admin.workflow.index') }}" class="{{ request()->routeIs('admin.workflow.*') ? 'active' : '' }}">
+                <i class="fas fa-project-diagram"></i> Workflow Permissions
+            </a>
+            <a href="{{ route('admin.settings.index') }}" class="{{ request()->routeIs('admin.settings.*') ? 'active' : '' }}">
+                <i class="fas fa-cog"></i> Tax Settings
+            </a>
+            @endif
+            
+            <!-- NOTIFICATIONS -->
+            <div class="sidebar-label">Alerts</div>
+            <a href="{{ route('notifications.index') }}" class="{{ request()->routeIs('notifications.*') ? 'active' : '' }}">
+                <i class="fas fa-bell"></i> Notifications
+                @php $unread = \App\Models\Notification::unreadCount(); @endphp
+                @if($unread > 0)<span class="badge bg-danger">{{ $unread }}</span>@endif
+            </a>
+        </nav>
         
-        <div class="mt-auto p-3" style="position: absolute; bottom: 0; width: 100%;">
-            <div class="text-center text-white-50" style="font-size: 0.8rem;">
-                <p>© 2024 CMS v1.0</p>
+        <div class="sidebar-footer">
+            © {{ date('Y') }} CMS Pro v2.0
+        </div>
+    </aside>
+
+    <!-- TOPBAR -->
+    <header class="topbar">
+        <button class="btn-icon d-md-none" onclick="document.getElementById('sidebar').classList.toggle('open')">
+            <i class="fas fa-bars"></i>
+        </button>
+        
+        <div class="flex-grow-1"></div>
+        
+        <!-- Notifications -->
+        <div class="dropdown">
+            <button class="btn-icon" data-bs-toggle="dropdown">
+                <i class="fas fa-bell"></i>
+                @if($unread > 0)<span class="badge bg-danger">{{ $unread }}</span>@endif
+            </button>
+            <div class="dropdown-menu dropdown-menu-end shadow-lg" style="width:320px;border-radius:12px;border:none;">
+                <div class="d-flex justify-content-between px-3 py-2 border-bottom">
+                    <strong>Notifications</strong>
+                    <a href="{{ route('notifications.mark-all-read') }}" class="text-muted small"
+                       onclick="event.preventDefault(); document.getElementById('mark-all-form').submit();">Mark all read</a>
+                    <form id="mark-all-form" action="{{ route('notifications.mark-all-read') }}" method="POST" class="d-none">@csrf</form>
+                </div>
+                <div style="max-height:280px;overflow-y:auto;">
+                    @foreach(\App\Models\Notification::recent(auth()->id(), 5) as $n)
+                    <a href="{{ route('notifications.read', $n) }}" class="dropdown-item {{ $n->is_read ? '' : 'bg-light' }}">
+                        <small><i class="fas fa-{{ $n->icon }} text-{{ $n->color }} me-1"></i></small>
+                        {{ Str::limit($n->title, 40) }}<br>
+                        <small class="text-muted">{{ $n->created_at->diffForHumans() }}</small>
+                    </a>
+                    @endforeach
+                </div>
+                <div class="text-center py-2 border-top">
+                    <a href="{{ route('notifications.index') }}" class="btn btn-sm btn-link">View All</a>
+                </div>
             </div>
         </div>
-    </nav>
-    
-    <!-- Main Content -->
+        
+        <!-- User Menu -->
+        @auth
+        <div class="dropdown">
+            <button class="user-btn" data-bs-toggle="dropdown">
+                <div class="user-avatar">{{ auth()->user()->initials }}</div>
+                <div class="d-none d-md-block text-start">
+                    <div class="user-name">{{ auth()->user()->name }}</div>
+                    <div class="user-role">{{ auth()->user()->role_label }}</div>
+                </div>
+            </button>
+            <div class="dropdown-menu dropdown-menu-end shadow-lg" style="border-radius:12px;border:none;min-width:200px;">
+                <div class="px-3 py-2">
+                    <strong>{{ auth()->user()->name }}</strong><br>
+                    <small class="text-muted">{{ auth()->user()->email }}</small>
+                </div>
+                <div class="dropdown-divider"></div>
+                <a href="{{ route('admin.profile') }}" class="dropdown-item">
+                    <i class="fas fa-user-circle me-2"></i> My Profile
+                </a>
+                <div class="dropdown-divider"></div>
+                <form action="{{ route('logout') }}" method="POST">
+                    @csrf
+                    <button type="submit" class="dropdown-item text-danger">
+                        <i class="fas fa-sign-out-alt me-2"></i> Sign Out
+                    </button>
+                </form>
+            </div>
+        </div>
+        @else
+        <a href="{{ route('login') }}" class="btn btn-primary">Sign In</a>
+        @endauth
+    </header>
+
+    <!-- MAIN CONTENT -->
     <main class="main-content">
         @if(session('success'))
             <div class="alert alert-success alert-dismissible fade show" role="alert">
                 <i class="fas fa-check-circle me-2"></i>{{ session('success') }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        @endif
+        
+        @if($errors->any())
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                <i class="fas fa-exclamation-triangle me-2"></i>
+                <strong>Please fix the following:</strong>
+                <ul class="mb-0 mt-1">
+                    @foreach($errors->all() as $error)<li>{{ $error }}</li>@endforeach
+                </ul>
                 <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
             </div>
         @endif
@@ -253,29 +345,19 @@
         
         @yield('content')
     </main>
-    
-    <!-- Scripts -->
+
+    <!-- SCRIPTS -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
     <script src="https://cdn.datatables.net/1.11.5/js/dataTables.bootstrap5.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    
-    @stack('scripts')
-    
     <script>
         $(document).ready(function() {
-            // Auto-initialize DataTables
-            $('.datatable').DataTable({
-                pageLength: 25,
-                responsive: true
-            });
-            
-            // Auto-dismiss alerts
-            setTimeout(function() {
-                $('.alert').alert('close');
-            }, 5000);
+            $('.datatable').DataTable({ pageLength: 25, responsive: true });
+            setTimeout(() => $('.alert').fadeOut('slow'), 5000);
         });
     </script>
+    @stack('scripts')
 </body>
 </html>

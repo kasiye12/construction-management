@@ -169,6 +169,12 @@
             <h5>👥 Subcontractors</h5>
             <hr>
             @forelse($project->subcontractors as $subcontractor)
+            <a href="{{ route('projects.subcontractors', $project) }}" class="btn btn-outline-primary btn-sm ms-2">
+                <i class="fas fa-users-cog me-1"></i> Manage Subcontractors
+            <a href="{{ route('projects.team', $project) }}" class="btn btn-outline-info btn-sm ms-2">
+                <i class="fas fa-users me-1"></i> Project Team
+            </a>
+            </a>
             <div class="mb-3 p-3 border rounded">
                 <strong>{{ $subcontractor->name }}</strong>
                 <p class="mb-1 text-muted small">{{ $subcontractor->pivot->scope_of_work ?? 'No scope defined' }}</p>
@@ -176,6 +182,12 @@
             </div>
             @empty
             <p class="text-muted">No subcontractors assigned</p>
+            <a href="{{ route('projects.subcontractors', $project) }}" class="btn btn-outline-primary btn-sm ms-2">
+                <i class="fas fa-users-cog me-1"></i> Manage Subcontractors
+            <a href="{{ route('projects.team', $project) }}" class="btn btn-outline-info btn-sm ms-2">
+                <i class="fas fa-users me-1"></i> Project Team
+            </a>
+            </a>
             @endforelse
         </div>
         
@@ -205,4 +217,6 @@
         </div>
     </div>
 </div>
+<!-- Documents -->
+@include('partials.document-upload', ['model' => $project, 'type' => 'App\\Models\\Project'])
 @endsection

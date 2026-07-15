@@ -22,11 +22,11 @@ class SubcontractorController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'name' => 'required|string|max:255',
+            'name' => 'required|string|max:255|min:2',
             'contact_person' => 'nullable|string|max:255',
             'email' => 'nullable|email|max:255',
             'phone' => 'nullable|string|max:50',
-            'address' => 'nullable|string',
+            'address' => 'nullable|string|max:500',
             'tax_id' => 'nullable|string|max:50',
             'is_active' => 'boolean'
         ]);
@@ -50,11 +50,11 @@ class SubcontractorController extends Controller
     public function update(Request $request, Subcontractor $subcontractor)
     {
         $validated = $request->validate([
-            'name' => 'required|string|max:255',
+            'name' => 'required|string|max:255|min:2',
             'contact_person' => 'nullable|string|max:255',
             'email' => 'nullable|email|max:255',
             'phone' => 'nullable|string|max:50',
-            'address' => 'nullable|string',
+            'address' => 'nullable|string|max:500',
             'tax_id' => 'nullable|string|max:50',
             'is_active' => 'boolean'
         ]);
