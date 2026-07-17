@@ -2,167 +2,140 @@
 namespace App\Exports;
 
 use App\Models\BoqItem;
+use App\Models\Project;
 use Maatwebsite\Excel\Concerns\FromCollection;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithTitle;
 use Maatwebsite\Excel\Concerns\WithStyles;
 use Maatwebsite\Excel\Concerns\WithColumnWidths;
-use Maatwebsite\Excel\Concerns\WithCustomStartCell;
 use Maatwebsite\Excel\Concerns\WithEvents;
 use Maatwebsite\Excel\Events\AfterSheet;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 use PhpOffice\PhpSpreadsheet\Style\Border;
 use PhpOffice\PhpSpreadsheet\Style\Fill;
 use PhpOffice\PhpSpreadsheet\Style\Alignment;
-use PhpOffice\PhpSpreadsheet\Style\Font;
 use Carbon\Carbon;
 
 class ThirtyColumnReportExport implements 
-    FromCollection, 
-    WithHeadings, 
-    WithTitle,
-    WithStyles,
-    WithColumnWidths,
-    WithCustomStartCell,
-    WithEvents
+    FromCollection, WithHeadings, WithTitle, WithStyles, 
+    WithColumnWidths, WithEvents
 {
     protected $projectId;
+    protected $filters;
     protected $projectName;
-    protected $data;
     protected $totalRevenue = 0;
     protected $totalBudget = 0;
-    protected $currentRow = 7; // Start after headers
 
-    public function __construct($projectId = null)
+    public function __construct($projectId = null, $filters = [])
     {
         $this->projectId = $projectId;
+        $this->filters = is_array($filters) ? $filters : [];
         
         if ($projectId) {
-            $project = \App\Models\Project::find($projectId);
+            $project = Project::find($projectId);
             $this->projectName = $project ? $project->name : 'All Projects';
         } else {
             $this->projectName = 'All Projects';
         }
-        
-        $this->prepareData();
-    }
-
-    protected function prepareData()
-    {
-        $query = BoqItem::with([
-            'costCategory',
-            'laborResources',
-            'materialResources',
-            'equipmentResources',
-            'project'
-        ])->where('is_parent', false);
-        
-        if ($this->projectId) {
-            $query->where('project_id', $this->projectId);
-        }
-        
-        $items = $query->orderBy('cost_category_id')
-                      ->orderBy('item_number')
-                      ->get();
-        
-        // Group by cost category
-        $this->data = $items->groupBy(function($item) {
-            return $item->costCategory ? $item->costCategory->code . '. ' . $item->costCategory->name : 'Uncategorized';
-        });
-        
-        $this->totalRevenue = $items->sum('revenue_amount');
-        $this->totalBudget = $items->sum(function($item) {
-            return $item->total_budget_cost;
-        });
     }
 
     public function collection()
     {
+        $query = BoqItem::with([
+            'costCategory', 'laborResources', 'materialResources', 'equipmentResources'
+        ])->where('is_parent', false);
+        
+        // Apply ALL filters - same as PDF
+        if ($this->projectId) {
+            $query->where('project_id', $this->projectId);
+        }
+        if (!empty($this->filters['category_id'])) {
+            $query->where('cost_category_id', $this->filters['category_id']);
+        }
+        if (!empty($this->filters['status'])) {
+            $query->where('status', $this->filters['status']);
+        }
+        if (!empty($this->filters['date_from'])) {
+            $query->where('planned_start_date', '>=', $this->filters['date_from']);
+        }
+        if (!empty($this->filters['date_to'])) {
+            $query->where('planned_start_date', '<=', $this->filters['date_to']);
+        }
+        
+        $items = $query->orderBy('cost_category_id')->orderBy('item_number')->get();
+        
+        $this->totalRevenue = $items->sum('revenue_amount');
+        $this->totalBudget = $items->sum(fn($i) => $i->total_budget_cost);
+        
+        $groupedItems = $items->groupBy(function($item) {
+            return $item->costCategory ? $item->costCategory->code . '. ' . $item->costCategory->name : 'Uncategorized';
+        });
+        
         $rows = collect();
         
-        foreach ($this->data as $categoryName => $categoryItems) {
-            $catRevenue = $categoryItems->sum('revenue_amount');
-            $catBudget = $categoryItems->sum(function($i) { return $i->total_budget_cost; });
-            
+        foreach ($groupedItems as $categoryName => $categoryItems) {
             // Category header row
-            $rows->push([
-                '', '', $categoryName, '', '', '', '', '', '', '',
-                '', '', '', '', '',
-                '', '', '', '',
-                '', '', '', '', '', '',
-                '', '', '', ''
-            ]);
+            $rows->push(array_merge(['', '', $categoryName], array_fill(0, 26, '')));
             
             foreach ($categoryItems as $item) {
-                $laborResources = $item->laborResources;
-                $materialResources = $item->materialResources;
-                $equipmentResources = $item->equipmentResources;
-                $maxRows = max($laborResources->count(), $materialResources->count(), $equipmentResources->count(), 1);
+                $labor = $item->laborResources;
+                $material = $item->materialResources;
+                $equipment = $item->equipmentResources;
+                $maxRows = max($labor->count(), $material->count(), $equipment->count(), 1);
                 
                 for ($i = 0; $i < $maxRows; $i++) {
                     $row = [];
                     
                     if ($i == 0) {
-                        // Main item data
-                        $row[] = $item->costCategory->code ?? ''; // Cost Category
-                        $row[] = $item->item_number; // Item No
-                        $row[] = $item->description; // Description
-                        $row[] = $item->unit; // Unit
-                        $row[] = $item->unit_rate; // BOQ Rate
-                        $row[] = $item->quantity; // Quantity
-                        $row[] = $item->revenue_amount; // Revenue
-                        $row[] = $item->duration_days; // Duration
-                        $row[] = $item->planned_start_date ? $item->planned_start_date->format('m/d/Y') : ''; // Start
-                        $row[] = $item->planned_end_date ? $item->planned_end_date->format('m/d/Y') : ''; // End
+                        $row = [
+                            $item->costCategory->code ?? '',
+                            $item->item_number,
+                            $item->description,
+                            $item->unit,
+                            $item->unit_rate,
+                            $item->quantity,
+                            $item->revenue_amount,
+                            $item->duration_days ?? '',
+                            $item->planned_start_date ? $item->planned_start_date->format('m/d/Y') : '',
+                            $item->planned_end_date ? $item->planned_end_date->format('m/d/Y') : '',
+                        ];
                     } else {
                         $row = array_fill(0, 10, '');
                     }
                     
-                    // Labor (5 columns)
-                    if (isset($laborResources[$i])) {
-                        $row[] = $laborResources[$i]->trade_name;
-                        $row[] = $laborResources[$i]->number_of_workers;
-                        $row[] = $laborResources[$i]->total_hours;
-                        $row[] = $laborResources[$i]->wage_per_day;
-                        $row[] = $laborResources[$i]->amount;
-                    } else {
-                        $row = array_merge($row, ['', '', '', '', '']);
-                    }
+                    // Labor (5 cols)
+                    if (isset($labor[$i])) {
+                        $row[] = $labor[$i]->trade_name;
+                        $row[] = $labor[$i]->number_of_workers;
+                        $row[] = $labor[$i]->total_hours;
+                        $row[] = $labor[$i]->wage_per_day;
+                        $row[] = $labor[$i]->amount;
+                    } else { $row = array_merge($row, ['','','','','']); }
                     
-                    // Material (4 columns)
-                    if (isset($materialResources[$i])) {
-                        $row[] = $materialResources[$i]->description;
-                        $row[] = $materialResources[$i]->unit;
-                        $row[] = $materialResources[$i]->quantity;
-                        $row[] = $materialResources[$i]->unit_rate;
-                    } else {
-                        $row = array_merge($row, ['', '', '', '']);
-                    }
+                    // Material (4 cols)
+                    if (isset($material[$i])) {
+                        $row[] = $material[$i]->description;
+                        $row[] = $material[$i]->unit;
+                        $row[] = $material[$i]->quantity;
+                        $row[] = $material[$i]->unit_rate;
+                    } else { $row = array_merge($row, ['','','','']); }
                     
-                    // Equipment (6 columns)
-                    if (isset($equipmentResources[$i])) {
-                        $row[] = $equipmentResources[$i]->description;
-                        $row[] = $equipmentResources[$i]->duration_days;
-                        $row[] = $equipmentResources[$i]->number_of_units;
-                        $row[] = $equipmentResources[$i]->total_hours;
-                        $row[] = $equipmentResources[$i]->rate_per_hour;
-                        $row[] = $equipmentResources[$i]->amount;
-                    } else {
-                        $row = array_merge($row, ['', '', '', '', '', '']);
-                    }
+                    // Equipment (6 cols)
+                    if (isset($equipment[$i])) {
+                        $row[] = $equipment[$i]->description;
+                        $row[] = $equipment[$i]->duration_days ?? '';
+                        $row[] = $equipment[$i]->number_of_units;
+                        $row[] = $equipment[$i]->total_hours;
+                        $row[] = $equipment[$i]->rate_per_hour;
+                        $row[] = $equipment[$i]->amount;
+                    } else { $row = array_merge($row, ['','','','','','']); }
                     
                     if ($i == 0) {
-                        $itemBudget = $item->total_budget_cost;
-                        $itemProfitLoss = $item->profit_loss;
-                        $itemMargin = $item->profit_margin_percentage;
-                        
-                        $row[] = $itemBudget; // Total Budget
-                        $row[] = $itemProfitLoss; // Profit/Loss
-                        $row[] = $itemMargin / 100; // Profit % (as decimal for Excel formatting)
-                        $row[] = $item->profit_loss_status; // Status
-                    } else {
-                        $row = array_merge($row, ['', '', '', '']);
-                    }
+                        $row[] = $item->total_budget_cost;
+                        $row[] = $item->profit_loss;
+                        $row[] = $item->profit_margin_percentage / 100;
+                        $row[] = $item->profit_loss_status;
+                    } else { $row = array_merge($row, ['','','','']); }
                     
                     $rows->push($row);
                 }
@@ -174,91 +147,49 @@ class ThirtyColumnReportExport implements
 
     public function headings(): array
     {
+        $filterInfo = [];
+        if (!empty($this->filters['category_id'])) $filterInfo[] = 'Category Filtered';
+        if (!empty($this->filters['status'])) $filterInfo[] = 'Status: ' . $this->filters['status'];
+        if (!empty($this->filters['date_from']) || !empty($this->filters['date_to'])) {
+            $filterInfo[] = 'Date: ' . ($this->filters['date_from'] ?? 'Any') . ' to ' . ($this->filters['date_to'] ?? 'Any');
+        }
+        $filterText = count($filterInfo) > 0 ? ' | Filters: ' . implode(', ', $filterInfo) : '';
+        
         return [
             ['30-COLUMN BUDGET & COST BREAKDOWN REPORT'],
-            ['Project: ' . $this->projectName],
+            ['Project: ' . $this->projectName . $filterText],
             ['Generated: ' . Carbon::now()->format('F d, Y')],
-            [''], // Empty row for spacing
+            [''],
             [
-                'Cost Category', 'Item No.', 'ITEM DESCRIPTION', 'UNIT', 'BOQ Rate', 
+                'Cost Category', 'Item No.', 'ITEM DESCRIPTION', 'UNIT', 'BOQ Rate',
                 'Quantity', 'REVENUE AMOUNT', 'Duration', 'Start Date', 'End Date',
                 'TRADE', 'NUMBER', 'TOTAL HOUR', 'WAGE/DAY', 'LABOUR AMOUNT',
-                'Material Description', 'Material UNIT', 'Material QUANTITY', 'UNIT RATE',
-                'Equipment DESCRIPTION', 'Equipment DURATION', 'NUMBER', 'TOTAL HOUR', 'RATE', 'EQUIPMENT AMOUNT',
-                'TOTAL BUDGET AMOUNT', 'PROFIT/LOSS', 'Profit %', 'STATUS'
+                'Material Desc', 'UNIT', 'QUANTITY', 'UNIT RATE',
+                'Equipment Desc', 'DURATION', 'NUMBER', 'TOTAL HOUR', 'RATE', 'EQUIP AMOUNT',
+                'TOTAL BUDGET', 'PROFIT/LOSS', 'Profit %', 'STATUS'
             ]
         ];
     }
 
-    public function title(): string
-    {
-        return '30-Column Budget Report';
-    }
-
-    public function startCell(): string
-    {
-        return 'A1';
-    }
+    public function title(): string { return '30-Column Budget Report'; }
 
     public function columnWidths(): array
     {
         return [
-            'A' => 12,  // Cost Category
-            'B' => 10,  // Item No
-            'C' => 45,  // Description
-            'D' => 8,   // Unit
-            'E' => 12,  // BOQ Rate
-            'F' => 12,  // Quantity
-            'G' => 15,  // Revenue
-            'H' => 10,  // Duration
-            'I' => 12,  // Start Date
-            'J' => 12,  // End Date
-            'K' => 20,  // Trade
-            'L' => 10,  // Number
-            'M' => 12,  // Total Hours
-            'N' => 12,  // Wage/Day
-            'O' => 15,  // Labour Amount
-            'P' => 25,  // Material Description
-            'Q' => 10,  // Material Unit
-            'R' => 12,  // Material Quantity
-            'S' => 12,  // Unit Rate
-            'T' => 25,  // Equipment Description
-            'U' => 12,  // Equipment Duration
-            'V' => 10,  // Equipment Number
-            'W' => 12,  // Total Hours
-            'X' => 12,  // Rate
-            'Y' => 15,  // Equipment Amount
-            'Z' => 15,  // Total Budget
-            'AA' => 15, // Profit/Loss
-            'AB' => 10, // Profit %
-            'AC' => 12, // Status
+            'A'=>12,'B'=>10,'C'=>40,'D'=>8,'E'=>12,'F'=>12,'G'=>14,
+            'H'=>8,'I'=>10,'J'=>10,
+            'K'=>18,'L'=>8,'M'=>10,'N'=>10,'O'=>14,
+            'P'=>22,'Q'=>8,'R'=>12,'S'=>12,
+            'T'=>22,'U'=>10,'V'=>8,'W'=>10,'X'=>10,'Y'=>14,
+            'Z'=>14,'AA'=>14,'AB'=>10,'AC'=>12,
         ];
     }
 
     public function styles(Worksheet $sheet)
     {
         return [
-            // Title row
-            1 => [
-                'font' => ['bold' => true, 'size' => 16, 'color' => ['rgb' => '002060']],
-                'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER],
-            ],
-            // Project name row
-            2 => [
-                'font' => ['size' => 11, 'color' => ['rgb' => '666666']],
-                'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER],
-            ],
-            // Date row
-            3 => [
-                'font' => ['size' => 9, 'color' => ['rgb' => '999999']],
-                'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER],
-            ],
-            // Header row (row 5)
-            5 => [
-                'font' => ['bold' => true, 'size' => 9, 'color' => ['rgb' => 'FFFFFF']],
-                'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['rgb' => '4472C4']],
-                'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER, 'vertical' => Alignment::VERTICAL_CENTER, 'wrapText' => true],
-            ],
+            1 => ['font' => ['bold'=>true,'size'=>14,'color'=>['rgb'=>'002060']],'alignment'=>['horizontal'=>Alignment::HORIZONTAL_CENTER]],
+            5 => ['font' => ['bold'=>true,'size'=>8,'color'=>['rgb'=>'FFFFFF']],'fill'=>['fillType'=>Fill::FILL_SOLID,'startColor'=>['rgb'=>'4472C4']]],
         ];
     }
 
@@ -269,120 +200,59 @@ class ThirtyColumnReportExport implements
                 $sheet = $event->sheet->getDelegate();
                 $lastRow = $sheet->getHighestRow();
                 
-                // Merge title cells
                 $sheet->mergeCells('A1:AC1');
                 $sheet->mergeCells('A2:AC2');
                 $sheet->mergeCells('A3:AC3');
                 
-                // Set row heights
-                $sheet->getRowDimension(1)->setRowHeight(30);
-                $sheet->getRowDimension(5)->setRowHeight(40);
+                $sheet->getRowDimension(1)->setRowHeight(25);
+                $sheet->getRowDimension(5)->setRowHeight(35);
                 
-                // Apply borders to all data cells
-                $styleArray = [
-                    'borders' => [
-                        'allBorders' => [
-                            'borderStyle' => Border::BORDER_THIN,
-                            'color' => ['rgb' => '333333'],
-                        ],
-                    ],
-                ];
-                
-                $sheet->getStyle('A5:AC' . $lastRow)->applyFromArray($styleArray);
-                
-                // Format currency columns
-                $currencyColumns = ['E', 'F', 'G', 'N', 'O', 'R', 'S', 'X', 'Y', 'Z', 'AA'];
-                foreach ($currencyColumns as $col) {
-                    $sheet->getStyle($col . '6:' . $col . $lastRow)
-                        ->getNumberFormat()
-                        ->setFormatCode('#,##0.00');
-                }
-                
-                // Format percentage column
-                $sheet->getStyle('AB6:AB' . $lastRow)
-                    ->getNumberFormat()
-                    ->setFormatCode('0.0%');
-                
-                // Apply category header styling
-                for ($row = 6; $row <= $lastRow; $row++) {
-                    $cellValue = $sheet->getCell('C' . $row)->getValue();
-                    // Check if this is a category header (only column C has value, others empty)
-                    $aEmpty = empty($sheet->getCell('A' . $row)->getValue());
-                    $bEmpty = empty($sheet->getCell('B' . $row)->getValue());
-                    
-                    if ($aEmpty && $bEmpty && !empty($cellValue)) {
-                        $sheet->mergeCells('A' . $row . ':AC' . $row);
-                        $sheet->getStyle('A' . $row . ':AC' . $row)->applyFromArray([
-                            'font' => ['bold' => true, 'size' => 10],
-                            'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['rgb' => 'D6E4F0']],
-                        ]);
-                    }
-                    
-                    // Apply PROFIT/LOSS coloring
-                    $statusCell = $sheet->getCell('AC' . $row)->getValue();
-                    $plCell = $sheet->getCell('AA' . $row)->getValue();
-                    
-                    if ($statusCell == 'PROFIT') {
-                        $sheet->getStyle('AA' . $row . ':AC' . $row)
-                            ->getFont()->getColor()->setRGB('006100');
-                        $sheet->getStyle('AC' . $row)
-                            ->getFill()->setFillType(Fill::FILL_SOLID)
-                            ->getStartColor()->setRGB('C6EFCE');
-                    } elseif ($statusCell == 'LOSS') {
-                        $sheet->getStyle('AA' . $row . ':AC' . $row)
-                            ->getFont()->getColor()->setRGB('9C0006');
-                        $sheet->getStyle('AC' . $row)
-                            ->getFill()->setFillType(Fill::FILL_SOLID)
-                            ->getStartColor()->setRGB('FFC7CE');
-                    }
-                }
-                
-                // Add grand total row
-                $totalRow = $lastRow + 2;
-                $sheet->mergeCells('A' . $totalRow . ':F' . $totalRow);
-                $sheet->setCellValue('A' . $totalRow, 'GRAND TOTAL:');
-                $sheet->setCellValue('G' . $totalRow, $this->totalRevenue);
-                $sheet->setCellValue('Z' . $totalRow, $this->totalBudget);
-                
-                $totalPL = $this->totalRevenue - $this->totalBudget;
-                $sheet->setCellValue('AA' . $totalRow, $totalPL);
-                
-                $totalMargin = $this->totalRevenue > 0 ? ($totalPL / $this->totalRevenue) : 0;
-                $sheet->setCellValue('AB' . $totalRow, $totalMargin);
-                $sheet->setCellValue('AC' . $totalRow, $totalPL >= 0 ? 'PROFIT' : 'LOSS');
-                
-                // Style grand total row
-                $sheet->getStyle('A' . $totalRow . ':AC' . $totalRow)->applyFromArray([
-                    'font' => ['bold' => true, 'size' => 11, 'color' => ['rgb' => 'FFFFFF']],
-                    'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['rgb' => '002060']],
+                $sheet->getStyle('A5:AC' . $lastRow)->applyFromArray([
+                    'borders' => ['allBorders' => ['borderStyle' => Border::BORDER_THIN]]
                 ]);
                 
-                $sheet->getStyle('G' . $totalRow . ':AC' . $totalRow)
-                    ->getNumberFormat()
-                    ->setFormatCode('#,##0.00');
-                    
-                $sheet->getStyle('AB' . $totalRow)
-                    ->getNumberFormat()
-                    ->setFormatCode('0.0%');
+                // Format currency columns
+                foreach(['E','F','G','N','O','R','S','X','Y','Z','AA'] as $col) {
+                    $sheet->getStyle($col.'6:'.$col.$lastRow)->getNumberFormat()->setFormatCode('#,##0.00');
+                }
+                $sheet->getStyle('AB6:AB'.$lastRow)->getNumberFormat()->setFormatCode('0.0%');
                 
-                // Freeze panes
+                // Category headers styling
+                for ($row = 6; $row <= $lastRow; $row++) {
+                    $c = $sheet->getCell('C'.$row)->getValue();
+                    $a = $sheet->getCell('A'.$row)->getValue();
+                    if (empty($a) && !empty($c)) {
+                        $sheet->mergeCells('A'.$row.':AC'.$row);
+                        $sheet->getStyle('A'.$row.':AC'.$row)->applyFromArray([
+                            'font'=>['bold'=>true,'size'=>10],
+                            'fill'=>['fillType'=>Fill::FILL_SOLID,'startColor'=>['rgb'=>'D6E4F0']],
+                        ]);
+                    }
+                }
+                
+                // Grand total row
+                $tr = $lastRow + 2;
+                $sheet->mergeCells('A'.$tr.':F'.$tr);
+                $sheet->setCellValue('A'.$tr, 'GRAND TOTAL:');
+                $sheet->setCellValue('G'.$tr, $this->totalRevenue);
+                $sheet->setCellValue('Z'.$tr, $this->totalBudget);
+                $pl = $this->totalRevenue - $this->totalBudget;
+                $sheet->setCellValue('AA'.$tr, $pl);
+                $sheet->setCellValue('AB'.$tr, $this->totalRevenue>0?$pl/$this->totalRevenue:0);
+                $sheet->setCellValue('AC'.$tr, $pl>=0?'PROFIT':'LOSS');
+                
+                $sheet->getStyle('A'.$tr.':AC'.$tr)->applyFromArray([
+                    'font'=>['bold'=>true,'size'=>10,'color'=>['rgb'=>'FFFFFF']],
+                    'fill'=>['fillType'=>Fill::FILL_SOLID,'startColor'=>['rgb'=>'002060']],
+                ]);
+                
                 $sheet->freezePane('D6');
+                $sheet->setAutoFilter('A5:AC'.$lastRow);
                 
-                // Auto filter
-                $sheet->setAutoFilter('A5:AC' . $lastRow);
-                
-                // Print settings
                 $sheet->getPageSetup()
                     ->setOrientation(\PhpOffice\PhpSpreadsheet\Worksheet\PageSetup::ORIENTATION_LANDSCAPE)
                     ->setPaperSize(\PhpOffice\PhpSpreadsheet\Worksheet\PageSetup::PAPERSIZE_A3)
-                    ->setFitToWidth(1)
-                    ->setFitToHeight(0);
-                
-                $sheet->getPageMargins()
-                    ->setTop(0.5)
-                    ->setBottom(0.5)
-                    ->setLeft(0.3)
-                    ->setRight(0.3);
+                    ->setFitToWidth(1)->setFitToHeight(0);
             },
         ];
     }

@@ -5,7 +5,6 @@ class NumberToWordsHelper
 {
     /**
      * Convert number to words in standard financial format
-     * Example: 618750 → "Six Hundred Eighteen Thousand Seven Hundred Fifty Ethiopian Birr Only"
      */
     public static function convert($number)
     {
@@ -25,9 +24,6 @@ class NumberToWordsHelper
         return $words . ' Ethiopian Birr Only';
     }
 
-    /**
-     * Convert whole number to words (standard financial format - no "and")
-     */
     private static function convertWholeNumber($number)
     {
         if ($number == 0) {
@@ -65,10 +61,6 @@ class NumberToWordsHelper
         return trim($words);
     }
 
-    /**
-     * Convert hundreds part (0-999) to words
-     * Standard format: "Six Hundred Eighteen" (no "and")
-     */
     private static function convertHundreds($number, $ones, $tens)
     {
         $words = '';
@@ -76,15 +68,13 @@ class NumberToWordsHelper
         $hundreds = floor($number / 100);
         $remainder = $number % 100;
 
-        // Hundreds
         if ($hundreds > 0) {
             $words .= $ones[$hundreds] . ' Hundred';
         }
 
-        // Tens and ones
         if ($remainder > 0) {
             if ($hundreds > 0) {
-                $words .= ' '; // Space only, no "and"
+                $words .= ' ';
             }
             
             if ($remainder < 20) {
