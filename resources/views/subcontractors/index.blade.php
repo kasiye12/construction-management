@@ -14,15 +14,15 @@
                 </ol>
             </nav>
         </div>
-        <a href="{{ route('subcontractors.create') }}" class="btn btn-primary btn-custom">
-            <i class="fas fa-plus me-2"></i>New Subcontractor
+        <a href="{{ route('subcontractors.create') }}" class="btn btn-primary">
+            <i class="fas fa-plus me-1"></i> New Subcontractor
         </a>
     </div>
 </div>
 
-<div class="table-card">
+<div class="card">
     <div class="table-responsive">
-        <table class="table table-hover datatable">
+        <table class="table table-hover mb-0">
             <thead class="table-light">
                 <tr>
                     <th>Name</th>
@@ -35,43 +35,31 @@
                 </tr>
             </thead>
             <tbody>
-                @forelse($subcontractors as $subcontractor)
+                @forelse($subcontractors as $sub)
                 <tr>
+                    <td><a href="{{ route('subcontractors.show', $sub) }}" class="fw-bold text-decoration-none">{{ $sub->name }}</a></td>
+                    <td>{{ $sub->contact_person ?? '-' }}</td>
+                    <td>{{ $sub->email ?? '-' }}</td>
+                    <td>{{ $sub->phone ?? '-' }}</td>
+                    <td><span class="badge bg-info">{{ $sub->projects_count }}</span></td>
                     <td>
-                        <a href="{{ route('subcontractors.show', $subcontractor) }}" class="fw-bold">
-                            {{ $subcontractor->name }}
-                        </a>
-                    </td>
-                    <td>{{ $subcontractor->contact_person ?? 'N/A' }}</td>
-                    <td>{{ $subcontractor->email ?? 'N/A' }}</td>
-                    <td>{{ $subcontractor->phone ?? 'N/A' }}</td>
-                    <td>{{ $subcontractor->projects->count() }}</td>
-                    <td>
-                        <span class="badge {{ $subcontractor->is_active ? 'bg-success' : 'bg-danger' }}">
-                            {{ $subcontractor->is_active ? 'Active' : 'Inactive' }}
+                        <span class="badge {{ $sub->is_active ? 'bg-success' : 'bg-secondary' }}">
+                            {{ $sub->is_active ? 'Active' : 'Inactive' }}
                         </span>
                     </td>
                     <td>
-                        <a href="{{ route('subcontractors.show', $subcontractor) }}" class="btn btn-sm btn-info">
-                            <i class="fas fa-eye"></i>
-                        </a>
-                        <a href="{{ route('subcontractors.edit', $subcontractor) }}" class="btn btn-sm btn-warning">
-                            <i class="fas fa-edit"></i>
-                        </a>
+                        <div class="btn-group btn-group-sm">
+                            <a href="{{ route('subcontractors.show', $sub) }}" class="btn btn-info"><i class="fas fa-eye"></i></a>
+                            <a href="{{ route('subcontractors.edit', $sub) }}" class="btn btn-warning"><i class="fas fa-edit"></i></a>
+                        </div>
                     </td>
                 </tr>
                 @empty
-                <tr>
-                    <td colspan="7" class="text-center py-4">
-                        <i class="fas fa-users fa-3x text-muted mb-3"></i>
-                        <h4>No Subcontractors Found</h4>
-                        <a href="{{ route('subcontractors.create') }}" class="btn btn-primary">Add Subcontractor</a>
-                    </td>
-                </tr>
+                <tr><td colspan="7" class="text-center py-4">No subcontractors found.</td></tr>
                 @endforelse
             </tbody>
         </table>
     </div>
-    {{ $subcontractors->links() }}
+    <div class="card-footer">{{ $subcontractors->links() }}</div>
 </div>
 @endsection

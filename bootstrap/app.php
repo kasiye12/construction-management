@@ -11,10 +11,14 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware) {
-        // Register aliases
         $middleware->alias([
             'permission' => \App\Http\Middleware\CheckPermission::class,
             'role' => \App\Http\Middleware\RoleMiddleware::class,
+        ]);
+        
+        // Add project access middleware to web group
+        $middleware->web(append: [
+            \App\Http\Middleware\ProjectAccessMiddleware::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {

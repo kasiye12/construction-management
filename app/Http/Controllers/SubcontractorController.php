@@ -9,14 +9,13 @@ class SubcontractorController extends Controller
 {
     public function index()
     {
-        $subcontractors = Subcontractor::with('projects')->orderBy('name')->paginate(10);
+        $subcontractors = Subcontractor::withCount('projects')->orderBy('name')->paginate(15);
         return view('subcontractors.index', compact('subcontractors'));
     }
 
     public function create()
     {
-        $projects = Project::all();
-        return view('subcontractors.create', compact('projects'));
+        return view('subcontractors.create');
     }
 
     public function store(Request $request)
@@ -30,21 +29,19 @@ class SubcontractorController extends Controller
             'tax_id' => 'nullable|string|max:50',
             'is_active' => 'boolean'
         ]);
-
         Subcontractor::create($validated);
-        return redirect()->route('subcontractors.index')->with('success', 'Subcontractor created successfully.');
+        return redirect()->route('subcontractors.index')->with('success', 'Subcontractor created.');
     }
 
     public function show(Subcontractor $subcontractor)
     {
-        $subcontractor->load(['projects', 'ipcs.ipcItems.boqItem']);
+        $subcontractor->load(['projects', 'ipcs' => function($q) { $q->latest()->take(10); }]);
         return view('subcontractors.show', compact('subcontractor'));
     }
 
     public function edit(Subcontractor $subcontractor)
     {
-        $projects = Project::all();
-        return view('subcontractors.edit', compact('subcontractor', 'projects'));
+        return view('subcontractors.edit', compact('subcontractor'));
     }
 
     public function update(Request $request, Subcontractor $subcontractor)
@@ -58,14 +55,13 @@ class SubcontractorController extends Controller
             'tax_id' => 'nullable|string|max:50',
             'is_active' => 'boolean'
         ]);
-
         $subcontractor->update($validated);
-        return redirect()->route('subcontractors.index')->with('success', 'Subcontractor updated successfully.');
+        return redirect()->route('subcontractors.index')->with('success', 'Subcontractor updated.');
     }
 
     public function destroy(Subcontractor $subcontractor)
     {
         $subcontractor->delete();
-        return redirect()->route('subcontractors.index')->with('success', 'Subcontractor deleted successfully.');
+        return redirect()->route('subcontractors.index')->with('success', 'Subcontractor deleted.');
     }
 }

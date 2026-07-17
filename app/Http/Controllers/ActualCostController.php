@@ -9,32 +9,55 @@ use Illuminate\Support\Facades\Auth;
 
 class ActualCostController extends Controller
 {
+    private function getUserProjectIds()
+    {
+        $user = Auth::user();
+        if ($user->isAdmin()) return Project::pluck('id')->toArray();
+        return $user->projects()->where('project_user.is_active', true)->pluck('projects.id')->toArray();
+    }
+
     public function index(Request $request)
     {
         $projectId = $request->get('project_id');
-        $projects = Project::all();
+        $user = Auth::user();
+        $userProjectIds = $this->getUserProjectIds();
         
-        $query = ActualCost::with(['project', 'boqItem', 'creator']);
+        $projects = $user->isAdmin() ? Project::all() : $user->projects()->where('project_user.is_active', true)->get();
         
-        if ($projectId) {
-            $query->where('project_id', $projectId);
-        }
+        $query = ActualCost::with(['project', 'boqItem', 'creator'])
+            ->whereIn('project_id', $userProjectIds);
+        
+        if ($projectId) $query->where('project_id', $projectId);
         
         $costs = $query->orderBy('cost_date', 'desc')->paginate(20);
         
-        // Summary
-        $totalActual = ActualCost::when($projectId, fn($q) => $q->where('project_id', $projectId))->sum('amount');
-        $totalBudget = BoqItem::when($projectId, fn($q) => $q->where('project_id', $projectId))
-            ->get()->sum(fn($i) => $i->total_budget_cost);
+        // Summary calculations
+        $totalActual = ActualCost::whereIn('project_id', $userProjectIds)
+            ->when($projectId, fn($q) => $q->where('project_id', $projectId))
+            ->sum('amount');
+            
+        $totalBudget = BoqItem::whereIn('project_id', $userProjectIds)
+            ->when($projectId, fn($q) => $q->where('project_id', $projectId))
+            ->where('is_parent', false)
+            ->get()
+            ->sum(fn($i) => $i->total_budget_cost);
+            
         $variance = $totalBudget - $totalActual;
+        $percentUsed = $totalBudget > 0 ? round(($totalActual / $totalBudget) * 100, 1) : 0;
         
-        return view('actual-costs.index', compact('costs', 'projects', 'projectId', 'totalActual', 'totalBudget', 'variance'));
+        return view('actual-costs.index', compact(
+            'costs', 'projects', 'projectId', 
+            'totalActual', 'totalBudget', 'variance', 'percentUsed'
+        ));
     }
 
     public function create(Request $request)
     {
         $projectId = $request->get('project_id');
-        $projects = Project::all();
+        $user = Auth::user();
+        $userProjectIds = $this->getUserProjectIds();
+        
+        $projects = $user->isAdmin() ? Project::all() : $user->projects()->where('project_user.is_active', true)->get();
         $boqItems = $projectId ? BoqItem::where('project_id', $projectId)->where('is_parent', false)->get() : collect();
         
         return view('actual-costs.create', compact('projects', 'boqItems', 'projectId'));
@@ -55,7 +78,6 @@ class ActualCostController extends Controller
         ]);
 
         $validated['created_by'] = Auth::id();
-        
         ActualCost::create($validated);
 
         return redirect()->route('actual-costs.index', ['project_id' => $validated['project_id']])
@@ -70,8 +92,11 @@ class ActualCostController extends Controller
 
     public function edit(ActualCost $actualCost)
     {
-        $projects = Project::all();
+        $user = Auth::user();
+        $userProjectIds = $this->getUserProjectIds();
+        $projects = $user->isAdmin() ? Project::all() : $user->projects()->where('project_user.is_active', true)->get();
         $boqItems = BoqItem::where('project_id', $actualCost->project_id)->where('is_parent', false)->get();
+        
         return view('actual-costs.edit', compact('actualCost', 'projects', 'boqItems'));
     }
 
@@ -99,24 +124,24 @@ class ActualCostController extends Controller
     {
         $projectId = $actualCost->project_id;
         $actualCost->delete();
-        
         return redirect()->route('actual-costs.index', ['project_id' => $projectId])
             ->with('success', 'Cost record deleted.');
     }
 
-    // Variance Report
     public function varianceReport(Request $request)
     {
         $projectId = $request->get('project_id');
-        $projects = Project::all();
+        $user = Auth::user();
+        $userProjectIds = $this->getUserProjectIds();
+        
+        $projects = $user->isAdmin() ? Project::all() : $user->projects()->where('project_user.is_active', true)->get();
         $selectedProject = $projectId ? Project::find($projectId) : null;
         
-        $query = BoqItem::with(['actualCosts', 'laborResources', 'materialResources', 'equipmentResources'])
-            ->where('is_parent', false);
+        $query = BoqItem::with(['actualCosts', 'laborResources', 'materialResources', 'equipmentResources', 'costCategory'])
+            ->where('is_parent', false)
+            ->whereIn('project_id', $userProjectIds);
         
-        if ($projectId) {
-            $query->where('project_id', $projectId);
-        }
+        if ($projectId) $query->where('project_id', $projectId);
         
         $items = $query->orderBy('cost_category_id')->orderBy('item_number')->get();
         

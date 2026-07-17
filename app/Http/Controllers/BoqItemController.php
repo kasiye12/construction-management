@@ -6,15 +6,32 @@ use App\Models\Project;
 use App\Models\CostCategory;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Auth;
 
 class BoqItemController extends Controller
 {
     public function index(Request $request)
     {
         $projectId = $request->get('project_id');
-        $projects = Project::all();
+        $user = Auth::user();
+        
+        // Filter by user's projects if not admin
+        if ($user && !$user->isAdmin()) {
+            $userProjectIds = $user->projects()->where('project_user.is_active', true)->pluck('projects.id')->toArray();
+            $projects = Project::whereIn('id', $userProjectIds)->get();
+        } else {
+            $projects = Project::all();
+        }
+        
         $query = BoqItem::with(['project','costCategory','laborResources','materialResources','equipmentResources']);
+        
         if ($projectId) $query->where('project_id', $projectId);
+        
+        // Non-admin only see their projects' BOQ
+        if ($user && !$user->isAdmin()) {
+            $query->whereIn('project_id', $userProjectIds);
+        }
+        
         $boqItems = $query->orderBy('item_number')->paginate(20);
         return view('boq-items.index', compact('boqItems','projects','projectId'));
     }
@@ -22,7 +39,14 @@ class BoqItemController extends Controller
     public function create(Request $request)
     {
         $projectId = $request->get('project_id');
-        $projects = Project::all();
+        $user = Auth::user();
+        
+        if ($user && $user->isAdmin()) {
+            $projects = Project::all();
+        } else {
+            $projects = $user->projects()->where('project_user.is_active', true)->get();
+        }
+        
         $costCategories = $projectId ? CostCategory::where('project_id', $projectId)->get() : CostCategory::all();
         return view('boq-items.create', compact('projects', 'costCategories', 'projectId'));
     }
@@ -41,25 +65,9 @@ class BoqItemController extends Controller
             'planned_start_date' => 'nullable|date',
             'planned_end_date' => 'nullable|date',
             'is_parent' => 'boolean',
-            // Labor resources
             'labor' => 'nullable|array',
-            'labor.*.trade_name' => 'nullable|string|max:255',
-            'labor.*.number_of_workers' => 'nullable|numeric|min:0',
-            'labor.*.total_hours' => 'nullable|numeric|min:0',
-            'labor.*.wage_per_day' => 'nullable|numeric|min:0',
-            // Material resources
             'materials' => 'nullable|array',
-            'materials.*.description' => 'nullable|string|max:500',
-            'materials.*.unit' => 'nullable|string|max:50',
-            'materials.*.quantity' => 'nullable|numeric|min:0',
-            'materials.*.unit_rate' => 'nullable|numeric|min:0',
-            // Equipment resources
             'equipment' => 'nullable|array',
-            'equipment.*.description' => 'nullable|string|max:500',
-            'equipment.*.duration_days' => 'nullable|numeric|min:0',
-            'equipment.*.number_of_units' => 'nullable|integer|min:1',
-            'equipment.*.total_hours' => 'nullable|numeric|min:0',
-            'equipment.*.rate_per_hour' => 'nullable|numeric|min:0',
         ]);
 
         $validated['revenue_amount'] = $validated['quantity'] * $validated['unit_rate'];
@@ -68,7 +76,7 @@ class BoqItemController extends Controller
         try {
             $boqItem = BoqItem::create($validated);
 
-            // Save Labor Resources
+            // Save Labor
             if ($request->has('labor')) {
                 foreach ($request->labor as $labor) {
                     if (!empty($labor['trade_name'])) {
@@ -83,7 +91,7 @@ class BoqItemController extends Controller
                 }
             }
 
-            // Save Material Resources
+            // Save Materials
             if ($request->has('materials')) {
                 foreach ($request->materials as $material) {
                     if (!empty($material['description'])) {
@@ -98,7 +106,7 @@ class BoqItemController extends Controller
                 }
             }
 
-            // Save Equipment Resources
+            // Save Equipment
             if ($request->has('equipment')) {
                 foreach ($request->equipment as $equipment) {
                     if (!empty($equipment['description'])) {
@@ -115,10 +123,10 @@ class BoqItemController extends Controller
             }
 
             DB::commit();
-            return redirect()->route('boq-items.show', $boqItem)->with('success', 'BOQ Item created with resources.');
+            return redirect()->route('boq-items.show', $boqItem)->with('success', 'BOQ Item created.');
         } catch (\Exception $e) {
             DB::rollback();
-            return back()->with('error', 'Error: ' . $e->getMessage())->withInput();
+            return back()->with('error', $e->getMessage())->withInput();
         }
     }
 
@@ -130,7 +138,12 @@ class BoqItemController extends Controller
 
     public function edit(BoqItem $boqItem)
     {
-        $projects = Project::all();
+        $user = Auth::user();
+        if ($user->isAdmin()) {
+            $projects = Project::all();
+        } else {
+            $projects = $user->projects()->where('project_user.is_active', true)->get();
+        }
         $costCategories = CostCategory::where('project_id', $boqItem->project_id)->get();
         $boqItem->load(['laborResources','materialResources','equipmentResources']);
         return view('boq-items.edit', compact('boqItem','projects','costCategories'));
@@ -156,7 +169,6 @@ class BoqItemController extends Controller
         try {
             $boqItem->update($validated);
 
-            // Update resources if provided
             if ($request->has('labor')) {
                 $boqItem->laborResources()->delete();
                 foreach ($request->labor as $labor) {

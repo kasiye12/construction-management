@@ -1,22 +1,35 @@
 @extends('layouts.app')
 
-@section('title', 'Budget vs Actual Variance Report - CMS')
+@section('title', 'Budget vs Actual Variance - CMS')
 
 @section('content')
 <div class="page-header">
-    <h2>📊 Budget vs Actual Variance Report</h2>
+    <div class="d-flex justify-content-between align-items-center">
+        <div>
+            <h2>📊 Budget vs Actual Variance Report</h2>
+            <p class="text-muted">
+                @if($selectedProject) Project: <strong>{{ $selectedProject->name }}</strong> @endif
+            </p>
+        </div>
+        <a href="{{ route('actual-costs.index') }}" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left me-1"></i> Back to Costs
+        </a>
+    </div>
 </div>
 
 @foreach($groupedItems as $categoryName => $items)
-    <div class="table-card mb-4">
-        <h5>{{ $categoryName }}</h5><hr>
-        <table class="table table-bordered">
+<div class="card mb-4">
+    <div class="card-header">
+        <h5 class="mb-0">{{ $categoryName }}</h5>
+    </div>
+    <div class="table-responsive">
+        <table class="table table-bordered mb-0">
             <thead class="table-light">
                 <tr>
                     <th>Item</th>
-                    <th>Budget</th>
-                    <th>Actual</th>
-                    <th>Variance</th>
+                    <th class="text-end">Budget</th>
+                    <th class="text-end">Actual</th>
+                    <th class="text-end">Variance</th>
                     <th>Status</th>
                 </tr>
             </thead>
@@ -32,16 +45,18 @@
                     <td>{{ $item->item_number }} - {{ Str::limit($item->description, 50) }}</td>
                     <td class="text-end">{{ number_format($budget, 2) }}</td>
                     <td class="text-end">{{ number_format($actual, 2) }}</td>
-                    <td class="text-end {{ $variance >= 0 ? 'text-success' : 'text-danger' }}">
+                    <td class="text-end {{ $variance >= 0 ? 'text-success' : 'text-danger' }} fw-bold">
                         {{ number_format($variance, 2) }}
                     </td>
                     <td>
                         @if($pct > 100)
-                            <span class="badge bg-danger">Over Budget ({{ number_format($pct,0) }}%)</span>
+                            <span class="badge bg-danger">Over Budget ({{ number_format($pct, 0) }}%)</span>
                         @elseif($pct > 80)
-                            <span class="badge bg-warning">{{ number_format($pct,0) }}% Used</span>
+                            <span class="badge bg-warning text-dark">{{ number_format($pct, 0) }}% Used</span>
+                        @elseif($pct > 0)
+                            <span class="badge bg-success">{{ number_format($pct, 0) }}% Used</span>
                         @else
-                            <span class="badge bg-success">{{ number_format($pct,0) }}% Used</span>
+                            <span class="badge bg-secondary">No Costs</span>
                         @endif
                     </td>
                 </tr>
@@ -49,5 +64,6 @@
             </tbody>
         </table>
     </div>
+</div>
 @endforeach
 @endsection

@@ -24,43 +24,35 @@ class Ipc extends Model
         'retention_amount',
         'net_payment_amount',
         'remarks',
-        'status'
+        'status',
+        // Workflow fields
+        'prepared_by', 'prepared_at',
+        'checked_by', 'checked_at',
+        'submitted_by', 'submitted_at',
+        'approved_by', 'approved_at',
+        'rejected_by', 'rejected_at',
+        'paid_by', 'paid_at',
     ];
 
     protected $casts = [
         'ipc_date' => 'date',
         'period_start_date' => 'date',
         'period_end_date' => 'date',
+        'prepared_at' => 'datetime',
+        'checked_at' => 'datetime',
+        'submitted_at' => 'datetime',
+        'approved_at' => 'datetime',
+        'rejected_at' => 'datetime',
+        'paid_at' => 'datetime',
         'total_previous_amount' => 'decimal:2',
         'total_current_amount' => 'decimal:2',
         'total_to_date_amount' => 'decimal:2',
         'retention_percentage' => 'decimal:2',
         'retention_amount' => 'decimal:2',
-        'net_payment_amount' => 'decimal:2'
+        'net_payment_amount' => 'decimal:2',
     ];
 
-    public function project()
-    {
-        return $this->belongsTo(Project::class);
-    }
-
-    public function subcontractor()
-    {
-        return $this->belongsTo(Subcontractor::class);
-    }
-
-    public function ipcItems()
-    {
-        return $this->hasMany(IpcItem::class);
-    }
-
-    public function calculateTotals()
-    {
-        $this->total_current_amount = $this->ipcItems->sum('current_amount');
-        $this->total_previous_amount = $this->ipcItems->sum('previous_amount');
-        $this->total_to_date_amount = $this->total_previous_amount + $this->total_current_amount;
-        $this->retention_amount = $this->total_to_date_amount * ($this->retention_percentage / 100);
-        $this->net_payment_amount = $this->total_to_date_amount - $this->retention_amount;
-        $this->save();
-    }
+    public function project() { return $this->belongsTo(Project::class); }
+    public function subcontractor() { return $this->belongsTo(Subcontractor::class); }
+    public function ipcItems() { return $this->hasMany(IpcItem::class); }
 }

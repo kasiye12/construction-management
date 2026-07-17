@@ -11,12 +11,8 @@ class CostCategoryController extends Controller
     {
         $projectId = $request->get('project_id');
         $projects = Project::all();
-        
-        $query = CostCategory::with('project');
-        if ($projectId) {
-            $query->where('project_id', $projectId);
-        }
-        
+        $query = CostCategory::withCount('boqItems')->with('project');
+        if ($projectId) $query->where('project_id', $projectId);
         $costCategories = $query->orderBy('display_order')->paginate(15);
         return view('cost-categories.index', compact('costCategories', 'projects', 'projectId'));
     }
@@ -36,14 +32,13 @@ class CostCategoryController extends Controller
             'description' => 'nullable|string|max:500',
             'display_order' => 'integer|min:0'
         ]);
-
         CostCategory::create($validated);
-        return redirect()->route('cost-categories.index')->with('success', 'Cost Category created successfully.');
+        return redirect()->route('cost-categories.index')->with('success', 'Cost Category created.');
     }
 
     public function show(CostCategory $costCategory)
     {
-        $costCategory->load(['project', 'boqItems']);
+        $costCategory->load(['project', 'boqItems' => function($q) { $q->where('is_parent', false); }]);
         return view('cost-categories.show', compact('costCategory'));
     }
 
@@ -62,14 +57,13 @@ class CostCategoryController extends Controller
             'description' => 'nullable|string|max:500',
             'display_order' => 'integer|min:0'
         ]);
-
         $costCategory->update($validated);
-        return redirect()->route('cost-categories.index')->with('success', 'Cost Category updated successfully.');
+        return redirect()->route('cost-categories.index')->with('success', 'Cost Category updated.');
     }
 
     public function destroy(CostCategory $costCategory)
     {
         $costCategory->delete();
-        return redirect()->route('cost-categories.index')->with('success', 'Cost Category deleted successfully.');
+        return redirect()->route('cost-categories.index')->with('success', 'Cost Category deleted.');
     }
 }

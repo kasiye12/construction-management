@@ -174,7 +174,7 @@
             </a>
             <a href="{{ route('projects.index') }}" class="{{ request()->routeIs('projects.*') && !request()->routeIs('projects.team*') && !request()->routeIs('projects.subcontractors*') ? 'active' : '' }}">
                 <i class="fas fa-hard-hat"></i> Projects
-                <span class="badge bg-light text-dark">{{ \App\Models\Project::where('status','active')->count() }}</span>
+                <span class="badge bg-light text-dark">{{ auth()->user()->isAdmin() ? \App\Models\Project::where('status','active')->count() : auth()->user()->projects()->where('project_user.is_active',true)->where('status','active')->count() }}</span>
             </a>
             
             <!-- ENGINEERING -->
@@ -184,7 +184,7 @@
             </a>
             <a href="{{ route('ipcs.index') }}" class="{{ request()->routeIs('ipcs.*') ? 'active' : '' }}">
                 <i class="fas fa-file-invoice-dollar"></i> Payment Certificates
-                @php $pendingCount = \App\Models\Ipc::where('status','submitted')->count(); @endphp
+                @php $pendingCount = auth()->user()->isAdmin() ? \App\Models\Ipc::where('status','submitted')->count() : \App\Models\Ipc::whereIn('project_id', auth()->user()->projects()->where('project_user.is_active',true)->pluck('projects.id')->toArray())->where('status','submitted')->count(); @endphp
                 @if($pendingCount > 0)<span class="badge bg-warning text-dark">{{ $pendingCount }}</span>@endif
             </a>
             <a href="{{ route('actual-costs.index') }}" class="{{ request()->routeIs('actual-costs.*') ? 'active' : '' }}">

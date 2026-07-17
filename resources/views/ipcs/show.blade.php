@@ -2,40 +2,6 @@
 
 @section('title', $ipc->ipc_number . ' - Payment Certificate')
 
-@push('styles')
-<style>
-    .workflow-container { position: relative; }
-    .workflow-steps { display: flex; justify-content: space-between; position: relative; }
-    .workflow-steps::before {
-        content: ''; position: absolute; top: 20px; left: 10%; right: 10%;
-        height: 3px; background: #e5e7eb; z-index: 0;
-    }
-    .workflow-step { text-align: center; position: relative; z-index: 1; flex: 1; }
-    .workflow-step .step-circle {
-        width: 40px; height: 40px; border-radius: 50%;
-        display: inline-flex; align-items: center; justify-content: center;
-        font-size: 1rem; border: 3px solid #e5e7eb; background: white;
-    }
-    .workflow-step.completed .step-circle { background: #10b981; border-color: #10b981; color: white; }
-    .workflow-step.current .step-circle { background: #4f46e5; border-color: #4f46e5; color: white; box-shadow: 0 0 0 5px rgba(79,70,229,0.2); }
-    .workflow-step.rejected .step-circle { background: #ef4444; border-color: #ef4444; color: white; }
-    .workflow-step .step-label { font-size: 0.65rem; margin-top: 4px; font-weight: 600; text-transform: uppercase; }
-    .workflow-step .step-user { font-size: 0.65rem; color: #6b7280; }
-    .user-chip {
-        display: inline-flex; align-items: center; gap: 5px;
-        padding: 5px 12px; border-radius: 20px; border: 2px solid #e5e7eb;
-        cursor: pointer; font-size: 0.75rem; transition: all 0.2s;
-    }
-    .user-chip:hover { border-color: #4f46e5; background: #eef2ff; }
-    .user-chip.selected { border-color: #4f46e5; background: #4f46e5; color: white; font-weight: 600; }
-    .stamp {
-        border: 3px solid #10b981; color: #10b981; padding: 10px 20px;
-        border-radius: 50%; font-weight: 700; font-size: 1rem;
-        transform: rotate(-15deg); display: inline-block; opacity: 0.7;
-    }
-</style>
-@endpush
-
 @section('content')
 <div class="page-header">
     <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
@@ -60,42 +26,9 @@
     </div>
 </div>
 
-<!-- WORKFLOW STATUS BAR -->
-<div class="card mb-4">
-    <div class="card-body">
-        <h5 class="mb-3 text-center">📋 Approval Workflow Status</h5>
-        <div class="workflow-container">
-            <div class="workflow-steps">
-                @php
-                    $allSteps = ['draft','prepared','checked','submitted','approved','paid'];
-                    if($ipc->status == 'rejected') $allSteps = ['draft','prepared','checked','submitted','rejected'];
-                    $currentIdx = array_search($ipc->status, $allSteps);
-                @endphp
-                @foreach($allSteps as $index => $step)
-                    @php
-                        $isComplete = $currentIdx !== false && $index <= $currentIdx;
-                        $isCurrent = $index == $currentIdx;
-                        $stepInfo = \App\Services\WorkflowService::WORKFLOW[$step] ?? ['label'=>ucfirst($step),'icon'=>'circle','color'=>'secondary'];
-                        $fieldMap = ['prepared'=>'prepared_by','checked'=>'checked_by','submitted'=>'submitted_by','approved'=>'approved_by','rejected'=>'rejected_by','paid'=>'paid_by'];
-                        $dateMap = ['prepared'=>'prepared_at','checked'=>'checked_at','submitted'=>'submitted_at','approved'=>'approved_at','rejected'=>'rejected_at','paid'=>'paid_at'];
-                        $user = $ipc->{$fieldMap[$step] ?? ''} ?? null;
-                        $date = $ipc->{$dateMap[$step] ?? ''} ?? null;
-                    @endphp
-                    <div class="workflow-step {{ $isComplete ? 'completed' : '' }} {{ $isCurrent ? 'current' : '' }}">
-                        <div class="step-circle"><i class="fas fa-{{ $stepInfo['icon'] }}"></i></div>
-                        <div class="step-label">{{ $stepInfo['label'] }}</div>
-                        @if($user)<div class="step-user">👤 {{ $user }}</div>@endif
-                        @if($date)<div class="step-user">{{ \Carbon\Carbon::parse($date)->format('M d') }}</div>@endif
-                    </div>
-                @endforeach
-            </div>
-        </div>
-    </div>
-</div>
-
 <div class="row">
     <div class="col-md-7">
-        <!-- Info Card -->
+        <!-- Info -->
         <div class="card mb-4">
             <div class="card-body">
                 <div class="row">
@@ -108,33 +41,20 @@
                         </table>
                     </div>
                     <div class="col-sm-6 text-end">
-                        <span class="badge bg-{{ \App\Services\WorkflowService::getStatusColor($ipc->status) }} fs-6">
-                            {{ strtoupper(\App\Services\WorkflowService::getStatusLabel($ipc->status)) }}
-                        </span>
-                        @if($ipc->status == 'approved')<div class="stamp mt-2">APPROVED</div>@endif
-                        @if($ipc->status == 'paid')<div class="stamp mt-2" style="border-color:#3b82f6;color:#3b82f6;">PAID</div>@endif
+                        @php $colors = ['draft'=>'secondary','prepared'=>'info','checked'=>'warning','submitted'=>'primary','approved'=>'success','rejected'=>'danger','paid'=>'dark']; @endphp
+                        <span class="badge bg-{{ $colors[$ipc->status] ?? 'secondary' }} fs-6">{{ strtoupper($ipc->status) }}</span>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- Work Items Table -->
+        <!-- Work Items -->
         <div class="card mb-4">
             <div class="card-header"><h5 class="mb-0">📋 Work Executed</h5></div>
             <div class="table-responsive">
                 <table class="table table-sm mb-0">
                     <thead class="table-light">
-                        <tr>
-                            <th>#</th>
-                            <th>Item Description</th>
-                            <th>Unit</th>
-                            <th>Contract Qty</th>
-                            <th>Rate</th>
-                            <th>Previous Qty</th>
-                            <th>Previous Amount</th>
-                            <th>Current Qty</th>
-                            <th>Amount (ETB)</th>
-                        </tr>
+                        <tr><th>#</th><th>Description</th><th>Unit</th><th>Qty</th><th>Rate</th><th>Amount</th></tr>
                     </thead>
                     <tbody>
                         @php $total = 0; @endphp
@@ -144,84 +64,174 @@
                             <td>{{ $i+1 }}</td>
                             <td>{{ $item->boqItem->description ?? 'N/A' }}</td>
                             <td>{{ $item->boqItem->unit ?? '-' }}</td>
-                            <td class="text-end">{{ number_format($item->contract_quantity, 2) }}</td>
-                            <td class="text-end">{{ number_format($item->contract_rate ?? $item->boqItem->unit_rate, 2) }}</td>
-                            <td class="text-end">{{ number_format($item->previous_quantity, 2) }}</td>
-                            <td class="text-end">{{ number_format($item->previous_amount, 2) }}</td>
-                            <td class="text-end fw-bold">{{ number_format($item->current_quantity, 2) }}</td>
-                            <td class="text-end fw-bold">{{ number_format($amt, 2) }}</td>
+                            <td>{{ number_format($item->current_quantity,2) }}</td>
+                            <td>{{ number_format($item->boqItem->unit_rate??0,2) }}</td>
+                            <td class="text-end fw-bold">{{ number_format($amt,2) }}</td>
                         </tr>
                         @endforeach
                     </tbody>
-                    <tfoot>
-                        <tr class="table-primary fw-bold">
-                            <td colspan="8" class="text-end">Total Work Done:</td>
-                            <td class="text-end">{{ number_format($total, 2) }} ETB</td>
-                        </tr>
-                    </tfoot>
+                    <tfoot><tr class="table-primary fw-bold"><td colspan="5" class="text-end">Net Amount:</td><td class="text-end">{{ number_format($total,2) }} ETB</td></tr></tfoot>
                 </table>
             </div>
         </div>
 
-        <!-- Actions -->
-        @if(count($availableActions) > 0)
+        <!-- APPROVAL ACTIONS - Simple Buttons -->
+        @php
+            $currentUser = auth()->user();
+            $userRole = $currentUser->getRoleName();
+            $status = $ipc->status;
+            
+            $canPrepare = in_array($userRole, ['admin','manager','engineer']);
+            $canCheck = in_array($userRole, ['admin','manager','engineer']);
+            $canSubmit = in_array($userRole, ['admin','manager','engineer']);
+            $canApprove = in_array($userRole, ['admin','manager','finance']);
+            $canReject = in_array($userRole, ['admin','manager','finance']);
+            $canPay = in_array($userRole, ['admin','finance']);
+        @endphp
+
         <div class="card">
-            <div class="card-header"><h5 class="mb-0">✅ Available Actions</h5></div>
+            <div class="card-header"><h5 class="mb-0">✅ Actions</h5></div>
             <div class="card-body">
-                @foreach($availableActions as $action)
-                <div class="border rounded p-3 mb-3">
-                    <h6><i class="fas fa-{{ $action['icon'] }} text-{{ $action['color'] }} me-2"></i>{{ $action['label'] }}</h6>
-                    <div class="d-flex flex-wrap gap-2 mb-2">
-                        @foreach($users as $u)
-                        <span class="user-chip {{ $loop->first ? 'selected' : '' }}" 
-                              data-action="{{ $action['status'] }}" data-name="{{ $u->name }}"
-                              onclick="selectUser(this, '{{ $action['status'] }}')">
-                            👤 {{ $u->name }}
-                        </span>
-                        @endforeach
-                    </div>
-                    <form action="{{ route($action['route_name'], $ipc) }}" method="POST" id="form-{{ $action['status'] }}"
-                          @if(in_array($action['status'], ['approved','rejected'])) onsubmit="return confirm('Confirm this action?')" @endif>
-                        @csrf
-                        <input type="hidden" name="{{ $action['status'] }}_by_name" id="input-{{ $action['status'] }}" value="{{ $users->first()->name ?? auth()->user()->name }}">
-                        <button type="submit" class="btn btn-{{ $action['color'] }}">
-                            <i class="fas fa-{{ $action['icon'] }} me-1"></i> {{ $action['label'] }}
-                        </button>
-                    </form>
+                <div class="d-flex gap-2 flex-wrap">
+                    @if($status == 'draft' && $canPrepare)
+                        <form action="{{ route('ipcs.prepare', $ipc) }}" method="POST">
+                            @csrf
+                            <button type="submit" class="btn btn-info">📝 Mark as Prepared</button>
+                        </form>
+                    @endif
+
+                    @if(in_array($status, ['draft','prepared']) && $canCheck)
+                        <form action="{{ route('ipcs.check', $ipc) }}" method="POST">
+                            @csrf
+                            <button type="submit" class="btn btn-warning">✅ Mark as Checked</button>
+                        </form>
+                    @endif
+
+                    @if(in_array($status, ['draft','prepared','checked']) && $canSubmit)
+                        <form action="{{ route('ipcs.submit', $ipc) }}" method="POST">
+                            @csrf
+                            <button type="submit" class="btn btn-primary">📤 Submit for Approval</button>
+                        </form>
+                    @endif
+
+                    @if($status == 'submitted' && $canApprove)
+                        <form action="{{ route('ipcs.approve', $ipc) }}" method="POST" onsubmit="return confirm('Approve this certificate?')">
+                            @csrf
+                            <button type="submit" class="btn btn-success">✔️ Approve</button>
+                        </form>
+                    @endif
+
+                    @if($status == 'submitted' && $canReject)
+                        <form action="{{ route('ipcs.reject', $ipc) }}" method="POST" onsubmit="return confirm('Reject this certificate?')">
+                            @csrf
+                            <button type="submit" class="btn btn-danger">❌ Reject</button>
+                        </form>
+                    @endif
+
+                    @if($status == 'approved' && $canPay)
+                        <form action="{{ route('ipcs.mark-paid', $ipc) }}" method="POST">
+                            @csrf
+                            <button type="submit" class="btn btn-dark">💰 Mark as Paid</button>
+                        </form>
+                    @endif
                 </div>
-                @endforeach
+
+                {{-- Status Messages --}}
+                @if($status == 'paid')
+                    <div class="alert alert-success mt-3 mb-0">✅ Fully processed and paid.</div>
+                @endif
+                @if($status == 'rejected')
+                    <div class="alert alert-danger mt-3 mb-0">❌ Rejected - needs revision.</div>
+                @endif
+                @if($status == 'submitted' && !$canApprove && !$canReject)
+                    <div class="alert alert-info mt-3 mb-0">📌 Waiting for Finance/Admin approval.</div>
+                @endif
+                @if($status == 'approved' && !$canPay)
+                    <div class="alert alert-info mt-3 mb-0">📌 Waiting for Finance to process payment.</div>
+                @endif
             </div>
         </div>
-        @endif
-
-        @if($ipc->status == 'paid')<div class="alert alert-success"><i class="fas fa-check-circle me-2"></i>Fully processed and paid.</div>@endif
-        @if($ipc->status == 'rejected')<div class="alert alert-danger"><i class="fas fa-times-circle me-2"></i>Rejected - needs revision.</div>@endif
     </div>
 
-    <!-- Right Column -->
+    <!-- RIGHT: Approval Status -->
     <div class="col-md-5">
+        <div class="card mb-4">
+            <div class="card-header"><h5 class="mb-0">🔐 Approval Status</h5></div>
+            <div class="card-body">
+                @php
+                    $steps = [
+                        ['label' => 'Prepared By',  'user' => $ipc->prepared_by,  'date' => $ipc->prepared_at,  'status' => 'prepared'],
+                        ['label' => 'Checked By',   'user' => $ipc->checked_by,   'date' => $ipc->checked_at,   'status' => 'checked'],
+                        ['label' => 'Submitted By', 'user' => $ipc->submitted_by, 'date' => $ipc->submitted_at, 'status' => 'submitted'],
+                        ['label' => 'Approved By',  'user' => $ipc->approved_by,  'date' => $ipc->approved_at,  'status' => 'approved'],
+                        ['label' => 'Paid By',      'user' => $ipc->paid_by,      'date' => $ipc->paid_at,      'status' => 'paid'],
+                    ];
+                    $statusOrder = ['draft','prepared','checked','submitted','approved','paid'];
+                    $currentIdx = array_search($ipc->status, $statusOrder);
+                @endphp
+                
+                @foreach($steps as $step)
+                    @php 
+                        $stepIdx = array_search($step['status'], $statusOrder);
+                        $isDone = $currentIdx !== false && $stepIdx <= $currentIdx && $ipc->status != 'rejected';
+                    @endphp
+                    <div class="d-flex align-items-start mb-3 pb-3 border-bottom">
+                        <div style="width:28px;text-align:center;">
+                            @if($isDone)<i class="fas fa-check-circle text-success fa-lg"></i>
+                            @else<i class="far fa-circle text-muted fa-lg"></i>@endif
+                        </div>
+                        <div class="ms-3">
+                            <strong>{{ $step['label'] }}</strong>
+                            <div style="min-height:22px;">
+                                @if(!empty($step['user']))
+                                    <span class="text-primary fw-bold">👤 {{ $step['user'] }}</span>
+                                @elseif($isDone)
+                                    <span class="text-warning small">⚠️ Not recorded</span>
+                                @else
+                                    <span class="text-muted small">Pending...</span>
+                                @endif
+                            </div>
+                            @if(!empty($step['date']))
+                                <small class="text-muted">📅 {{ \Carbon\Carbon::parse($step['date'])->format('M d, Y h:i A') }}</small>
+                            @endif
+                        </div>
+                    </div>
+                @endforeach
+                
+                @if($ipc->status == 'rejected')
+                    <div class="d-flex align-items-start mb-3">
+                        <div style="width:28px;"><i class="fas fa-times-circle text-danger fa-lg"></i></div>
+                        <div class="ms-3">
+                            <strong>Rejected By</strong>
+                            @if($ipc->rejected_by)<br><span class="text-danger fw-bold">👤 {{ $ipc->rejected_by }}</span>@endif
+                            @if($ipc->rejected_at)<br><small>📅 {{ \Carbon\Carbon::parse($ipc->rejected_at)->format('M d, Y h:i A') }}</small>@endif
+                        </div>
+                    </div>
+                @endif
+            </div>
+        </div>
+
+        <!-- Financial Summary -->
         <div class="card">
             <div class="card-header"><h5 class="mb-0">💰 Financial Summary</h5></div>
             <div class="card-body">
                 @php
-                    $net = $total;
-                    $vat = $net * 0.15; $gross = $net + $vat;
+                    $net = $total; $vat = $net * 0.15; $gross = $net + $vat;
                     $ret = $net * (($ipc->retention_percentage??5)/100);
-                    $prev = $ipc->total_previous_amount ?? 0;
-                    $ded = $prev + $ret; $due = $gross - $ded;
+                    $prev = $ipc->total_previous_amount ?? 0; $ded = $prev + $ret; $due = $gross - $ded;
                 @endphp
                 <table class="table table-sm">
                     <tr><td>Net Amount:</td><td class="text-end">{{ number_format($net,2) }}</td></tr>
                     <tr><td>VAT (15%):</td><td class="text-end text-success">+{{ number_format($vat,2) }}</td></tr>
-                    <tr class="fw-bold"><td>Gross Amount:</td><td class="text-end">{{ number_format($gross,2) }}</td></tr>
+                    <tr class="fw-bold"><td>Gross:</td><td class="text-end">{{ number_format($gross,2) }}</td></tr>
                     <tr><td colspan="2"><hr class="my-1"></td></tr>
-                    <tr><td>Previous Payment:</td><td class="text-end text-danger">-{{ number_format($prev,2) }}</td></tr>
+                    <tr><td>Prev. Payment:</td><td class="text-end text-danger">-{{ number_format($prev,2) }}</td></tr>
                     <tr><td>Retention ({{ $ipc->retention_percentage??5 }}%):</td><td class="text-end text-danger">-{{ number_format($ret,2) }}</td></tr>
                     <tr><td colspan="2"><hr class="my-1"></td></tr>
                     <tr class="fw-bold fs-6"><td>Net Due:</td><td class="text-end text-success">{{ number_format($due,2) }} ETB</td></tr>
                 </table>
-                <div class="p-3 mt-2 rounded" style="background:#fffde7;border:1px solid #f59e0b;">
-                    <small class="text-muted">Amount in Words:</small><br>
+                <div class="p-2 mt-2 rounded" style="background:#fffde7;border:1px solid #f59e0b;">
+                    <small>Amount in Words:</small><br>
                     <strong>{{ \App\Helpers\NumberToWordsHelper::convert($due) }} Ethiopian Birr Only</strong>
                 </div>
             </div>
@@ -229,13 +239,3 @@
     </div>
 </div>
 @endsection
-
-@push('scripts')
-<script>
-function selectUser(chip, action) {
-    chip.parentElement.querySelectorAll('.user-chip').forEach(c => c.classList.remove('selected'));
-    chip.classList.add('selected');
-    document.getElementById('input-' + action).value = chip.dataset.name;
-}
-</script>
-@endpush

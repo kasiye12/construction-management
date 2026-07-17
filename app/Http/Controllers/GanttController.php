@@ -4,18 +4,29 @@ namespace App\Http\Controllers;
 use App\Models\Project;
 use App\Models\BoqItem;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
 
 class GanttController extends Controller
 {
+    private function getUserProjectIds()
+    {
+        $user = Auth::user();
+        if ($user->isAdmin()) return Project::pluck('id')->toArray();
+        return $user->projects()->where('project_user.is_active', true)->pluck('projects.id')->toArray();
+    }
+
     public function index(Request $request)
     {
+        $user = Auth::user();
+        $userProjectIds = $this->getUserProjectIds();
+        
+        $projects = $user->isAdmin() ? Project::all() : $user->projects()->where('project_user.is_active', true)->get();
         $projectId = $request->get('project_id');
-        $projects = Project::all();
         $selectedProject = null;
         $tasks = collect();
         
-        if ($projectId) {
+        if ($projectId && in_array($projectId, $userProjectIds)) {
             $selectedProject = Project::find($projectId);
             $tasks = BoqItem::where('project_id', $projectId)
                 ->where('is_parent', false)
@@ -26,9 +37,8 @@ class GanttController extends Controller
                 ->map(function($item) {
                     $start = Carbon::parse($item->planned_start_date);
                     $end = Carbon::parse($item->planned_end_date);
-                    $duration = $start->diffInDays($end) ?: 1;
-                    $progress = $item->status == 'completed' ? 100 : 
-                               ($item->status == 'in_progress' ? 50 : 0);
+                    $duration = max($start->diffInDays($end), 1);
+                    $progress = $item->status == 'completed' ? 100 : ($item->status == 'in_progress' ? 50 : 0);
                     
                     return [
                         'id' => $item->id,
@@ -43,19 +53,10 @@ class GanttController extends Controller
                 });
         }
         
-        // Calculate date range
         $minDate = $tasks->min('start') ?? date('Y-m-d');
         $maxDate = $tasks->max('end') ?? date('Y-m-d', strtotime('+30 days'));
-        $totalDays = Carbon::parse($minDate)->diffInDays(Carbon::parse($maxDate)) ?: 30;
+        $totalDays = max(Carbon::parse($minDate)->diffInDays(Carbon::parse($maxDate)), 30);
         
-        return view('gantt.index', compact(
-            'projects', 'projectId', 'selectedProject', 
-            'tasks', 'minDate', 'maxDate', 'totalDays'
-        ));
-    }
-    
-    public function projectTimeline($projectId)
-    {
-        return redirect()->route('gantt.index', ['project_id' => $projectId]);
+        return view('gantt.index', compact('projects', 'projectId', 'selectedProject', 'tasks', 'minDate', 'maxDate', 'totalDays'));
     }
 }
