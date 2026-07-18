@@ -135,3 +135,48 @@ Route::get('/projects/{project}/team', [\App\Http\Controllers\TeamController::cl
 Route::post('/projects/{project}/team/assign', [\App\Http\Controllers\TeamController::class, 'assign'])->name('projects.team.assign');
 Route::delete('/projects/{project}/team/{user}', [\App\Http\Controllers\TeamController::class, 'remove'])->name('projects.team.remove');
 Route::put('/projects/{project}/team/{user}', [\App\Http\Controllers\TeamController::class, 'update'])->name('projects.team.update');
+
+// Module permission protected routes
+Route::middleware(['auth', 'module:projects.view'])->group(function () {
+    Route::get('/projects', [\App\Http\Controllers\ProjectController::class, 'index'])->name('projects.index');
+    Route::get('/projects/{project}', [\App\Http\Controllers\ProjectController::class, 'show'])->name('projects.show');
+});
+
+Route::middleware(['auth', 'module:boq.view'])->group(function () {
+    Route::get('/boq-items', [\App\Http\Controllers\BoqItemController::class, 'index'])->name('boq-items.index');
+    Route::get('/boq-items/{boqItem}', [\App\Http\Controllers\BoqItemController::class, 'show'])->name('boq-items.show');
+});
+
+Route::middleware(['auth', 'module:ipc.view'])->group(function () {
+    Route::get('/ipcs', [\App\Http\Controllers\IpcController::class, 'index'])->name('ipcs.index');
+    Route::get('/ipcs/{ipc}', [\App\Http\Controllers\IpcController::class, 'show'])->name('ipcs.show');
+});
+
+// Audit Trail
+Route::get('/admin/audit', function () {
+    return view('admin.audit.index');
+})->name('admin.audit.index')->middleware('auth');
+
+// Material Deliveries
+Route::resource('material-deliveries', \App\Http\Controllers\MaterialDeliveryController::class);
+
+// Quantity Takeoffs
+Route::resource('quantity-takeoffs', \App\Http\Controllers\QuantityTakeoffController::class);
+Route::post('quantity-takeoffs/{quantityTakeoff}/verify', [\App\Http\Controllers\QuantityTakeoffController::class, 'verify'])->name('quantity-takeoffs.verify');
+Route::post('quantity-takeoffs/{quantityTakeoff}/approve', [\App\Http\Controllers\QuantityTakeoffController::class, 'approve'])->name('quantity-takeoffs.approve');
+
+// Company Settings
+Route::get('/admin/company-settings', [\App\Http\Controllers\Admin\CompanySettingsController::class, 'index'])->name('admin.company-settings.index');
+Route::put('/admin/company-settings', [\App\Http\Controllers\Admin\CompanySettingsController::class, 'update'])->name('admin.company-settings.update');
+Route::get('/admin/company-settings/remove-logo', [\App\Http\Controllers\Admin\CompanySettingsController::class, 'removeLogo'])->name('admin.company-settings.remove-logo');
+
+// Take-Off Workflow
+Route::post('quantity-takeoffs/{quantityTakeoff}/revert', [\App\Http\Controllers\QuantityTakeoffController::class, 'revertToDraft'])->name('quantity-takeoffs.revert');
+
+// Material Delivery Workflow
+Route::post('material-deliveries/{materialDelivery}/confirm', [\App\Http\Controllers\MaterialDeliveryController::class, 'confirm'])->name('material-deliveries.confirm');
+Route::post('material-deliveries/{materialDelivery}/revert', [\App\Http\Controllers\MaterialDeliveryController::class, 'revertToRecorded'])->name('material-deliveries.revert');
+
+// Notification delete
+Route::delete('/notifications/{notification}', [\App\Http\Controllers\NotificationController::class, 'delete'])->name('notifications.delete');
+Route::delete('/notifications/delete-all-read', [\App\Http\Controllers\NotificationController::class, 'deleteAllRead'])->name('notifications.delete-all-read');

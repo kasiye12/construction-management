@@ -14,9 +14,9 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'permission' => \App\Http\Middleware\CheckPermission::class,
             'role' => \App\Http\Middleware\RoleMiddleware::class,
+            'module' => \App\Http\Middleware\CheckModulePermission::class,
         ]);
         
-        // Add project access middleware to web group
         $middleware->web(append: [
             \App\Http\Middleware\ProjectAccessMiddleware::class,
         ]);

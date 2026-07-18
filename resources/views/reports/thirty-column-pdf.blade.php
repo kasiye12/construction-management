@@ -4,22 +4,43 @@
     <meta charset="utf-8">
     <title>30 Column Budget Report</title>
     <style>
-        @page { size: A3 landscape; margin: 10mm; }
-        body { font-family: Arial, sans-serif; font-size: 6px; }
-        h2 { text-align: center; font-size: 12px; color: #1a237e; margin: 0 0 3px; }
-        .subtitle { text-align: center; font-size: 7px; color: #666; margin-bottom: 8px; }
+        @page { size: A3 landscape; margin: 8mm; }
+        body { font-family: 'Helvetica', 'Arial', sans-serif; font-size: 6px; }
+        
+        .report-header { text-align: center; margin-bottom: 8px; border-bottom: 2px solid #1a237e; padding-bottom: 5px; }
+        .report-header img { width: 45px; height: 45px; object-fit: contain; vertical-align: middle; margin-right: 8px; }
+        .report-header .header-text { display: inline-block; vertical-align: middle; text-align: center; }
+        .report-header h3 { font-size: 10px; color: #1a237e; margin: 0; }
+        .report-header p { font-size: 7px; color: #555; margin: 1px 0; }
+        
+        h2 { text-align: center; font-size: 10px; color: #1a237e; margin: 5px 0; }
+        .subtitle { text-align: center; font-size: 7px; color: #666; margin-bottom: 6px; }
         table { width: 100%; border-collapse: collapse; }
-        th, td { border: 0.3px solid #999; padding: 2px; text-align: center; }
+        th, td { border: 0.3px solid #999; padding: 1.5px 2px; text-align: center; }
         thead th { background: #4472C4; color: white; font-size: 5px; font-weight: bold; }
         .cat-row td { background: #D6E4F0; font-weight: bold; text-align: left; font-size: 7px; }
         .total-row td { background: #E2EFDA; font-weight: bold; }
         .grand-total td { background: #002060; color: white; font-weight: bold; font-size: 7px; }
         .profit { color: green; } .loss { color: red; }
         .text-right { text-align: right; }
-        .footer { text-align: center; font-size: 5px; color: #999; margin-top: 8px; border-top: 1px solid #ddd; padding-top: 3px; }
+        .footer { text-align: center; font-size: 5px; color: #999; margin-top: 6px; border-top: 1px solid #ddd; padding-top: 3px; }
     </style>
 </head>
 <body>
+    @php $settings = \App\Helpers\PdfHelper::getCompanySettings(); @endphp
+    
+    <!-- Company Header with Logo -->
+    <div class="report-header">
+        @if($settings['logo_base64'])
+            <img src="{{ $settings['logo_base64'] }}" alt="Logo">
+        @endif
+        <div class="header-text">
+            <h3>{{ $settings['name'] }}</h3>
+            <p>{{ $settings['tagline'] }}</p>
+            <p>{{ $settings['phone'] }} | {{ $settings['email'] }} | {{ $settings['address'] }} | TIN: {{ $settings['tin'] }}</p>
+        </div>
+    </div>
+
     <h2>30-COLUMN BUDGET & COST BREAKDOWN REPORT</h2>
     <p class="subtitle">Project: {{ $selectedProject->name ?? 'All Projects' }} | Date: {{ now()->format('F d, Y') }}</p>
 
@@ -50,16 +71,7 @@
                     @php $l=$item->laborResources; $m=$item->materialResources; $e=$item->equipmentResources; $mx=max($l->count(),$m->count(),$e->count(),1); @endphp
                     @for($i=0;$i<$mx;$i++)
                         <tr>
-                            @if($i==0)
-                                <td>{{ $item->costCategory->code??'' }}</td><td>{{ $item->item_number }}</td>
-                                <td style="text-align:left;">{{ $item->description }}</td><td>{{ $item->unit }}</td>
-                                <td class="text-right">{{ number_format($item->unit_rate,2) }}</td>
-                                <td class="text-right">{{ number_format($item->quantity,2) }}</td>
-                                <td class="text-right">{{ number_format($item->revenue_amount,2) }}</td>
-                                <td>{{ $item->duration_days??'-' }}</td>
-                                <td>{{ $item->planned_start_date?$item->planned_start_date->format('m/d/Y'):'-' }}</td>
-                                <td>{{ $item->planned_end_date?$item->planned_end_date->format('m/d/Y'):'-' }}</td>
-                            @else<td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td>@endif
+                            @if($i==0)<td>{{ $item->costCategory->code??'' }}</td><td>{{ $item->item_number }}</td><td style="text-align:left;">{{ $item->description }}</td><td>{{ $item->unit }}</td><td class="text-right">{{ number_format($item->unit_rate,2) }}</td><td class="text-right">{{ number_format($item->quantity,2) }}</td><td class="text-right">{{ number_format($item->revenue_amount,2) }}</td><td>{{ $item->duration_days??'-' }}</td><td>{{ $item->planned_start_date?$item->planned_start_date->format('m/d/Y'):'-' }}</td><td>{{ $item->planned_end_date?$item->planned_end_date->format('m/d/Y'):'-' }}</td>@else<td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td>@endif
                             @if(isset($l[$i]))<td>{{$l[$i]->trade_name}}</td><td>{{number_format($l[$i]->number_of_workers,1)}}</td><td>{{number_format($l[$i]->total_hours,1)}}</td><td>{{number_format($l[$i]->wage_per_day,2)}}</td><td class="text-right">{{number_format($l[$i]->amount,2)}}</td>@else<td>-</td><td>-</td><td>-</td><td>-</td><td>-</td>@endif
                             @if(isset($m[$i]))<td>{{$m[$i]->description}}</td><td>{{$m[$i]->unit}}</td><td class="text-right">{{number_format($m[$i]->quantity,2)}}</td><td class="text-right">{{number_format($m[$i]->unit_rate,2)}}</td>@else<td>-</td><td>-</td><td>-</td><td>-</td>@endif
                             @if(isset($e[$i]))<td>{{$e[$i]->description}}</td><td>{{number_format($e[$i]->duration_days,1)}}</td><td>{{$e[$i]->number_of_units}}</td><td>{{number_format($e[$i]->total_hours,1)}}</td><td>{{number_format($e[$i]->rate_per_hour,2)}}</td><td class="text-right">{{number_format($e[$i]->amount,2)}}</td>@else<td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td>@endif
@@ -81,6 +93,6 @@
             @endif
         </tbody>
     </table>
-    <div class="footer">Generated by Construction Management System | {{ date('F d, Y H:i') }}</div>
+    <div class="footer">Generated by {{ $settings['name'] }} CMS | {{ date('F d, Y H:i') }}</div>
 </body>
 </html>

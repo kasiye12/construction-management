@@ -13,7 +13,9 @@ class WorkflowPermission extends Model
         return $this->belongsTo(User::class);
     }
 
-    // Check if a user can perform a specific workflow action
+    /**
+     * Check if a user can perform a specific workflow action
+     */
     public static function canUserAct($userId, $step): bool
     {
         return self::where('user_id', $userId)
@@ -22,26 +24,22 @@ class WorkflowPermission extends Model
             ->exists();
     }
 
-    // Get all users who can perform a specific step
-    public static function getUsersForStep($step)
-    {
-        return User::whereHas('workflowPermissions', function($q) use ($step) {
-            $q->where('workflow_step', $step)->where('can_act', true);
-        })->get();
-    }
-
-    // Sync permissions for a user
+    /**
+     * Sync permissions for a user - only update submitted steps
+     */
     public static function syncForUser($userId, array $permissions)
     {
-        self::where('user_id', $userId)->delete();
-        
         foreach ($permissions as $step => $canAct) {
             if ($canAct) {
-                self::create([
-                    'user_id' => $userId,
-                    'workflow_step' => $step,
-                    'can_act' => true,
-                ]);
+                self::updateOrCreate(
+                    ['user_id' => $userId, 'workflow_step' => $step],
+                    ['can_act' => true]
+                );
+            } else {
+                // If unchecked, delete the permission record
+                self::where('user_id', $userId)
+                    ->where('workflow_step', $step)
+                    ->delete();
             }
         }
     }

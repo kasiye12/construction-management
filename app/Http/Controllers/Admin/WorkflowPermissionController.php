@@ -10,52 +10,61 @@ class WorkflowPermissionController extends Controller
 {
     public function index()
     {
-        return view('admin.workflow.permissions');
+        $users = User::with('workflowPermissions')->orderBy('name')->get();
+        return view('admin.workflow.permissions', compact('users'));
     }
 
+    /**
+     * Update all workflow permissions at once
+     */
     public function update(Request $request)
     {
         $permissions = $request->input('permissions', []);
         
         foreach ($permissions as $userId => $steps) {
+            // Only sync the steps that were actually submitted (checked or unchecked)
             WorkflowPermission::syncForUser($userId, $steps);
         }
 
-        return back()->with('success', 'Workflow permissions updated successfully.');
+        return back()->with('success', '✅ All workflow permissions updated successfully!');
     }
 
+    /**
+     * Apply preset permission templates
+     */
     public function applyPreset(Request $request)
     {
-        $preset = $request->input('preset');
+        $preset = $request->input('preset', 'standard');
         $users = User::all();
         
         $presets = [
             'standard' => [
-                'admin' => ['prepare','check','submit','approve','reject','pay'],
-                'manager' => ['prepare','check','submit','approve','reject'],
-                'engineer' => ['prepare','check','submit'],
-                'finance' => ['approve','reject','pay'],
+                'admin' => [
+                    'prepare','check','submit','approve','reject','pay',
+                    'verify_takeoff','approve_takeoff',
+                    'record_delivery','confirm_delivery'
+                ],
+                'manager' => [
+                    'prepare','check','submit','approve','reject',
+                    'verify_takeoff','approve_takeoff',
+                    'record_delivery','confirm_delivery'
+                ],
+                'engineer' => [
+                    'prepare','check','submit',
+                    'verify_takeoff',
+                    'record_delivery'
+                ],
+                'finance' => [
+                    'approve','reject','pay',
+                    'confirm_delivery'
+                ],
                 'viewer' => [],
             ],
             'all_managers' => [
-                'admin' => ['prepare','check','submit','approve','reject','pay'],
-                'manager' => ['prepare','check','submit','approve','reject','pay'],
-                'engineer' => ['prepare','check','submit'],
-                'finance' => ['approve','reject','pay'],
-                'viewer' => [],
-            ],
-            'engineers_only' => [
-                'admin' => ['prepare','check','submit','approve','reject','pay'],
-                'manager' => ['approve','reject'],
-                'engineer' => ['prepare','check','submit'],
-                'finance' => ['approve','reject','pay'],
-                'viewer' => [],
-            ],
-            'finance_approve' => [
-                'admin' => ['prepare','check','submit','approve','reject','pay'],
-                'manager' => ['prepare','check','submit'],
-                'engineer' => ['prepare','check','submit'],
-                'finance' => ['approve','reject','pay'],
+                'admin' => ['prepare','check','submit','approve','reject','pay','verify_takeoff','approve_takeoff','record_delivery','confirm_delivery'],
+                'manager' => ['prepare','check','submit','approve','reject','pay','verify_takeoff','approve_takeoff','record_delivery','confirm_delivery'],
+                'engineer' => ['prepare','check','submit','verify_takeoff','record_delivery'],
+                'finance' => ['approve','reject','pay','confirm_delivery'],
                 'viewer' => [],
             ],
         ];
@@ -64,14 +73,23 @@ class WorkflowPermissionController extends Controller
 
         foreach ($users as $user) {
             $role = $user->getRoleName();
-            $steps = $selectedPreset[$role] ?? [];
-            $permissions = [];
-            foreach (['prepare','check','submit','approve','reject','pay'] as $step) {
-                $permissions[$step] = in_array($step, $steps);
+            $allowedSteps = $selectedPreset[$role] ?? [];
+            
+            // Build permissions array for all workflow steps
+            $allSteps = [
+                'prepare','check','submit','approve','reject','pay',
+                'verify_takeoff','approve_takeoff',
+                'record_delivery','confirm_delivery'
+            ];
+            
+            $userPermissions = [];
+            foreach ($allSteps as $step) {
+                $userPermissions[$step] = in_array($step, $allowedSteps);
             }
-            WorkflowPermission::syncForUser($user->id, $permissions);
+            
+            WorkflowPermission::syncForUser($user->id, $userPermissions);
         }
 
-        return back()->with('success', 'Preset "' . $preset . '" applied successfully.');
+        return back()->with('success', "✅ Preset '{$preset}' applied successfully!");
     }
 }
