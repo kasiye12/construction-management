@@ -89,6 +89,9 @@
             </tbody>
         </table>
     </div>
-    <div class="card-footer">{{ $ipcs->links() }}</div>
+    <div class="card-footer"><div class="d-flex justify-content-between align-items-center px-3 py-2">
+                <div class="pagination-info">Showing {{ $ipcs->firstItem() ?? 0 }} - {{ $ipcs->lastItem() ?? 0 }} of {{ $ipcs->total() }} results</div>
+                {{ $ipcs->links('vendor.pagination.custom') }}
+            </div></div>
 </div>
 @endsection

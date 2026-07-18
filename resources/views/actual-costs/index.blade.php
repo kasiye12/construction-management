@@ -92,6 +92,9 @@
             </tbody>
         </table>
     </div>
-    <div class="card-footer">{{ $costs->links() }}</div>
+    <div class="card-footer"><div class="d-flex justify-content-between align-items-center px-3 py-2">
+                <div class="pagination-info">Showing {{ $costs->firstItem() ?? 0 }} - {{ $costs->lastItem() ?? 0 }} of {{ $costs->total() }} results</div>
+                {{ $costs->links('vendor.pagination.custom') }}
+            </div></div>
 </div>
 @endsection

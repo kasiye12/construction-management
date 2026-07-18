@@ -197,6 +197,9 @@
 @endforelse
 
 <div class="mt-3">
-    {{ $notifications->links() }}
+    <div class="d-flex justify-content-between align-items-center px-3 py-2">
+                <div class="pagination-info">Showing {{ $notifications->firstItem() ?? 0 }} - {{ $notifications->lastItem() ?? 0 }} of {{ $notifications->total() }} results</div>
+                {{ $notifications->links('vendor.pagination.custom') }}
+            </div>
 </div>
 @endsection

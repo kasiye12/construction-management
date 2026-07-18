@@ -53,6 +53,9 @@
             </tbody>
         </table>
     </div>
-    <div class="card-footer">{{ $takeoffs->links() }}</div>
+    <div class="card-footer"><div class="d-flex justify-content-between align-items-center px-3 py-2">
+                <div class="pagination-info">Showing {{ $takeoffs->firstItem() ?? 0 }} - {{ $takeoffs->lastItem() ?? 0 }} of {{ $takeoffs->total() }} results</div>
+                {{ $takeoffs->links('vendor.pagination.custom') }}
+            </div></div>
 </div>
 @endsection

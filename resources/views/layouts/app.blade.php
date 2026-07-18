@@ -63,6 +63,13 @@
         @media (max-width: 768px) { .sidebar { transform: translateX(-100%); } .sidebar.open { transform: translateX(0); } .topbar { left: 0; } .main-content { margin-left: 0; padding: 14px; } .topbar-brand { display: none; } }
         @media print { .sidebar, .topbar, .btn, .no-print { display: none !important; } .main-content { margin: 0 !important; padding: 0 !important; } }
     </style>
+    <style>
+        .pagination { margin-bottom: 0; }
+        .page-link { padding: 3px 10px !important; font-size: 0.75rem !important; border-radius: 4px !important; margin: 0 1px; }
+        .page-item.active .page-link { background: #4f46e5 !important; border-color: #4f46e5 !important; }
+        .page-link:hover { background: #eef2ff !important; color: #4f46e5 !important; }
+        .pagination-info { font-size: 0.7rem; color: #6b7280; padding: 3px 0; }
+    </style>
     @stack('styles')
 </head>
 <body>

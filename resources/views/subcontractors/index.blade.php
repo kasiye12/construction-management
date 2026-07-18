@@ -49,6 +49,9 @@
             </tbody>
         </table>
     </div>
-    <div class="card-footer">{{ $subcontractors->links() }}</div>
+    <div class="card-footer"><div class="d-flex justify-content-between align-items-center px-3 py-2">
+                <div class="pagination-info">Showing {{ $subcontractors->firstItem() ?? 0 }} - {{ $subcontractors->lastItem() ?? 0 }} of {{ $subcontractors->total() }} results</div>
+                {{ $subcontractors->links('vendor.pagination.custom') }}
+            </div></div>
 </div>
 @endsection
