@@ -86,9 +86,11 @@
             
             <div class="sidebar-label">Engineering</div>
             <a href="{{ route('boq-items.index') }}" class="{{ request()->routeIs('boq-items.*') ? 'active' : '' }}"><i class="fas fa-calculator"></i> BOQ & Costing</a>
-            <a href="{{ route('quantity-takeoffs.index') }}" class="{{ request()->routeIs('quantity-takeoffs.*') ? 'active' : '' }}"><i class="fas fa-ruler-combined"></i> Quantity Take-Off</a>
+            <a href="{{ route('quantity-takeoffs.index') }}" class="{{ request()->routeIs('quantity-takeoffs.*') ? 'active' : '' }}"><i class="fas fa-ruler-combined"></i> Quantity Take-Off
                 @php $toPending = \App\Models\QuantityTakeoff::where('status','draft')->count(); @endphp
                 @if($toPending>0)<span class="badge bg-warning text-dark">{{ $toPending }}</span>@endif
+            </a>
+            <a href="{{ route('takeoff-sheets.index') }}" class="{{ request()->routeIs('takeoff-sheets.*') ? 'active' : '' }}"><i class="fas fa-table"></i> Takeoff Sheets</a>
             <a href="{{ route('ipcs.index') }}" class="{{ request()->routeIs('ipcs.*') ? 'active' : '' }}"><i class="fas fa-file-invoice-dollar"></i> Payment Certificates
                 @php $pc = \App\Models\Ipc::where('status','submitted')->count(); @endphp
                 @if($pc>0)<span class="badge bg-warning text-dark">{{ $pc }}</span>@endif
@@ -114,9 +116,7 @@
             <a href="{{ route('admin.roles.index') }}" class="{{ request()->routeIs('admin.roles.*') ? 'active' : '' }}"><i class="fas fa-shield-alt"></i> Roles</a>
             @endif
             <a href="{{ route('admin.workflow.index') }}" class="{{ request()->routeIs('admin.workflow.*') ? 'active' : '' }}"><i class="fas fa-project-diagram"></i> Workflow Permissions</a>
-                <a href="{{ route('admin.company-settings.index') }}" class="nav-link {{ request()->routeIs('admin.company-settings.*') ? 'active' : '' }}">
-                    <i class="fas fa-building"></i> Company Settings
-                </a>
+            <a href="{{ route('admin.company-settings.index') }}" class="{{ request()->routeIs('admin.company-settings.*') ? 'active' : '' }}"><i class="fas fa-building"></i> Company Settings</a>
             <a href="{{ route('admin.settings.index') }}" class="{{ request()->routeIs('admin.settings.*') ? 'active' : '' }}"><i class="fas fa-cog"></i> Tax Settings</a>
             <a href="{{ route('admin.audit.index') }}" class="{{ request()->routeIs('admin.audit.*') ? 'active' : '' }}"><i class="fas fa-history"></i> Audit Trail</a>
             @endif

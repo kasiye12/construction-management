@@ -39,6 +39,25 @@ class BoqItemController extends Controller
 
     public function store(Request $request) { /* same as before */ }
 
+    public function quickStore(Request $request)
+    {
+        $validated = $request->validate([
+            "project_id" => "required|exists:projects,id",
+            "item_number" => "required|string",
+            "description" => "required|string",
+            "unit" => "required|string",
+            "quantity" => "required|numeric|min:0",
+            "unit_rate" => "required|numeric|min:0",
+        ]);
+        
+        $item = BoqItem::create($validated);
+        
+        return response()->json([
+            "success" => true,
+            "item" => $item
+        ]);
+    }
+
     public function show(BoqItem $boqItem)
     {
         $boqItem->load(['project','costCategory','laborResources','materialResources','equipmentResources','ipcItems.ipc']);

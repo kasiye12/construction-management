@@ -23,22 +23,15 @@ class QuantityTakeoffController extends Controller
         return $user->isAdmin() ? Project::all() : Project::whereIn('id', $this->getUserProjectIds())->get();
     }
 
-    // ------------------------------------------------------------------
-    // INDEX
-    // ------------------------------------------------------------------
     public function index(Request $request)
     {
         $userProjectIds = $this->getUserProjectIds();
         $projects = $this->getUserProjects();
         $projectId = $request->get('project_id');
         
-        $query = QuantityTakeoff::with(['project', 'boqItem'])
-            ->whereIn('project_id', $userProjectIds);
-        
+        $query = QuantityTakeoff::with(['project', 'boqItem'])->whereIn('project_id', $userProjectIds);
         if ($projectId) $query->where('project_id', $projectId);
         if ($request->filled('status')) $query->where('status', $request->status);
-        if ($request->filled('date_from')) $query->where('measurement_date', '>=', $request->date_from);
-        if ($request->filled('date_to')) $query->where('measurement_date', '<=', $request->date_to);
         
         $takeoffs = $query->orderBy('measurement_date', 'desc')->paginate(20)->appends($request->query());
         $totalMeasured = (clone $query)->sum('total_area_volume');
@@ -46,9 +39,6 @@ class QuantityTakeoffController extends Controller
         return view('quantity-takeoffs.index', compact('takeoffs', 'projects', 'projectId', 'totalMeasured'));
     }
 
-    // ------------------------------------------------------------------
-    // CREATE / STORE
-    // ------------------------------------------------------------------
     public function create(Request $request)
     {
         $projectId = $request->get('project_id');
@@ -57,6 +47,9 @@ class QuantityTakeoffController extends Controller
         return view('quantity-takeoffs.create', compact('projects', 'boqItems', 'projectId'));
     }
 
+    /**
+     * Store single measurement
+     */
     public function store(Request $request)
     {
         $validated = $request->validate([
@@ -75,27 +68,101 @@ class QuantityTakeoffController extends Controller
         ]);
 
         $takeoff = QuantityTakeoff::create($validated);
-        return redirect()->route('quantity-takeoffs.show', $takeoff)->with('success', 'Measurement recorded successfully.');
+        return redirect()->route('quantity-takeoffs.show', $takeoff)->with('success', 'Measurement saved.');
     }
 
-    // ------------------------------------------------------------------
-    // SHOW
-    // ------------------------------------------------------------------
+    /**
+     * Store MULTIPLE measurements (left + right arrays)
+     */
+    public function storeMultiple(Request $request)
+    {
+        $validated = $request->validate([
+            'project_id' => 'required|exists:projects,id',
+            'boq_item_id' => 'required|exists:boq_items,id',
+            'structure_type' => 'nullable|string|max:255',
+            'location_axis' => 'nullable|string|max:500',
+            'measurement_date' => 'required|date',
+            'measured_by' => 'nullable|string|max:255',
+            // Left side measurements (array)
+            'left' => 'nullable|array',
+            'left.*.element_id' => 'required_with:left|string|max:100',
+            'left.*.quantity_count' => 'required_with:left|integer|min:1',
+            'left.*.length' => 'required_with:left|numeric|min:0',
+            'left.*.width' => 'nullable|numeric|min:0',
+            'left.*.height_depth' => 'nullable|numeric|min:0',
+            'left.*.remarks' => 'nullable|string',
+            // Right side measurements (array)
+            'right' => 'nullable|array',
+            'right.*.element_id' => 'required_with:right|string|max:100',
+            'right.*.quantity_count' => 'required_with:right|integer|min:1',
+            'right.*.length' => 'required_with:right|numeric|min:0',
+            'right.*.width' => 'nullable|numeric|min:0',
+            'right.*.height_depth' => 'nullable|numeric|min:0',
+            'right.*.remarks' => 'nullable|string',
+        ]);
+
+        $count = 0;
+
+        // Save LEFT measurements
+        if ($request->has('left')) {
+            foreach ($request->left as $item) {
+                if (!empty($item['element_id'])) {
+                    QuantityTakeoff::create([
+                        'project_id' => $validated['project_id'],
+                        'boq_item_id' => $validated['boq_item_id'],
+                        'structure_type' => $validated['structure_type'] ?? null,
+                        'location_axis' => $validated['location_axis'] ?? null,
+                        'element_id' => $item['element_id'],
+                        'quantity_count' => $item['quantity_count'],
+                        'length' => $item['length'],
+                        'width' => $item['width'] ?? 1,
+                        'height_depth' => $item['height_depth'] ?? 1,
+                        'measurement_date' => $validated['measurement_date'],
+                        'measured_by' => $validated['measured_by'] ?? Auth::user()->name,
+                        'remarks' => $item['remarks'] ?? null,
+                    ]);
+                    $count++;
+                }
+            }
+        }
+
+        // Save RIGHT measurements
+        if ($request->has('right')) {
+            foreach ($request->right as $item) {
+                if (!empty($item['element_id'])) {
+                    QuantityTakeoff::create([
+                        'project_id' => $validated['project_id'],
+                        'boq_item_id' => $validated['boq_item_id'],
+                        'structure_type' => $validated['structure_type'] ?? null,
+                        'location_axis' => $validated['location_axis'] ?? null,
+                        'element_id' => $item['element_id'],
+                        'quantity_count' => $item['quantity_count'],
+                        'length' => $item['length'],
+                        'width' => $item['width'] ?? 1,
+                        'height_depth' => $item['height_depth'] ?? 1,
+                        'measurement_date' => $validated['measurement_date'],
+                        'measured_by' => $validated['measured_by'] ?? Auth::user()->name,
+                        'remarks' => $item['remarks'] ?? null,
+                    ]);
+                    $count++;
+                }
+            }
+        }
+
+        return redirect()->route('quantity-takeoffs.index', ['project_id' => $validated['project_id']])
+            ->with('success', "✅ {$count} measurements saved successfully!");
+    }
+
     public function show(QuantityTakeoff $quantityTakeoff)
     {
         $quantityTakeoff->load(['project', 'boqItem']);
-        $canVerify = $this->canVerify();
-        $canApprove = $this->canApprove();
-        return view('quantity-takeoffs.show', compact('quantityTakeoff', 'canVerify', 'canApprove'));
+        return view('quantity-takeoffs.show', compact('quantityTakeoff'));
     }
 
-    // ------------------------------------------------------------------
-    // EDIT / UPDATE (locked after verification)
-    // ------------------------------------------------------------------
     public function edit(QuantityTakeoff $quantityTakeoff)
     {
         if ($quantityTakeoff->status === 'approved' && !Auth::user()->isAdmin()) {
-            return back()->with('error', '❌ Cannot edit approved measurement. Only admin can edit.');
+            return back()->with('error', 'Cannot edit approved measurement.');
         }
         $projects = Project::all();
         $boqItems = BoqItem::where('project_id', $quantityTakeoff->project_id)->where('is_parent', false)->get();
@@ -105,9 +172,8 @@ class QuantityTakeoffController extends Controller
     public function update(Request $request, QuantityTakeoff $quantityTakeoff)
     {
         if ($quantityTakeoff->status === 'approved' && !Auth::user()->isAdmin()) {
-            return back()->with('error', '❌ Cannot update approved measurement.');
+            return back()->with('error', 'Cannot update approved measurement.');
         }
-        
         $validated = $request->validate([
             'project_id' => 'required|exists:projects,id',
             'boq_item_id' => 'required|exists:boq_items,id',
@@ -119,97 +185,46 @@ class QuantityTakeoffController extends Controller
             'status' => 'required|in:draft,verified,approved',
             'remarks' => 'nullable|string',
         ]);
-        
         $quantityTakeoff->update($validated);
-        return redirect()->route('quantity-takeoffs.index')->with('success', 'Measurement updated.');
+        return redirect()->route('quantity-takeoffs.index')->with('success', 'Updated.');
     }
 
-    // ------------------------------------------------------------------
-    // DELETE (locked after approval)
-    // ------------------------------------------------------------------
     public function destroy(QuantityTakeoff $quantityTakeoff)
     {
         if ($quantityTakeoff->status === 'approved' && !Auth::user()->isAdmin()) {
-            return back()->with('error', '❌ Cannot delete approved measurement. Only admin can delete approved records.');
+            return back()->with('error', 'Cannot delete approved measurement.');
         }
-        
         $quantityTakeoff->delete();
-        return redirect()->route('quantity-takeoffs.index')->with('success', 'Measurement deleted.');
+        return redirect()->route('quantity-takeoffs.index')->with('success', 'Deleted.');
     }
 
-    // ==================================================================
-    // WORKFLOW ACTIONS
-    // ==================================================================
-    
-    private function canVerify(): bool
-    {
-        $user = Auth::user();
-        if ($user->isAdmin()) return true;
-        return \App\Models\WorkflowPermission::canUserAct($user->id, 'verify_takeoff');
-    }
-
-    private function canApprove(): bool
-    {
-        $user = Auth::user();
-        if ($user->isAdmin()) return true;
-        return \App\Models\WorkflowPermission::canUserAct($user->id, 'approve_takeoff');
-    }
-
-    /**
-     * Verify take-off measurement
-     */
     public function verify(QuantityTakeoff $quantityTakeoff)
     {
-        if (!$this->canVerify()) {
-            return back()->with('error', '❌ You do not have permission to verify measurements.');
+        if (!Auth::user()->isAdmin() && !\App\Models\WorkflowPermission::canUserAct(Auth::id(), 'verify_takeoff')) {
+            return back()->with('error', 'No permission to verify.');
         }
-        
-        if ($quantityTakeoff->status !== 'draft') {
-            return back()->with('error', '❌ Only draft measurements can be verified.');
-        }
-        
-        $quantityTakeoff->update([
-            'status' => 'verified',
-            'verified_by' => Auth::user()->name,
-        ]);
-        
-        return back()->with('success', '✅ Measurement verified by ' . Auth::user()->name);
+        $quantityTakeoff->update(['status' => 'verified', 'verified_by' => Auth::user()->name]);
+        return back()->with('success', 'Verified.');
     }
 
-    /**
-     * Approve take-off measurement
-     */
     public function approve(QuantityTakeoff $quantityTakeoff)
     {
-        if (!$this->canApprove()) {
-            return back()->with('error', '❌ You do not have permission to approve measurements.');
+        if (!Auth::user()->isAdmin() && !\App\Models\WorkflowPermission::canUserAct(Auth::id(), 'approve_takeoff')) {
+            return back()->with('error', 'No permission to approve.');
         }
-        
-        if ($quantityTakeoff->status !== 'verified') {
-            return back()->with('error', '❌ Only verified measurements can be approved.');
-        }
-        
-        $quantityTakeoff->update([
-            'status' => 'approved',
-        ]);
-        
-        return back()->with('success', '✔️ Measurement approved successfully.');
+        $quantityTakeoff->update(['status' => 'approved']);
+        return back()->with('success', 'Approved.');
     }
 
-    /**
-     * Revert to draft
-     */
     public function revertToDraft(QuantityTakeoff $quantityTakeoff)
     {
-        if (!Auth::user()->isAdmin()) {
-            return back()->with('error', '❌ Only admin can revert measurements.');
-        }
-        
-        $quantityTakeoff->update([
-            'status' => 'draft',
-            'verified_by' => null,
-        ]);
-        
-        return back()->with('success', 'Measurement reverted to draft.');
+        if (!Auth::user()->isAdmin()) return back()->with('error', 'Only admin can revert.');
+        $quantityTakeoff->update(['status' => 'draft', 'verified_by' => null]);
+        return back()->with('success', 'Reverted to draft.');
+    }
+
+    public function print(QuantityTakeoff $quantityTakeoff)
+    {
+        return view('quantity-takeoffs.print', compact('quantityTakeoff'));
     }
 }

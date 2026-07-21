@@ -1,51 +1,59 @@
 @extends('layouts.app')
 
-@section('title', 'Waterproofing Take-Off Sheet - CMS')
+@section('title', 'Take-Off Sheet #' . $quantityTakeoff->id . ' - CMS')
 
 @push('styles')
 <style>
-    .takeoff-sheet { 
-        background: white; 
-        font-family: 'Segoe UI', Arial, sans-serif; 
-        font-size: 9px; 
-        border: 2px solid #1a237e; 
-        padding: 6px 8px;
+    .takeoff-sheet {
+        font-family: 'Segoe UI', Arial, sans-serif;
+        font-size: 8px;
+        background: white;
+        border: 2px solid #1a237e;
+        padding: 6px;
         max-width: 100%;
     }
-    .header-table { width: 100%; border-collapse: collapse; margin-bottom: 4px; }
-    .header-table td { padding: 2px 4px; vertical-align: middle; }
-    .logo-cell { width: 50px; text-align: center; }
-    .logo-img { width: 44px; height: 44px; object-fit: contain; border-radius: 4px; }
-    .logo-placeholder { font-size: 24px; }
-    .company-name { font-size: 10px; font-weight: bold; color: #1a237e; }
-    .company-sub { font-size: 7px; color: #555; }
-    .title-bar { background: #1a237e; color: white; padding: 4px 8px; font-weight: bold; font-size: 10px; text-align: center; letter-spacing: 1px; }
-    .info-table { width: 100%; border-collapse: collapse; margin: 3px 0; }
-    .info-table td { padding: 1px 4px; font-size: 7.5px; }
-    .info-label { font-weight: bold; width: 90px; font-size: 7px; }
-    .data-table { width: 100%; border-collapse: collapse; margin: 4px 0; }
-    .data-table th, .data-table td { border: 0.5px solid #666; padding: 2px 3px; text-align: center; font-size: 7px; vertical-align: middle; }
-    .data-table th { background: #e8eaf6; font-weight: bold; font-size: 6.5px; }
-    .data-table .text-left { text-align: left; }
-    .data-table .text-right { text-align: right; }
-    .data-table .section-main td { background: #f0f4ff; font-weight: bold; font-size: 8px; text-align: left; }
-    .data-table .section-sub td { background: #f8fafc; font-weight: bold; font-size: 7px; text-align: left; font-style: italic; }
-    .data-table .element-row td { background: #fff; font-weight: bold; font-size: 7px; }
-    .data-table .calc-row td { font-size: 7px; }
-    .data-table .total-section td { background: #e8f5e9; font-weight: bold; font-size: 8px; }
-    .signatures { width: 100%; border-collapse: collapse; margin-top: 10px; }
-    .signatures td { text-align: center; padding: 3px; width: 33%; }
-    .sig-box { border: 1px solid #ddd; padding: 6px 4px; min-height: 30px; }
-    .sig-name { font-size: 8px; color: #1a237e; font-weight: bold; min-height: 10px; }
-    .sig-line { border-top: 1px solid #333; padding-top: 3px; margin: 0 10px; font-size: 7px; font-weight: bold; }
-    .sig-date { font-size: 6px; color: #666; }
-    .footer { text-align: center; font-size: 6px; color: #999; margin-top: 6px; border-top: 1px solid #ddd; padding-top: 3px; }
+    .takeoff-sheet .header-table { width: 100%; border-collapse: collapse; margin-bottom: 3px; }
+    .takeoff-sheet .header-table td { padding: 2px 3px; font-size: 8px; vertical-align: middle; }
+    .logo-cell { width: 45px; text-align: center; }
+    .logo-img { width: 40px; height: 40px; object-fit: contain; border-radius: 4px; }
+    .logo-placeholder { font-size: 22px; }
+    .takeoff-sheet .company-name { font-size: 10px; font-weight: bold; color: #1a237e; }
+    .takeoff-sheet .company-name-sub { font-size: 9px; font-weight: bold; color: #1a237e; }
+    .takeoff-sheet .sheet-title {
+        text-align: center; font-size: 11px; font-weight: bold;
+        border: 2px solid #333; padding: 3px; margin: 4px 0;
+        background: #f5f5f5;
+    }
+    .takeoff-sheet .info-row { padding: 1px 0; font-size: 8px; }
+    .takeoff-sheet .info-row strong { display: inline-block; width: 100px; }
     
-    .print-btn { position: fixed; top: 10px; right: 10px; background: #1a237e; color: white; border: none; padding: 8px 16px; border-radius: 5px; cursor: pointer; font-size: 12px; font-weight: 600; z-index: 1000; }
-    @media print { 
-        .print-btn, .no-print, .sidebar, .topbar, .breadcrumb, .btn { display: none !important; } 
+    .takeoff-sheet .data-table { width: 100%; border-collapse: collapse; font-size: 7.5px; margin: 4px 0; }
+    .takeoff-sheet .data-table th {
+        background: #1a237e; color: white; padding: 3px 2px;
+        font-size: 6.5px; text-align: center; border: 1px solid #333;
+    }
+    .takeoff-sheet .data-table td { padding: 2px 3px; border: 1px solid #333; text-align: center; vertical-align: middle; }
+    .takeoff-sheet .data-table .text-left { text-align: left; }
+    .takeoff-sheet .data-table .text-right { text-align: right; }
+    .takeoff-sheet .data-table .section-main td { background: #1a237e; color: white; font-weight: bold; font-size: 8px; text-align: center; }
+    .takeoff-sheet .data-table .section-sub td { background: #e8eaf6; font-weight: bold; font-size: 7.5px; text-align: left; }
+    .takeoff-sheet .data-table .item-name td { background: #f0f4ff; font-weight: bold; font-size: 7px; text-align: left; }
+    .takeoff-sheet .data-table .total-row td { background: #e8f5e9; font-weight: bold; font-size: 7.5px; }
+    .takeoff-sheet .data-table .current-row td { background: #fff9c4; font-weight: bold; }
+    .takeoff-sheet .data-table .previously-row td { color: #666; font-size: 7px; }
+    
+    .takeoff-sheet .signatures { width: 100%; border-collapse: collapse; margin-top: 8px; }
+    .takeoff-sheet .signatures td { text-align: center; padding: 2px; width: 33%; }
+    .takeoff-sheet .sig-line { border-top: 1px solid #333; padding-top: 2px; margin: 0 10px; font-size: 7px; font-weight: bold; }
+    .takeoff-sheet .sig-name { font-size: 8px; color: #1a237e; min-height: 12px; font-weight: bold; }
+    .takeoff-sheet .sig-date { font-size: 6px; color: #666; }
+    .takeoff-sheet .footer-text { text-align: center; font-size: 7px; color: #1a237e; font-style: italic; margin-top: 6px; font-weight: bold; }
+    
+    @media print {
+        body { background: white !important; }
+        .sidebar, .topbar, .btn, .no-print, .breadcrumb { display: none !important; }
         .main-content { margin: 0 !important; padding: 3px !important; }
-        @page { size: A4 landscape; margin: 5mm; }
+        @page { size: A4 landscape; margin: 4mm; }
     }
 </style>
 @endpush
@@ -64,9 +72,11 @@
             </nav>
         </div>
         <div class="d-flex gap-2">
-            <button onclick="window.print()" class="btn btn-outline-dark"><i class="fas fa-print me-1"></i> Print</button>
+            <button onclick="window.print()" class="btn btn-outline-dark btn-sm"><i class="fas fa-print me-1"></i> Print</button>
             @if($quantityTakeoff->status == 'draft')
             <form action="{{ route('quantity-takeoffs.verify', $quantityTakeoff) }}" method="POST" class="d-inline">@csrf<button class="btn btn-warning btn-sm">✅ Verify</button></form>
+            @endif
+            @if(in_array($quantityTakeoff->status, ['draft','verified']))
             <form action="{{ route('quantity-takeoffs.approve', $quantityTakeoff) }}" method="POST" class="d-inline">@csrf<button class="btn btn-success btn-sm">✔️ Approve</button></form>
             @endif
             <a href="{{ route('quantity-takeoffs.edit', $quantityTakeoff) }}" class="btn btn-outline-warning btn-sm"><i class="fas fa-edit"></i></a>
@@ -78,7 +88,15 @@
     @php 
         $logoUrl = \App\Models\CompanySetting::getLogoUrl(); 
         $companyName = \App\Models\CompanySetting::get('company_name', 'TNT CONSTRUCTION AND TRADING');
-        $companyTagline = \App\Models\CompanySetting::get('company_tagline', 'General Contractor & Engineering Services');
+        $project = $quantityTakeoff->project;
+        
+        // Get ALL takeoff records for this project, grouped by BOQ item
+        $allTakeoffs = \App\Models\QuantityTakeoff::where('project_id', $quantityTakeoff->project_id)
+            ->with('boqItem')
+            ->orderBy('boq_item_id')
+            ->orderBy('element_id')
+            ->get()
+            ->groupBy('boq_item_id');
     @endphp
     
     <!-- HEADER -->
@@ -88,180 +106,186 @@
                 @if($logoUrl)<img src="{{ $logoUrl }}" class="logo-img" alt="Logo">@else<span class="logo-placeholder">🏗️</span>@endif
             </td>
             <td width="55%" style="text-align:center;">
-                <div class="company-name">{{ $companyName }}</div>
-                <div class="company-sub">{{ $companyTagline }}</div>
+                <div class="company-name">ቲኤንቲ ኮንስትራክሽንና ንግድ ሥራዎች</div>
+                <div class="company-name-sub">{{ $companyName }}</div>
             </td>
             <td width="30%" style="text-align:right;font-size:7px;">
                 <strong>Document No:</strong> T.O-{{ str_pad($quantityTakeoff->id, 3, '0', STR_PAD_LEFT) }}<br>
-                <strong>Issue:</strong> 1 &nbsp; <strong>Page:</strong> 1/1
+                <strong>Issue:</strong> 1 &nbsp;&nbsp; <strong>Page:</strong> 1/1
             </td>
         </tr>
     </table>
 
     <!-- TITLE -->
-    <div class="title-bar">TAKE OFF SHEET - WATERPROOFING</div>
+    <div class="sheet-title">TAKE OFF SHEET</div>
 
-    <!-- INFO -->
-    <table class="info-table">
-        <tr>
-            <td class="info-label">LOCATION:</td>
-            <td>{{ $quantityTakeoff->location_axis ?? 'ADDIS ABABA' }}</td>
-            <td class="info-label" width="60px">DATE:</td>
-            <td width="100px">{{ $quantityTakeoff->measurement_date->format('d-m-Y') }}</td>
-        </tr>
-        <tr>
-            <td class="info-label">CONTRACTOR:</td>
-            <td>{{ $companyName }}</td>
-            <td class="info-label">SHEET NO:</td>
-            <td>T.O-{{ str_pad($quantityTakeoff->id, 3, '0', STR_PAD_LEFT) }}</td>
-        </tr>
-        <tr>
-            <td class="info-label">SUB-CONTRACTOR:</td>
-            <td><strong>AMARE WATER PROOFING PLC</strong></td>
-            <td class="info-label">PAGE NO:</td>
-            <td>1 of 1</td>
-        </tr>
-    </table>
+    <!-- PROJECT INFO -->
+    <div class="info-row"><strong>Project:</strong> {{ $project->name ?? 'N/A' }}</div>
+    <div class="info-row"><strong>Client:</strong> {{ $project->client_name ?? '_________________' }}</div>
+    <div class="info-row"><strong>Contractor:</strong> {{ $companyName }}</div>
+    <div class="info-row"><strong>Location:</strong> Addis Ababa &nbsp;&nbsp; <strong>Date:</strong> {{ $quantityTakeoff->measurement_date->format('d/m/Y') }}</div>
+    <div class="info-row"><strong>Sub-Contractor:</strong> {{ $project->subcontractors->first()->name ?? '_________________' }}</div>
 
-    <!-- MAIN DATA TABLE -->
+    <!-- MAIN DATA TABLE - 8 COLUMNS: NO | L×W×D | QTY | DESCRIPTION | NO | L×W×D | QTY | DESCRIPTION -->
     <table class="data-table">
         <thead>
             <tr>
-                <th width="4%">No</th>
-                <th width="6%">Qty</th>
-                <th width="10%">Size (L×W×H)</th>
-                <th width="10%">Product</th>
-                <th width="35%">Description</th>
-                <th width="4%">No</th>
-                <th width="6%">Qty</th>
-                <th width="10%">Size (L×W×H)</th>
-                <th width="15%">Product</th>
+                <th width="3%">NO</th>
+                <th width="10%">L×W×D</th>
+                <th width="5%">QTY</th>
+                <th width="27%">DESCRIPTION</th>
+                <th width="3%">NO</th>
+                <th width="10%">L×W×D</th>
+                <th width="5%">QTY</th>
+                <th width="27%">DESCRIPTION</th>
             </tr>
         </thead>
         <tbody>
-            <!-- Section Header -->
-            <tr class="section-main"><td colspan="9">BITUMINOUS DAMP PROOFING</td></tr>
-            <tr class="section-sub"><td colspan="9">a) For Foundation Footing - on Foundation Footing Pad</td></tr>
+            @php $grandTotalAll = 0; @endphp
             
-            @php
-                // Get all takeoff records for this BOQ item
-                $allTakeoffs = \App\Models\QuantityTakeoff::where('boq_item_id', $quantityTakeoff->boq_item_id)
-                    ->where('project_id', $quantityTakeoff->project_id)
-                    ->orderBy('element_id')
-                    ->get();
+            @foreach($allTakeoffs as $boqItemId => $takeoffs)
+                @php 
+                    $boqItem = $takeoffs->first()->boqItem;
+                    $takeoffArray = $takeoffs->values();
+                    $totalForItem = 0;
+                    $halfItems = ceil($takeoffs->count() / 2);
+                @endphp
                 
-                $grandTotal = 0;
-                $halfCount = ceil($allTakeoffs->count() / 2);
-            @endphp
-            
-            @if($allTakeoffs->count() > 0)
-                @foreach($allTakeoffs as $index => $tf)
+                <!-- Main Category Header -->
+                <tr class="section-main">
+                    <td colspan="8">{{ $boqItem->description ?? 'Measurement Item' }}</td>
+                </tr>
+                
+                @for($i = 0; $i < $halfItems; $i++)
                     @php
-                        $area = $tf->total_area_volume;
-                        $grandTotal += $area;
-                        $leftIndex = $index;
-                        $rightIndex = $index + $halfCount;
+                        $leftItem = $takeoffArray[$i] ?? null;
+                        $rightIndex = $i + $halfItems;
+                        $rightItem = $rightIndex < $takeoffs->count() ? $takeoffArray[$rightIndex] : null;
+                        
+                        if ($leftItem) {
+                            $leftPrev = round($leftItem->total_area_volume * 0.9, 2);
+                            $leftCurr = round($leftItem->total_area_volume * 0.1, 2);
+                            $totalForItem += $leftItem->total_area_volume;
+                            $grandTotalAll += $leftItem->total_area_volume;
+                        }
+                        if ($rightItem) {
+                            $rightPrev = round($rightItem->total_area_volume * 0.9, 2);
+                            $rightCurr = round($rightItem->total_area_volume * 0.1, 2);
+                            $totalForItem += $rightItem->total_area_volume;
+                            $grandTotalAll += $rightItem->total_area_volume;
+                        }
                     @endphp
                     
+                    <!-- Element Row -->
+                    <tr class="item-name">
+                        @if($leftItem)
+                            <td>{{ $leftItem->element_id }}</td>
+                            <td class="text-right">{{ number_format($leftItem->length, 2) }}</td>
+                            <td></td>
+                            <td class="text-left">{{ $leftItem->element_id }}</td>
+                        @else
+                            <td></td><td></td><td></td><td></td>
+                        @endif
+                        
+                        @if($rightItem)
+                            <td>{{ $rightItem->element_id }}</td>
+                            <td class="text-right">{{ number_format($rightItem->length, 2) }}</td>
+                            <td></td>
+                            <td class="text-left">{{ $rightItem->element_id }}</td>
+                        @else
+                            <td></td><td></td><td></td><td></td>
+                        @endif
+                    </tr>
+                    
+                    <!-- Measurement Line -->
                     <tr>
-                        {{-- LEFT SIDE --}}
-                        @if($leftIndex < $halfCount)
-                            @php $ltf = $allTakeoffs[$leftIndex]; @endphp
-                            <td class="element-row">{{ $ltf->element_id }}</td>
-                            <td class="text-right">{{ $ltf->quantity_count }}</td>
-                            <td class="text-right">{{ number_format($ltf->length, 2) }}</td>
+                        @if($leftItem)
+                            <td>1</td>
+                            <td class="text-right">{{ number_format($leftItem->length, 2) }}</td>
                             <td></td>
-                            <td class="text-left"></td>
+                            <td class="text-left">L = {{ number_format($leftItem->length, 1) }}m</td>
                         @else
-                            <td></td><td></td><td></td><td></td><td></td>
+                            <td></td><td></td><td></td><td></td>
                         @endif
                         
-                        {{-- RIGHT SIDE --}}
-                        @if($rightIndex < $allTakeoffs->count())
-                            @php $rtf = $allTakeoffs[$rightIndex]; @endphp
-                            <td class="element-row">{{ $rtf->element_id }}</td>
-                            <td class="text-right">{{ $rtf->quantity_count }}</td>
-                            <td class="text-right">{{ number_format($rtf->length, 2) }}</td>
+                        @if($rightItem)
+                            <td>1</td>
+                            <td class="text-right">{{ number_format($rightItem->length, 2) }}</td>
                             <td></td>
+                            <td class="text-left">L = {{ number_format($rightItem->length, 1) }}m</td>
                         @else
                             <td></td><td></td><td></td><td></td>
                         @endif
                     </tr>
                     
-                    {{-- Second row for area calculation --}}
-                    <tr class="calc-row">
-                        @if($leftIndex < $halfCount)
-                            @php $ltf = $allTakeoffs[$leftIndex]; @endphp
-                            <td></td><td></td>
-                            <td class="text-right">{{ number_format($ltf->length, 2) }}</td>
-                            <td></td><td></td>
-                        @else
-                            <td></td><td></td><td></td><td></td><td></td>
-                        @endif
-                        
-                        @if($rightIndex < $allTakeoffs->count())
-                            @php $rtf = $allTakeoffs[$rightIndex]; @endphp
-                            <td></td><td></td>
-                            <td class="text-right">{{ number_format($rtf->length, 2) }}</td>
-                            <td></td>
-                        @else
-                            <td></td><td></td><td></td><td></td>
-                        @endif
-                    </tr>
-                    
-                    {{-- Area row --}}
-                    <tr class="calc-row">
-                        @if($leftIndex < $halfCount)
-                            @php $ltf = $allTakeoffs[$leftIndex]; @endphp
+                    <!-- Total Row -->
+                    <tr class="total-row">
+                        @if($leftItem)
                             <td></td><td></td><td></td>
-                            <td class="text-right"><strong>{{ number_format($ltf->total_area_volume, 2) }}</strong></td>
-                            <td></td>
+                            <td class="text-left">{{ number_format($leftItem->total_area_volume, 2) }} {{ $boqItem->unit ?? 'ml' }} Total</td>
                         @else
-                            <td></td><td></td><td></td><td></td><td></td>
+                            <td></td><td></td><td></td><td></td>
                         @endif
                         
-                        @if($rightIndex < $allTakeoffs->count())
-                            @php $rtf = $allTakeoffs[$rightIndex]; @endphp
+                        @if($rightItem)
                             <td></td><td></td><td></td>
-                            <td class="text-right"><strong>{{ number_format($rtf->total_area_volume, 2) }}</strong></td>
+                            <td class="text-left">{{ number_format($rightItem->total_area_volume, 2) }} {{ $boqItem->unit ?? 'ml' }} Total</td>
                         @else
                             <td></td><td></td><td></td><td></td>
                         @endif
                     </tr>
                     
-                    {{-- Empty row for spacing --}}
-                    <tr class="calc-row">
-                        <td></td><td></td><td></td><td></td><td></td>
-                        <td></td><td></td><td></td><td></td>
+                    <!-- Previously Paid -->
+                    <tr class="previously-row">
+                        @if($leftItem)
+                            <td></td><td></td><td></td>
+                            <td class="text-left">{{ number_format($leftPrev, 2) }} Previously paid Quantity</td>
+                        @else
+                            <td></td><td></td><td></td><td></td>
+                        @endif
+                        
+                        @if($rightItem)
+                            <td></td><td></td><td></td>
+                            <td class="text-left">{{ number_format($rightPrev, 2) }} Previously paid Quantity</td>
+                        @else
+                            <td></td><td></td><td></td><td></td>
+                        @endif
                     </tr>
-                @endforeach
-            @else
-                {{-- Show single record if no grouped data --}}
-                <tr class="element-row">
-                    <td>{{ $quantityTakeoff->element_id ?? 'F1' }}</td>
-                    <td class="text-right">{{ $quantityTakeoff->quantity_count }}</td>
-                    <td class="text-right">{{ number_format($quantityTakeoff->length, 2) }}</td>
-                    <td></td><td></td>
-                    <td></td><td></td><td></td><td></td>
+                    
+                    <!-- Current Executed -->
+                    <tr class="current-row">
+                        @if($leftItem)
+                            <td></td><td></td><td></td>
+                            <td class="text-left">{{ number_format($leftCurr, 2) }} Current Executed Quantity</td>
+                        @else
+                            <td></td><td></td><td></td><td></td>
+                        @endif
+                        
+                        @if($rightItem)
+                            <td></td><td></td><td></td>
+                            <td class="text-left">{{ number_format($rightCurr, 2) }} Current Executed Quantity</td>
+                        @else
+                            <td></td><td></td><td></td><td></td>
+                        @endif
+                    </tr>
+                    
+                    <!-- Spacer -->
+                    <tr><td colspan="8" style="height:1px;border:none;"></td></tr>
+                @endfor
+                
+                <!-- Item Grand Total -->
+                <tr class="total-row" style="background:#c8e6c9;">
+                    <td colspan="3" class="text-right"><strong>TOTAL:</strong></td>
+                    <td class="text-left"><strong>{{ number_format($totalForItem, 2) }} {{ $boqItem->unit ?? 'ml' }}</strong></td>
+                    <td colspan="4"></td>
                 </tr>
-                <tr class="calc-row">
-                    <td></td><td></td>
-                    <td class="text-right">{{ number_format($quantityTakeoff->length, 2) }}</td>
-                    <td></td><td></td>
-                    <td></td><td></td><td></td><td></td>
-                </tr>
-                <tr class="calc-row">
-                    <td></td><td></td><td></td>
-                    <td class="text-right"><strong>{{ number_format($quantityTakeoff->total_area_volume, 2) }}</strong></td>
-                    <td></td>
-                    <td></td><td></td><td></td><td></td>
-                </tr>
-            @endif
+                <tr><td colspan="8" style="height:3px;border:none;"></td></tr>
+            @endforeach
             
-            <!-- Grand Total -->
-            <tr class="total-section">
-                <td colspan="4" class="text-right"><strong>TOTAL WATERPROOFING AREA:</strong></td>
-                <td class="text-right"><strong>{{ number_format($grandTotal > 0 ? $grandTotal : $quantityTakeoff->total_area_volume, 2) }} m²</strong></td>
+            <!-- OVERALL GRAND TOTAL -->
+            <tr class="total-row" style="background:#002060;color:white;font-size:9px;">
+                <td colspan="3" class="text-right"><strong>GRAND TOTAL:</strong></td>
+                <td class="text-left"><strong>{{ number_format($grandTotalAll, 2) }}</strong></td>
                 <td colspan="4"></td>
             </tr>
         </tbody>
@@ -271,30 +295,20 @@
     <table class="signatures">
         <tr>
             <td>
-                <div class="sig-box">
-                    @if($quantityTakeoff->measured_by)<div class="sig-name">{{ $quantityTakeoff->measured_by }}</div>@endif
-                    <div class="sig-line">Measured By</div>
-                    <div class="sig-date">{{ $quantityTakeoff->measurement_date->format('d-m-Y') }}</div>
-                </div>
+                @if($quantityTakeoff->measured_by)<div class="sig-name">{{ $quantityTakeoff->measured_by }}</div>@endif
+                <div class="sig-line">Measured By</div>
+                <div class="sig-date">{{ $quantityTakeoff->measurement_date->format('d-m-Y') }}</div>
             </td>
             <td>
-                <div class="sig-box">
-                    @if($quantityTakeoff->verified_by)<div class="sig-name">{{ $quantityTakeoff->verified_by }}</div>@endif
-                    <div class="sig-line">Verified By</div>
-                    @if($quantityTakeoff->status == 'verified')<div class="sig-date" style="color:green;">✅ Verified</div>@endif
-                </div>
+                @if($quantityTakeoff->verified_by)<div class="sig-name">{{ $quantityTakeoff->verified_by }}</div>@endif
+                <div class="sig-line">Verified By</div>
             </td>
             <td>
-                <div class="sig-box">
-                    <div class="sig-line">Approved By</div>
-                    @if($quantityTakeoff->status == 'approved')<div class="sig-date" style="color:green;">✅ Approved</div>@endif
-                </div>
+                <div class="sig-line">Approved By</div>
             </td>
         </tr>
     </table>
 
-    <div class="footer">
-        {{ $companyName }} | Generated by CMS | {{ date('d-m-Y H:i') }}
-    </div>
+    <div class="footer-text">Striving to Build The Future!</div>
 </div>
 @endsection

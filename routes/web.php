@@ -38,7 +38,7 @@ Route::middleware(['auth'])->group(function () {
     Route::delete('/projects/{project}/team/{user}', [App\Http\Controllers\TeamController::class, 'remove'])->name('projects.team.remove');
     Route::put('/projects/{project}/team/{user}', [App\Http\Controllers\TeamController::class, 'update'])->name('projects.team.update');
     
-    // BOQ Items - ONLY ONE RESOURCE DEFINITION
+    // BOQ Items
     Route::resource('boq-items', App\Http\Controllers\BoqItemController::class);
     Route::get('/api/boq-items/project/{project}', [App\Http\Controllers\BoqItemController::class, 'getByProject']);
     
@@ -65,9 +65,20 @@ Route::middleware(['auth'])->group(function () {
     
     // Quantity Take-Offs
     Route::resource('quantity-takeoffs', App\Http\Controllers\QuantityTakeoffController::class);
+    Route::post('/quantity-takeoffs/store-multiple', [App\Http\Controllers\QuantityTakeoffController::class, 'storeMultiple'])->name('quantity-takeoffs.store-multiple');
     Route::post('/quantity-takeoffs/{quantityTakeoff}/verify', [App\Http\Controllers\QuantityTakeoffController::class, 'verify'])->name('quantity-takeoffs.verify');
     Route::post('/quantity-takeoffs/{quantityTakeoff}/approve', [App\Http\Controllers\QuantityTakeoffController::class, 'approve'])->name('quantity-takeoffs.approve');
     Route::post('/quantity-takeoffs/{quantityTakeoff}/revert', [App\Http\Controllers\QuantityTakeoffController::class, 'revertToDraft'])->name('quantity-takeoffs.revert');
+    
+    // Takeoff Sheets
+    Route::resource('takeoff-sheets', App\Http\Controllers\TakeoffSheetController::class);
+    Route::get('/takeoff-sheets/{takeoff_sheet}/print', [App\Http\Controllers\TakeoffSheetController::class, 'print'])->name('takeoff-sheets.print');
+    Route::post('/takeoff-sheets/{takeoff_sheet}/verify', [App\Http\Controllers\TakeoffSheetController::class, 'verify'])->name('takeoff-sheets.verify');
+    Route::post('/takeoff-sheets/{takeoff_sheet}/approve', [App\Http\Controllers\TakeoffSheetController::class, 'approve'])->name('takeoff-sheets.approve');
+    Route::post('/takeoff-sheets/{takeoff_sheet}/revert', [App\Http\Controllers\TakeoffSheetController::class, 'revertToDraft'])->name('takeoff-sheets.revert');
+    Route::post('/takeoff-sheets/{takeoff_sheet}/revert-to-verified', [AppHttpControllersTakeoffSheetController::class, 'revertToVerified'])->name('takeoff-sheets.revert-to-verified');
+    Route::post('/takeoff-sheets/{takeoff_sheet}/revert-to-verified', [AppHttpControllersTakeoffSheetController::class, 'revertToVerified'])->name('takeoff-sheets.revert-to-verified');
+    Route::post('/takeoff-sheets/{takeoff_sheet}/revert-to-verified', [AppHttpControllersTakeoffSheetController::class, 'revertToVerified'])->name('takeoff-sheets.revert-to-verified');
     
     // Material Deliveries
     Route::resource('material-deliveries', App\Http\Controllers\MaterialDeliveryController::class);
@@ -103,9 +114,12 @@ Route::middleware(['auth'])->group(function () {
         Route::put('/profile', [App\Http\Controllers\Admin\UserController::class, 'updateProfile'])->name('profile.update');
         Route::put('/profile/password', [App\Http\Controllers\Admin\UserController::class, 'updatePassword'])->name('profile.password');
         Route::resource('roles', App\Http\Controllers\Admin\RoleController::class);
+        
+        // Workflow Permissions
         Route::get('/workflow', [App\Http\Controllers\Admin\WorkflowPermissionController::class, 'index'])->name('workflow.index');
         Route::put('/workflow', [App\Http\Controllers\Admin\WorkflowPermissionController::class, 'update'])->name('workflow.update');
         Route::post('/workflow/preset', [App\Http\Controllers\Admin\WorkflowPermissionController::class, 'applyPreset'])->name('workflow.preset');
+        
         Route::get('/company-settings', [App\Http\Controllers\Admin\CompanySettingsController::class, 'index'])->name('company-settings.index');
         Route::put('/company-settings', [App\Http\Controllers\Admin\CompanySettingsController::class, 'update'])->name('company-settings.update');
         Route::get('/company-settings/remove-logo', [App\Http\Controllers\Admin\CompanySettingsController::class, 'removeLogo'])->name('company-settings.remove-logo');
