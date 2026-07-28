@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Take-Off Sheet - Print</title>
+    <title>Take-Off Sheet · {{ $sheet->sheet_number }}</title>
     <style>
         @page { size: A4 portrait; margin: 5mm; }
         * { margin: 0; padding: 0; box-sizing: border-box; }
