@@ -16,6 +16,9 @@
             </nav>
         </div>
         <div class="d-flex gap-2">
+            <a href="{{ route('equipment.index', ['project_id' => $project->id]) }}" class="btn btn-outline-info btn-custom">
+                <i class="fas fa-truck-monster me-1"></i>Fleet ({{ $project->equipment->count() }})
+            </a>
             <a href="{{ route('contractual-reports.create', ['project_id' => $project->id]) }}" class="btn btn-primary btn-custom">
                 <i class="fas fa-file-contract me-1"></i>New CAD-01 Report
             </a>
@@ -242,6 +245,32 @@
             </div>
             @empty
             <p class="text-muted small mb-0">No contractual follow-up reports recorded yet.</p>
+            @endforelse
+        </div>
+
+        <!-- Deployed Plant & Equipment (EAMD) -->
+        <div class="table-card mt-3">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <h5 class="mb-0">🚜 Assigned Equipment</h5>
+                <a href="{{ route('equipment.create', ['project_id' => $project->id]) }}" class="btn btn-outline-info btn-sm">
+                    <i class="fas fa-plus"></i> Add
+                </a>
+            </div>
+            <hr>
+            @forelse($project->equipment->take(5) as $eq)
+            <div class="mb-2 p-2 border rounded">
+                <div class="d-flex justify-content-between align-items-center">
+                    <a href="{{ route('equipment.show', $eq) }}" class="fw-bold text-decoration-none">
+                        {{ $eq->equipment_type }}
+                    </a>
+                    {!! $eq->service_status_badge !!}
+                </div>
+                <small class="text-muted d-block mt-1">
+                    Plate: <strong>{{ $eq->plate_serial_no }}</strong> • Reading: {{ number_format($eq->current_reading, 0) }} {{ $eq->reading_unit }}
+                </small>
+            </div>
+            @empty
+            <p class="text-muted small mb-0">No equipment currently assigned to this project site.</p>
             @endforelse
         </div>
     </div>

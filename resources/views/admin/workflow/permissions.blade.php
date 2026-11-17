@@ -96,6 +96,12 @@
                             <th colspan="4" class="section-header text-center" style="background:#ffebee !important;color:#b71c1c !important;">
                                 <i class="fas fa-file-contract me-1"></i> Contractual (CAD-01)
                             </th>
+                            <th colspan="4" class="section-header text-center" style="background:#e0f2fe !important;color:#0369a1 !important;">
+                                <i class="fas fa-calendar-check me-1"></i> PM Schedule (OF/EAMD/074)
+                            </th>
+                            <th colspan="4" class="section-header text-center" style="background:#fef3c7 !important;color:#92400e !important;">
+                                <i class="fas fa-tools me-1"></i> Breakdown Report (OF/TNT/ EAMD/030)
+                            </th>
                         </tr>
                         <tr>
                             <th>📝 Prepare</th>
@@ -110,6 +116,14 @@
                             <th>✅ Approve</th>
                             <th>📦 Record</th>
                             <th>✔️ Confirm</th>
+                            <th>✍️ Prepare</th>
+                            <th>🔍 Check</th>
+                            <th>👍 Approve</th>
+                            <th>❌ Reject</th>
+                            <th>✍️ Prepare</th>
+                            <th>🔍 Check</th>
+                            <th>👍 Approve</th>
+                            <th>❌ Reject</th>
                             <th>✍️ Prepare</th>
                             <th>🔍 Check</th>
                             <th>👍 Approve</th>
@@ -154,6 +168,16 @@
                             <td class="checkbox-cell"><input type="checkbox" class="custom-checkbox" name="permissions[{{$user->id}}][check_contractual_report]" {{ ($perms['check_contractual_report']??false)?'checked':'' }}></td>
                             <td class="checkbox-cell"><input type="checkbox" class="custom-checkbox" name="permissions[{{$user->id}}][approve_contractual_report]" {{ ($perms['approve_contractual_report']??false)?'checked':'' }}></td>
                             <td class="checkbox-cell"><input type="checkbox" class="custom-checkbox" name="permissions[{{$user->id}}][reject_contractual_report]" {{ ($perms['reject_contractual_report']??false)?'checked':'' }}></td>
+                            {{-- Equipment PM Schedule (OF/EAMD/074) --}}
+                            <td class="checkbox-cell"><input type="checkbox" class="custom-checkbox" name="permissions[{{$user->id}}][prepare_equipment_schedule]" {{ ($perms['prepare_equipment_schedule']??false)?'checked':'' }}></td>
+                            <td class="checkbox-cell"><input type="checkbox" class="custom-checkbox" name="permissions[{{$user->id}}][check_equipment_schedule]" {{ ($perms['check_equipment_schedule']??false)?'checked':'' }}></td>
+                            <td class="checkbox-cell"><input type="checkbox" class="custom-checkbox" name="permissions[{{$user->id}}][approve_equipment_schedule]" {{ ($perms['approve_equipment_schedule']??false)?'checked':'' }}></td>
+                            <td class="checkbox-cell"><input type="checkbox" class="custom-checkbox" name="permissions[{{$user->id}}][reject_equipment_schedule]" {{ ($perms['reject_equipment_schedule']??false)?'checked':'' }}></td>
+                            {{-- Equipment Breakdown Report (OF/TNT/ EAMD/030) --}}
+                            <td class="checkbox-cell"><input type="checkbox" class="custom-checkbox" name="permissions[{{$user->id}}][prepare_maintenance_report]" {{ ($perms['prepare_maintenance_report']??false)?'checked':'' }}></td>
+                            <td class="checkbox-cell"><input type="checkbox" class="custom-checkbox" name="permissions[{{$user->id}}][check_maintenance_report]" {{ ($perms['check_maintenance_report']??false)?'checked':'' }}></td>
+                            <td class="checkbox-cell"><input type="checkbox" class="custom-checkbox" name="permissions[{{$user->id}}][approve_maintenance_report]" {{ ($perms['approve_maintenance_report']??false)?'checked':'' }}></td>
+                            <td class="checkbox-cell"><input type="checkbox" class="custom-checkbox" name="permissions[{{$user->id}}][reject_maintenance_report]" {{ ($perms['reject_maintenance_report']??false)?'checked':'' }}></td>
                         </tr>
                         @endforeach
                     </tbody>

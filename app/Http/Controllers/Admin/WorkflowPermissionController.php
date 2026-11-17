@@ -39,6 +39,8 @@ class WorkflowPermissionController extends Controller
                     'verify_takeoff_sheet','approve_takeoff_sheet',
                     'record_delivery','confirm_delivery',
                     'prepare_contractual_report','check_contractual_report','approve_contractual_report','reject_contractual_report',
+                    'prepare_equipment_schedule','check_equipment_schedule','approve_equipment_schedule','reject_equipment_schedule',
+                    'prepare_maintenance_report','check_maintenance_report','approve_maintenance_report','reject_maintenance_report',
                 ],
                 'manager' => [
                     'prepare','check','submit','approve','reject',
@@ -46,6 +48,8 @@ class WorkflowPermissionController extends Controller
                     'verify_takeoff_sheet','approve_takeoff_sheet',
                     'record_delivery','confirm_delivery',
                     'prepare_contractual_report','check_contractual_report','approve_contractual_report','reject_contractual_report',
+                    'prepare_equipment_schedule','check_equipment_schedule','approve_equipment_schedule','reject_equipment_schedule',
+                    'prepare_maintenance_report','check_maintenance_report','approve_maintenance_report','reject_maintenance_report',
                 ],
                 'engineer' => [
                     'prepare','check','submit',
@@ -53,11 +57,15 @@ class WorkflowPermissionController extends Controller
                     'verify_takeoff_sheet',
                     'record_delivery',
                     'prepare_contractual_report','check_contractual_report',
+                    'prepare_equipment_schedule','check_equipment_schedule',
+                    'prepare_maintenance_report','check_maintenance_report',
                 ],
                 'finance' => [
                     'approve','reject','pay',
                     'confirm_delivery',
                     'approve_contractual_report','reject_contractual_report',
+                    'approve_equipment_schedule','reject_equipment_schedule',
+                    'approve_maintenance_report','reject_maintenance_report',
                 ],
                 'viewer' => [],
             ],
@@ -68,6 +76,8 @@ class WorkflowPermissionController extends Controller
                     'verify_takeoff_sheet','approve_takeoff_sheet',
                     'record_delivery','confirm_delivery',
                     'prepare_contractual_report','check_contractual_report','approve_contractual_report','reject_contractual_report',
+                    'prepare_equipment_schedule','check_equipment_schedule','approve_equipment_schedule','reject_equipment_schedule',
+                    'prepare_maintenance_report','check_maintenance_report','approve_maintenance_report','reject_maintenance_report',
                 ],
                 'manager' => [
                     'prepare','check','submit','approve','reject','pay',
@@ -75,6 +85,8 @@ class WorkflowPermissionController extends Controller
                     'verify_takeoff_sheet','approve_takeoff_sheet',
                     'record_delivery','confirm_delivery',
                     'prepare_contractual_report','check_contractual_report','approve_contractual_report','reject_contractual_report',
+                    'prepare_equipment_schedule','check_equipment_schedule','approve_equipment_schedule','reject_equipment_schedule',
+                    'prepare_maintenance_report','check_maintenance_report','approve_maintenance_report','reject_maintenance_report',
                 ],
                 'engineer' => [
                     'prepare','check','submit',
@@ -82,11 +94,15 @@ class WorkflowPermissionController extends Controller
                     'verify_takeoff_sheet',
                     'record_delivery',
                     'prepare_contractual_report','check_contractual_report',
+                    'prepare_equipment_schedule','check_equipment_schedule',
+                    'prepare_maintenance_report','check_maintenance_report',
                 ],
                 'finance' => [
                     'approve','reject','pay',
                     'confirm_delivery',
                     'approve_contractual_report','reject_contractual_report',
+                    'approve_equipment_schedule','reject_equipment_schedule',
+                    'approve_maintenance_report','reject_maintenance_report',
                 ],
                 'viewer' => [],
             ],
@@ -104,6 +120,8 @@ class WorkflowPermissionController extends Controller
                 'verify_takeoff_sheet','approve_takeoff_sheet',
                 'record_delivery','confirm_delivery',
                 'prepare_contractual_report','check_contractual_report','approve_contractual_report','reject_contractual_report',
+                'prepare_equipment_schedule','check_equipment_schedule','approve_equipment_schedule','reject_equipment_schedule',
+                'prepare_maintenance_report','check_maintenance_report','approve_maintenance_report','reject_maintenance_report',
             ];
             
             $userPermissions = [];

@@ -49,7 +49,7 @@ class PermissionHelper
     /**
      * Get permission buttons HTML
      */
-    public static function actionButtons(string $module, $model, string $showRoute = null, string $editRoute = null, string $deleteRoute = null): string
+    public static function actionButtons(string $module, $model, ?string $showRoute = null, ?string $editRoute = null, ?string $deleteRoute = null): string
     {
         $html = '<div class="btn-group btn-group-sm">';
         
@@ -79,7 +79,7 @@ class PermissionHelper
     /**
      * Show create button if user has permission
      */
-    public static function createButton(string $module, string $label = null, string $route = null): string
+    public static function createButton(string $module, ?string $label = null, ?string $route = null): string
     {
         if (!self::canCreate($module)) return '';
         

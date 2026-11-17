@@ -22,6 +22,10 @@ class Project extends Model
     ];
 
     public function contractualReports() { return $this->hasMany(ContractualReport::class); }
+    public function equipment() { return $this->hasMany(Equipment::class); }
+    public function pmSchedules() { return $this->hasMany(PmSchedule::class); }
+    public function breakdownReports() { return $this->hasMany(EquipmentBreakdownReport::class); }
+    public function maintenanceLogs() { return $this->hasMany(EquipmentMaintenanceLog::class); }
     public function costCategories() { return $this->hasMany(CostCategory::class); }
     public function boqItems() { return $this->hasMany(BoqItem::class); }
     

@@ -106,6 +106,18 @@
             <div class="sidebar-label">Management</div>
             <a href="{{ route('subcontractors.index') }}" class="{{ request()->routeIs('subcontractors.*') ? 'active' : '' }}"><i class="fas fa-users"></i> Subcontractors</a>
             <a href="{{ route('cost-categories.index') }}" class="{{ request()->routeIs('cost-categories.*') ? 'active' : '' }}"><i class="fas fa-sitemap"></i> Cost Categories</a>
+
+            <div class="sidebar-label">Plant & Equipment (EAMD)</div>
+            <a href="{{ route('equipment.index') }}" class="{{ request()->routeIs('equipment.*') ? 'active' : '' }}"><i class="fas fa-truck-monster"></i> Fleet Registry</a>
+            <a href="{{ route('pm-schedules.index') }}" class="{{ request()->routeIs('pm-schedules.*') ? 'active' : '' }}"><i class="fas fa-calendar-check"></i> PM Schedule (OF/074)
+                @php $pmOverdue = \App\Models\PmScheduleItem::where('service_status', 'Overdue')->count(); @endphp
+                @if($pmOverdue > 0)<span class="badge bg-danger">{{ $pmOverdue }}</span>@endif
+            </a>
+            <a href="{{ route('equipment-breakdowns.index') }}" class="{{ request()->routeIs('equipment-breakdowns.*') ? 'active' : '' }}"><i class="fas fa-tools"></i> Breakdown Reports (OF/030)
+                @php $downCases = \App\Models\EquipmentBreakdownItem::where('repair_status', 'down')->count(); @endphp
+                @if($downCases > 0)<span class="badge bg-warning text-dark">{{ $downCases }}</span>@endif
+            </a>
+            <a href="{{ route('equipment-logs.index') }}" class="{{ request()->routeIs('equipment-logs.*') ? 'active' : '' }}"><i class="fas fa-receipt"></i> Spare Parts Log</a>
             
             <div class="sidebar-label">Reports</div>
             <a href="{{ route('reports.30-column') }}" class="{{ request()->routeIs('reports.*') ? 'active' : '' }}"><i class="fas fa-table"></i> 30-Column Report</a>

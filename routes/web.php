@@ -89,6 +89,38 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/contractual-reports/{contractual_report}/approve', [App\Http\Controllers\ContractualReportController::class, 'approve'])->name('contractual-reports.approve');
     Route::post('/contractual-reports/{contractual_report}/reject', [App\Http\Controllers\ContractualReportController::class, 'reject'])->name('contractual-reports.reject');
     Route::post('/contractual-reports/{contractual_report}/revert', [App\Http\Controllers\ContractualReportController::class, 'revert'])->name('contractual-reports.revert');
+
+    // Equipment & Fleet Asset Management (EAMD)
+    Route::patch('/equipment/{equipment}/reading', [App\Http\Controllers\EquipmentController::class, 'updateReading'])->name('equipment.update-reading');
+    Route::resource('equipment', App\Http\Controllers\EquipmentController::class);
+
+    // Preventive Maintenance Schedule (OF/EAMD/074)
+    Route::get('/pm-schedules/template/download', [App\Http\Controllers\PmScheduleController::class, 'downloadTemplate'])->name('pm-schedules.download-template');
+    Route::post('/pm-schedules/import', [App\Http\Controllers\PmScheduleController::class, 'import'])->name('pm-schedules.import');
+    Route::resource('pm-schedules', App\Http\Controllers\PmScheduleController::class);
+    Route::get('/pm-schedules/{pm_schedule}/print', [App\Http\Controllers\PmScheduleController::class, 'print'])->name('pm-schedules.print');
+    Route::get('/pm-schedules/{pm_schedule}/export', [App\Http\Controllers\PmScheduleController::class, 'export'])->name('pm-schedules.export');
+    Route::post('/pm-schedules/{pm_schedule}/submit', [App\Http\Controllers\PmScheduleController::class, 'submit'])->name('pm-schedules.submit');
+    Route::post('/pm-schedules/{pm_schedule}/check', [App\Http\Controllers\PmScheduleController::class, 'check'])->name('pm-schedules.check');
+    Route::post('/pm-schedules/{pm_schedule}/approve', [App\Http\Controllers\PmScheduleController::class, 'approve'])->name('pm-schedules.approve');
+    Route::post('/pm-schedules/{pm_schedule}/reject', [App\Http\Controllers\PmScheduleController::class, 'reject'])->name('pm-schedules.reject');
+    Route::post('/pm-schedules/{pm_schedule}/revert', [App\Http\Controllers\PmScheduleController::class, 'revert'])->name('pm-schedules.revert');
+
+    // Equipment Breakdown & Maintenance Reports (OF/TNT/ EAMD/030)
+    Route::post('/equipment-breakdowns/import', [App\Http\Controllers\EquipmentBreakdownReportController::class, 'import'])->name('equipment-breakdowns.import');
+    Route::resource('equipment-breakdowns', App\Http\Controllers\EquipmentBreakdownReportController::class);
+    Route::get('/equipment-breakdowns/{equipment_breakdown}/print', [App\Http\Controllers\EquipmentBreakdownReportController::class, 'print'])->name('equipment-breakdowns.print');
+    Route::get('/equipment-breakdowns/{equipment_breakdown}/export', [App\Http\Controllers\EquipmentBreakdownReportController::class, 'export'])->name('equipment-breakdowns.export');
+    Route::post('/equipment-breakdowns/{equipment_breakdown}/submit', [App\Http\Controllers\EquipmentBreakdownReportController::class, 'submit'])->name('equipment-breakdowns.submit');
+    Route::post('/equipment-breakdowns/{equipment_breakdown}/check', [App\Http\Controllers\EquipmentBreakdownReportController::class, 'check'])->name('equipment-breakdowns.check');
+    Route::post('/equipment-breakdowns/{equipment_breakdown}/approve', [App\Http\Controllers\EquipmentBreakdownReportController::class, 'approve'])->name('equipment-breakdowns.approve');
+    Route::post('/equipment-breakdowns/{equipment_breakdown}/reject', [App\Http\Controllers\EquipmentBreakdownReportController::class, 'reject'])->name('equipment-breakdowns.reject');
+    Route::post('/equipment-breakdowns/{equipment_breakdown}/revert', [App\Http\Controllers\EquipmentBreakdownReportController::class, 'revert'])->name('equipment-breakdowns.revert');
+
+    // Daily Equipment Maintenance Logs & Spare Parts Costs
+    Route::get('/equipment-logs/export', [App\Http\Controllers\EquipmentMaintenanceLogController::class, 'export'])->name('equipment-logs.export');
+    Route::post('/equipment-logs/import', [App\Http\Controllers\EquipmentMaintenanceLogController::class, 'import'])->name('equipment-logs.import');
+    Route::resource('equipment-logs', App\Http\Controllers\EquipmentMaintenanceLogController::class);
     
     // Material Deliveries
     Route::resource('material-deliveries', App\Http\Controllers\MaterialDeliveryController::class);

@@ -104,6 +104,9 @@ class RoleController extends Controller
             'Contractual Reports (CAD-01)' => [
                 'contractual-reports.view', 'contractual-reports.create', 'contractual-reports.edit', 'contractual-reports.delete', 'contractual-reports.export',
             ],
+            'Equipment & Maintenance (EAMD)' => [
+                'equipment-maintenance.view', 'equipment-maintenance.create', 'equipment-maintenance.edit', 'equipment-maintenance.delete', 'equipment-maintenance.export',
+            ],
             'Users & Roles' => [
                 'users.view', 'users.create', 'users.edit', 'users.delete',
                 'roles.view', 'roles.create', 'roles.edit', 'roles.delete',

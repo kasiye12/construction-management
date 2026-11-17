@@ -169,6 +169,60 @@ class WorkflowService
     }
 
     /**
+     * Check if user can perform equipment PM schedule actions (OF/EAMD/074)
+     */
+    public static function canUserPrepareEquipmentSchedule(User $user): bool
+    {
+        if ($user->isAdmin()) return true;
+        return WorkflowPermission::canUserAct($user->id, 'prepare_equipment_schedule');
+    }
+
+    public static function canUserCheckEquipmentSchedule(User $user): bool
+    {
+        if ($user->isAdmin()) return true;
+        return WorkflowPermission::canUserAct($user->id, 'check_equipment_schedule');
+    }
+
+    public static function canUserApproveEquipmentSchedule(User $user): bool
+    {
+        if ($user->isAdmin()) return true;
+        return WorkflowPermission::canUserAct($user->id, 'approve_equipment_schedule');
+    }
+
+    public static function canUserRejectEquipmentSchedule(User $user): bool
+    {
+        if ($user->isAdmin()) return true;
+        return WorkflowPermission::canUserAct($user->id, 'reject_equipment_schedule');
+    }
+
+    /**
+     * Check if user can perform breakdown report actions (OF/TNT/ EAMD/030)
+     */
+    public static function canUserPrepareMaintenanceReport(User $user): bool
+    {
+        if ($user->isAdmin()) return true;
+        return WorkflowPermission::canUserAct($user->id, 'prepare_maintenance_report');
+    }
+
+    public static function canUserCheckMaintenanceReport(User $user): bool
+    {
+        if ($user->isAdmin()) return true;
+        return WorkflowPermission::canUserAct($user->id, 'check_maintenance_report');
+    }
+
+    public static function canUserApproveMaintenanceReport(User $user): bool
+    {
+        if ($user->isAdmin()) return true;
+        return WorkflowPermission::canUserAct($user->id, 'approve_maintenance_report');
+    }
+
+    public static function canUserRejectMaintenanceReport(User $user): bool
+    {
+        if ($user->isAdmin()) return true;
+        return WorkflowPermission::canUserAct($user->id, 'reject_maintenance_report');
+    }
+
+    /**
      * Get available take-off actions for user
      */
     public static function getTakeoffActions(QuantityTakeoff $takeoff, User $user): array
