@@ -33,17 +33,61 @@ class WorkflowPermissionController extends Controller
         
         $presets = [
             'standard' => [
-                'admin' => ['prepare','check','submit','approve','reject','pay','verify_takeoff','approve_takeoff','record_delivery','confirm_delivery'],
-                'manager' => ['prepare','check','submit','approve','reject','verify_takeoff','approve_takeoff','record_delivery','confirm_delivery'],
-                'engineer' => ['prepare','check','submit','verify_takeoff','record_delivery'],
-                'finance' => ['approve','reject','pay','confirm_delivery'],
+                'admin' => [
+                    'prepare','check','submit','approve','reject','pay',
+                    'verify_takeoff','approve_takeoff',
+                    'verify_takeoff_sheet','approve_takeoff_sheet',
+                    'record_delivery','confirm_delivery',
+                    'prepare_contractual_report','check_contractual_report','approve_contractual_report','reject_contractual_report',
+                ],
+                'manager' => [
+                    'prepare','check','submit','approve','reject',
+                    'verify_takeoff','approve_takeoff',
+                    'verify_takeoff_sheet','approve_takeoff_sheet',
+                    'record_delivery','confirm_delivery',
+                    'prepare_contractual_report','check_contractual_report','approve_contractual_report','reject_contractual_report',
+                ],
+                'engineer' => [
+                    'prepare','check','submit',
+                    'verify_takeoff',
+                    'verify_takeoff_sheet',
+                    'record_delivery',
+                    'prepare_contractual_report','check_contractual_report',
+                ],
+                'finance' => [
+                    'approve','reject','pay',
+                    'confirm_delivery',
+                    'approve_contractual_report','reject_contractual_report',
+                ],
                 'viewer' => [],
             ],
             'all_managers' => [
-                'admin' => ['prepare','check','submit','approve','reject','pay','verify_takeoff','approve_takeoff','record_delivery','confirm_delivery'],
-                'manager' => ['prepare','check','submit','approve','reject','pay','verify_takeoff','approve_takeoff','record_delivery','confirm_delivery'],
-                'engineer' => ['prepare','check','submit','verify_takeoff','record_delivery'],
-                'finance' => ['approve','reject','pay','confirm_delivery'],
+                'admin' => [
+                    'prepare','check','submit','approve','reject','pay',
+                    'verify_takeoff','approve_takeoff',
+                    'verify_takeoff_sheet','approve_takeoff_sheet',
+                    'record_delivery','confirm_delivery',
+                    'prepare_contractual_report','check_contractual_report','approve_contractual_report','reject_contractual_report',
+                ],
+                'manager' => [
+                    'prepare','check','submit','approve','reject','pay',
+                    'verify_takeoff','approve_takeoff',
+                    'verify_takeoff_sheet','approve_takeoff_sheet',
+                    'record_delivery','confirm_delivery',
+                    'prepare_contractual_report','check_contractual_report','approve_contractual_report','reject_contractual_report',
+                ],
+                'engineer' => [
+                    'prepare','check','submit',
+                    'verify_takeoff',
+                    'verify_takeoff_sheet',
+                    'record_delivery',
+                    'prepare_contractual_report','check_contractual_report',
+                ],
+                'finance' => [
+                    'approve','reject','pay',
+                    'confirm_delivery',
+                    'approve_contractual_report','reject_contractual_report',
+                ],
                 'viewer' => [],
             ],
         ];
@@ -54,7 +98,13 @@ class WorkflowPermissionController extends Controller
             $role = $user->getRoleName();
             $allowedSteps = $selectedPreset[$role] ?? [];
             
-            $allSteps = ['prepare','check','submit','approve','reject','pay','verify_takeoff','approve_takeoff','record_delivery','confirm_delivery'];
+            $allSteps = [
+                'prepare','check','submit','approve','reject','pay',
+                'verify_takeoff','approve_takeoff',
+                'verify_takeoff_sheet','approve_takeoff_sheet',
+                'record_delivery','confirm_delivery',
+                'prepare_contractual_report','check_contractual_report','approve_contractual_report','reject_contractual_report',
+            ];
             
             $userPermissions = [];
             foreach ($allSteps as $step) {

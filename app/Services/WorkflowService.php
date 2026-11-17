@@ -74,6 +74,36 @@ class WorkflowService
         ],
     ];
 
+    // Contractual Reports Workflow (OF/TNT/CAD/01)
+    const CR_STATUS_DRAFT = 'draft';
+    const CR_STATUS_SUBMITTED = 'submitted';
+    const CR_STATUS_CHECKED = 'checked';
+    const CR_STATUS_APPROVED = 'approved';
+    const CR_STATUS_REJECTED = 'rejected';
+
+    const CONTRACTUAL_WORKFLOW = [
+        self::CR_STATUS_DRAFT => [
+            'label' => 'Draft', 'icon' => 'file', 'color' => 'secondary',
+            'next' => ['submitted'],
+        ],
+        self::CR_STATUS_SUBMITTED => [
+            'label' => 'Submitted', 'icon' => 'paper-plane', 'color' => 'primary',
+            'next' => ['checked', 'rejected'],
+        ],
+        self::CR_STATUS_CHECKED => [
+            'label' => 'Checked', 'icon' => 'user-check', 'color' => 'warning',
+            'next' => ['approved', 'rejected'],
+        ],
+        self::CR_STATUS_APPROVED => [
+            'label' => 'Approved', 'icon' => 'check-circle', 'color' => 'success',
+            'next' => [],
+        ],
+        self::CR_STATUS_REJECTED => [
+            'label' => 'Rejected', 'icon' => 'times-circle', 'color' => 'danger',
+            'next' => ['draft'],
+        ],
+    ];
+
     const ROUTE_MAP = [
         'prepared' => 'ipcs.prepare', 'checked' => 'ipcs.check',
         'submitted' => 'ipcs.submit', 'approved' => 'ipcs.approve',
@@ -109,6 +139,33 @@ class WorkflowService
     {
         if ($user->isAdmin()) return true;
         return WorkflowPermission::canUserAct($user->id, 'approve_takeoff');
+    }
+
+    /**
+     * Check if user can perform contractual report actions
+     */
+    public static function canUserPrepareContractualReport(User $user): bool
+    {
+        if ($user->isAdmin()) return true;
+        return WorkflowPermission::canUserAct($user->id, 'prepare_contractual_report');
+    }
+
+    public static function canUserCheckContractualReport(User $user): bool
+    {
+        if ($user->isAdmin()) return true;
+        return WorkflowPermission::canUserAct($user->id, 'check_contractual_report');
+    }
+
+    public static function canUserApproveContractualReport(User $user): bool
+    {
+        if ($user->isAdmin()) return true;
+        return WorkflowPermission::canUserAct($user->id, 'approve_contractual_report');
+    }
+
+    public static function canUserRejectContractualReport(User $user): bool
+    {
+        if ($user->isAdmin()) return true;
+        return WorkflowPermission::canUserAct($user->id, 'reject_contractual_report');
     }
 
     /**

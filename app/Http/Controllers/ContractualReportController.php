@@ -9,6 +9,7 @@ use App\Models\ContractualCorrespondenceCheck;
 use App\Models\Project;
 use App\Models\Document;
 use App\Models\Notification;
+use App\Models\WorkflowPermission;
 use App\Services\ContractualReportExcelService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -94,6 +95,12 @@ class ContractualReportController extends Controller
     // ==========================================
     public function create(Request $request)
     {
+        $user = Auth::user();
+        if ($user && !$user->isAdmin() && !$user->isManager() && !WorkflowPermission::canUserAct($user->id, 'prepare_contractual_report')) {
+            return redirect()->route('contractual-reports.index')
+                ->with('error', 'You do not have workflow permission to prepare contractual reports.');
+        }
+
         $projects = $this->getUserProjects();
         $projectId = $request->get('project_id', $projects->first()?->id);
         $selectedProject = $projectId ? Project::find($projectId) : null;
@@ -121,6 +128,12 @@ class ContractualReportController extends Controller
     // ==========================================
     public function store(Request $request)
     {
+        $user = Auth::user();
+        if ($user && !$user->isAdmin() && !$user->isManager() && !WorkflowPermission::canUserAct($user->id, 'prepare_contractual_report')) {
+            return redirect()->route('contractual-reports.index')
+                ->with('error', 'You do not have workflow permission to prepare contractual reports.');
+        }
+
         $validated = $request->validate([
             'project_id' => 'required|exists:projects,id',
             'week_start_date' => 'required|date',
@@ -284,7 +297,13 @@ class ContractualReportController extends Controller
             'documents.uploader',
         ]);
 
-        return view('contractual-reports.show', compact('contractualReport'));
+        $user = Auth::user();
+        $canSubmit = $user && ($user->isAdmin() || $user->isManager() || WorkflowPermission::canUserAct($user->id, 'prepare_contractual_report') || $contractualReport->prepared_by === $user->id);
+        $canCheck = $user && ($user->isAdmin() || $user->isManager() || WorkflowPermission::canUserAct($user->id, 'check_contractual_report'));
+        $canApprove = $user && ($user->isAdmin() || $user->isManager() || WorkflowPermission::canUserAct($user->id, 'approve_contractual_report'));
+        $canReject = $user && ($user->isAdmin() || $user->isManager() || WorkflowPermission::canUserAct($user->id, 'reject_contractual_report') || WorkflowPermission::canUserAct($user->id, 'check_contractual_report'));
+
+        return view('contractual-reports.show', compact('contractualReport', 'canSubmit', 'canCheck', 'canApprove', 'canReject'));
     }
 
     // ==========================================
@@ -451,6 +470,11 @@ class ContractualReportController extends Controller
     // ==========================================
     public function submit(ContractualReport $contractualReport)
     {
+        $user = Auth::user();
+        if ($user && !$user->isAdmin() && !$user->isManager() && !WorkflowPermission::canUserAct($user->id, 'prepare_contractual_report') && $contractualReport->prepared_by !== $user->id) {
+            return back()->with('error', 'You do not have workflow permission to submit this report.');
+        }
+
         $contractualReport->update([
             'status' => 'submitted',
             'prepared_by' => Auth::id(),
@@ -464,6 +488,11 @@ class ContractualReportController extends Controller
 
     public function check(ContractualReport $contractualReport)
     {
+        $user = Auth::user();
+        if ($user && !$user->isAdmin() && !$user->isManager() && !WorkflowPermission::canUserAct($user->id, 'check_contractual_report')) {
+            return back()->with('error', 'You do not have workflow permission to verify/check contractual reports.');
+        }
+
         $contractualReport->update([
             'status' => 'checked',
             'checked_by' => Auth::id(),
@@ -476,6 +505,11 @@ class ContractualReportController extends Controller
 
     public function approve(ContractualReport $contractualReport)
     {
+        $user = Auth::user();
+        if ($user && !$user->isAdmin() && !$user->isManager() && !WorkflowPermission::canUserAct($user->id, 'approve_contractual_report')) {
+            return back()->with('error', 'You do not have workflow permission to approve contractual reports.');
+        }
+
         $contractualReport->update([
             'status' => 'approved',
             'approved_by' => Auth::id(),
@@ -488,6 +522,11 @@ class ContractualReportController extends Controller
 
     public function reject(Request $request, ContractualReport $contractualReport)
     {
+        $user = Auth::user();
+        if ($user && !$user->isAdmin() && !$user->isManager() && !WorkflowPermission::canUserAct($user->id, 'reject_contractual_report') && !WorkflowPermission::canUserAct($user->id, 'check_contractual_report')) {
+            return back()->with('error', 'You do not have workflow permission to reject contractual reports.');
+        }
+
         $request->validate(['reason' => 'required|string|max:1000']);
 
         $contractualReport->update([

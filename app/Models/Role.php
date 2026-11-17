@@ -39,6 +39,7 @@ class Role extends Model
                 'subcontractors.view', 'subcontractors.create', 'subcontractors.edit',
                 'cost-categories.view', 'cost-categories.create', 'cost-categories.edit',
                 'reports.view', 'reports.export',
+                'contractual-reports.view', 'contractual-reports.create', 'contractual-reports.edit', 'contractual-reports.delete', 'contractual-reports.export',
                 'users.view',
             ],
             'engineer' => [
@@ -48,18 +49,21 @@ class Role extends Model
                 'subcontractors.view',
                 'cost-categories.view',
                 'reports.view',
+                'contractual-reports.view', 'contractual-reports.create', 'contractual-reports.edit', 'contractual-reports.export',
             ],
             'finance' => [
                 'projects.view',
                 'boq.view',
                 'ipc.view', 'ipc.approve',
                 'reports.view', 'reports.export',
+                'contractual-reports.view', 'contractual-reports.export',
             ],
             'viewer' => [
                 'projects.view',
                 'boq.view',
                 'ipc.view',
                 'reports.view',
+                'contractual-reports.view',
             ],
         ];
     }

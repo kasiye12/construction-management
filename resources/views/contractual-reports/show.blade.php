@@ -66,32 +66,42 @@
 
         <div class="d-flex flex-wrap gap-2">
             @if($contractualReport->isDraft())
-                <form action="{{ route('contractual-reports.submit', $contractualReport) }}" method="POST" class="d-inline" onsubmit="return confirm('Submit this report for checking and verification?')">
-                    @csrf
-                    <button type="submit" class="btn btn-primary btn-sm">
-                        <i class="fas fa-paper-plane me-1"></i> Submit Report
-                    </button>
-                </form>
+                @if($canSubmit ?? true)
+                    <form action="{{ route('contractual-reports.submit', $contractualReport) }}" method="POST" class="d-inline" onsubmit="return confirm('Submit this report for checking and verification?')">
+                        @csrf
+                        <button type="submit" class="btn btn-primary btn-sm">
+                            <i class="fas fa-paper-plane me-1"></i> Submit Report
+                        </button>
+                    </form>
+                @endif
             @elseif($contractualReport->isSubmitted())
-                <form action="{{ route('contractual-reports.check', $contractualReport) }}" method="POST" class="d-inline" onsubmit="return confirm('Verify and sign this report as Checked?')">
-                    @csrf
-                    <button type="submit" class="btn btn-warning btn-sm text-dark">
-                        <i class="fas fa-user-check me-1"></i> Verify & Sign (Checked)
+                @if($canCheck ?? true)
+                    <form action="{{ route('contractual-reports.check', $contractualReport) }}" method="POST" class="d-inline" onsubmit="return confirm('Verify and sign this report as Checked?')">
+                        @csrf
+                        <button type="submit" class="btn btn-warning btn-sm text-dark">
+                            <i class="fas fa-user-check me-1"></i> Verify & Sign (Checked)
+                        </button>
+                    </form>
+                @endif
+                @if($canReject ?? true)
+                    <button type="button" class="btn btn-outline-danger btn-sm" data-bs-toggle="modal" data-bs-target="#rejectModal">
+                        <i class="fas fa-times me-1"></i> Reject
                     </button>
-                </form>
-                <button type="button" class="btn btn-outline-danger btn-sm" data-bs-toggle="modal" data-bs-target="#rejectModal">
-                    <i class="fas fa-times me-1"></i> Reject
-                </button>
+                @endif
             @elseif($contractualReport->isChecked())
-                <form action="{{ route('contractual-reports.approve', $contractualReport) }}" method="POST" class="d-inline" onsubmit="return confirm('Approve this contractual report officially?')">
-                    @csrf
-                    <button type="submit" class="btn btn-success btn-sm">
-                        <i class="fas fa-check-double me-1"></i> Approve Officially
+                @if($canApprove ?? true)
+                    <form action="{{ route('contractual-reports.approve', $contractualReport) }}" method="POST" class="d-inline" onsubmit="return confirm('Approve this contractual report officially?')">
+                        @csrf
+                        <button type="submit" class="btn btn-success btn-sm">
+                            <i class="fas fa-check-double me-1"></i> Approve Officially
+                        </button>
+                    </form>
+                @endif
+                @if($canReject ?? true)
+                    <button type="button" class="btn btn-outline-danger btn-sm" data-bs-toggle="modal" data-bs-target="#rejectModal">
+                        <i class="fas fa-times me-1"></i> Reject
                     </button>
-                </form>
-                <button type="button" class="btn btn-outline-danger btn-sm" data-bs-toggle="modal" data-bs-target="#rejectModal">
-                    <i class="fas fa-times me-1"></i> Reject
-                </button>
+                @endif
             @elseif($contractualReport->isApproved())
                 <span class="badge bg-success p-2"><i class="fas fa-check-circle me-1"></i> Officially Approved</span>
                 @if(auth()->user()->isAdmin())

@@ -101,6 +101,9 @@ class RoleController extends Controller
             'Reports' => [
                 'reports.view', 'reports.export',
             ],
+            'Contractual Reports (CAD-01)' => [
+                'contractual-reports.view', 'contractual-reports.create', 'contractual-reports.edit', 'contractual-reports.delete', 'contractual-reports.export',
+            ],
             'Users & Roles' => [
                 'users.view', 'users.create', 'users.edit', 'users.delete',
                 'roles.view', 'roles.create', 'roles.edit', 'roles.delete',

@@ -14,6 +14,7 @@ return [
                 'subcontractors.create', 'subcontractors.edit',
                 'cost-categories.create', 'cost-categories.edit',
                 'reports.view', 'reports.export',
+                'contractual-reports.view', 'contractual-reports.create', 'contractual-reports.edit', 'contractual-reports.delete', 'contractual-reports.export',
             ],
         ],
         'engineer' => [
@@ -22,6 +23,7 @@ return [
                 'boq.create', 'boq.edit',
                 'ipc.create',
                 'reports.view',
+                'contractual-reports.view', 'contractual-reports.create', 'contractual-reports.edit', 'contractual-reports.export',
             ],
         ],
         'finance' => [
@@ -29,6 +31,7 @@ return [
             'permissions' => [
                 'ipc.view', 'ipc.approve',
                 'reports.view', 'reports.export',
+                'contractual-reports.view', 'contractual-reports.export',
             ],
         ],
         'viewer' => [
@@ -38,6 +41,7 @@ return [
                 'boq.view',
                 'ipc.view',
                 'reports.view',
+                'contractual-reports.view',
             ],
         ],
     ],

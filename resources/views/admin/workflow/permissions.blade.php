@@ -93,6 +93,9 @@
                             <th colspan="2" class="section-header text-center">
                                 <i class="fas fa-truck-loading me-1"></i> Material Delivery
                             </th>
+                            <th colspan="4" class="section-header text-center" style="background:#ffebee !important;color:#b71c1c !important;">
+                                <i class="fas fa-file-contract me-1"></i> Contractual (CAD-01)
+                            </th>
                         </tr>
                         <tr>
                             <th>📝 Prepare</th>
@@ -107,6 +110,10 @@
                             <th>✅ Approve</th>
                             <th>📦 Record</th>
                             <th>✔️ Confirm</th>
+                            <th>✍️ Prepare</th>
+                            <th>🔍 Check</th>
+                            <th>👍 Approve</th>
+                            <th>❌ Reject</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -143,6 +150,10 @@
                             <td class="checkbox-cell"><input type="checkbox" class="custom-checkbox" name="permissions[{{$user->id}}][approve_takeoff_sheet]" {{ ($perms['approve_takeoff_sheet']??false)?'checked':'' }}></td>
                             <td class="checkbox-cell"><input type="checkbox" class="custom-checkbox" name="permissions[{{$user->id}}][record_delivery]" {{ ($perms['record_delivery']??false)?'checked':'' }}></td>
                             <td class="checkbox-cell"><input type="checkbox" class="custom-checkbox" name="permissions[{{$user->id}}][confirm_delivery]" {{ ($perms['confirm_delivery']??false)?'checked':'' }}></td>
+                            <td class="checkbox-cell"><input type="checkbox" class="custom-checkbox" name="permissions[{{$user->id}}][prepare_contractual_report]" {{ ($perms['prepare_contractual_report']??false)?'checked':'' }}></td>
+                            <td class="checkbox-cell"><input type="checkbox" class="custom-checkbox" name="permissions[{{$user->id}}][check_contractual_report]" {{ ($perms['check_contractual_report']??false)?'checked':'' }}></td>
+                            <td class="checkbox-cell"><input type="checkbox" class="custom-checkbox" name="permissions[{{$user->id}}][approve_contractual_report]" {{ ($perms['approve_contractual_report']??false)?'checked':'' }}></td>
+                            <td class="checkbox-cell"><input type="checkbox" class="custom-checkbox" name="permissions[{{$user->id}}][reject_contractual_report]" {{ ($perms['reject_contractual_report']??false)?'checked':'' }}></td>
                         </tr>
                         @endforeach
                     </tbody>
