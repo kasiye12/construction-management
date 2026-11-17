@@ -11,7 +11,7 @@ class Project extends Model
     use HasFactory, SoftDeletes, HasDocuments;
 
     protected $fillable = [
-        'name', 'client_name', 'contractor_name', 'start_date',
+        'name', 'location', 'client_name', 'consultant_name', 'contractor_name', 'start_date',
         'end_date', 'contract_amount', 'description', 'status'
     ];
 
@@ -21,6 +21,7 @@ class Project extends Model
         'contract_amount' => 'decimal:2'
     ];
 
+    public function contractualReports() { return $this->hasMany(ContractualReport::class); }
     public function costCategories() { return $this->hasMany(CostCategory::class); }
     public function boqItems() { return $this->hasMany(BoqItem::class); }
     

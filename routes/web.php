@@ -76,9 +76,19 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/takeoff-sheets/{takeoff_sheet}/verify', [App\Http\Controllers\TakeoffSheetController::class, 'verify'])->name('takeoff-sheets.verify');
     Route::post('/takeoff-sheets/{takeoff_sheet}/approve', [App\Http\Controllers\TakeoffSheetController::class, 'approve'])->name('takeoff-sheets.approve');
     Route::post('/takeoff-sheets/{takeoff_sheet}/revert', [App\Http\Controllers\TakeoffSheetController::class, 'revertToDraft'])->name('takeoff-sheets.revert');
-    Route::post('/takeoff-sheets/{takeoff_sheet}/revert-to-verified', [AppHttpControllersTakeoffSheetController::class, 'revertToVerified'])->name('takeoff-sheets.revert-to-verified');
-    Route::post('/takeoff-sheets/{takeoff_sheet}/revert-to-verified', [AppHttpControllersTakeoffSheetController::class, 'revertToVerified'])->name('takeoff-sheets.revert-to-verified');
-    Route::post('/takeoff-sheets/{takeoff_sheet}/revert-to-verified', [AppHttpControllersTakeoffSheetController::class, 'revertToVerified'])->name('takeoff-sheets.revert-to-verified');
+    Route::post('/takeoff-sheets/{takeoff_sheet}/revert-to-verified', [App\Http\Controllers\TakeoffSheetController::class, 'revertToVerified'])->name('takeoff-sheets.revert-to-verified');
+
+    // Contractual Follow-up Reports (OF/TNT/CAD/01)
+    Route::get('/contractual-reports/template/download', [App\Http\Controllers\ContractualReportController::class, 'downloadTemplate'])->name('contractual-reports.download-template');
+    Route::post('/contractual-reports/import', [App\Http\Controllers\ContractualReportController::class, 'importExcel'])->name('contractual-reports.import');
+    Route::resource('contractual-reports', App\Http\Controllers\ContractualReportController::class);
+    Route::get('/contractual-reports/{contractual_report}/print', [App\Http\Controllers\ContractualReportController::class, 'print'])->name('contractual-reports.print');
+    Route::get('/contractual-reports/{contractual_report}/excel', [App\Http\Controllers\ContractualReportController::class, 'exportExcel'])->name('contractual-reports.excel');
+    Route::post('/contractual-reports/{contractual_report}/submit', [App\Http\Controllers\ContractualReportController::class, 'submit'])->name('contractual-reports.submit');
+    Route::post('/contractual-reports/{contractual_report}/check', [App\Http\Controllers\ContractualReportController::class, 'check'])->name('contractual-reports.check');
+    Route::post('/contractual-reports/{contractual_report}/approve', [App\Http\Controllers\ContractualReportController::class, 'approve'])->name('contractual-reports.approve');
+    Route::post('/contractual-reports/{contractual_report}/reject', [App\Http\Controllers\ContractualReportController::class, 'reject'])->name('contractual-reports.reject');
+    Route::post('/contractual-reports/{contractual_report}/revert', [App\Http\Controllers\ContractualReportController::class, 'revert'])->name('contractual-reports.revert');
     
     // Material Deliveries
     Route::resource('material-deliveries', App\Http\Controllers\MaterialDeliveryController::class);

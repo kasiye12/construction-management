@@ -15,12 +15,15 @@
                 </ol>
             </nav>
         </div>
-        <div>
+        <div class="d-flex gap-2">
+            <a href="{{ route('contractual-reports.create', ['project_id' => $project->id]) }}" class="btn btn-primary btn-custom">
+                <i class="fas fa-file-contract me-1"></i>New CAD-01 Report
+            </a>
             <a href="{{ route('projects.edit', $project) }}" class="btn btn-warning btn-custom">
-                <i class="fas fa-edit me-2"></i>Edit
+                <i class="fas fa-edit me-1"></i>Edit
             </a>
             <a href="{{ route('ipcs.create', ['project_id' => $project->id]) }}" class="btn btn-success btn-custom">
-                <i class="fas fa-file-invoice me-2"></i>New IPC
+                <i class="fas fa-file-invoice me-1"></i>New IPC
             </a>
         </div>
     </div>
@@ -192,7 +195,7 @@
         </div>
         
         <!-- Recent IPCs -->
-        <div class="table-card">
+        <div class="table-card mb-4">
             <h5>📄 Recent IPCs</h5>
             <hr>
             @forelse($project->ipcs->take(5) as $ipc)
@@ -213,6 +216,32 @@
             </div>
             @empty
             <p class="text-muted">No IPCs generated yet</p>
+            @endforelse
+        </div>
+
+        <!-- Weekly Contractual Reports (CAD-01) -->
+        <div class="table-card">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <h5 class="mb-0">📑 Contractual Reports</h5>
+                <a href="{{ route('contractual-reports.create', ['project_id' => $project->id]) }}" class="btn btn-outline-primary btn-sm">
+                    <i class="fas fa-plus"></i> New
+                </a>
+            </div>
+            <hr>
+            @forelse($project->contractualReports->take(5) as $cr)
+            <div class="mb-2 p-2 border rounded">
+                <div class="d-flex justify-content-between align-items-center">
+                    <a href="{{ route('contractual-reports.show', $cr) }}" class="fw-bold text-decoration-none">
+                        {{ $cr->report_number }}
+                    </a>
+                    {!! $cr->status_badge !!}
+                </div>
+                <small class="text-muted d-block mt-1">
+                    Week: {{ $cr->week_start_date->format('M d') }} - {{ $cr->week_end_date->format('M d, Y') }}
+                </small>
+            </div>
+            @empty
+            <p class="text-muted small mb-0">No contractual follow-up reports recorded yet.</p>
             @endforelse
         </div>
     </div>

@@ -91,6 +91,10 @@
                 @if($toPending>0)<span class="badge bg-warning text-dark">{{ $toPending }}</span>@endif
             </a>
             <a href="{{ route('takeoff-sheets.index') }}" class="{{ request()->routeIs('takeoff-sheets.*') ? 'active' : '' }}"><i class="fas fa-table"></i> Takeoff Sheets</a>
+            <a href="{{ route('contractual-reports.index') }}" class="{{ request()->routeIs('contractual-reports.*') ? 'active' : '' }}"><i class="fas fa-file-contract"></i> Contractual Follow-up (CAD-01)
+                @php $crPending = \App\Models\ContractualReport::whereIn('status', ['submitted', 'checked'])->count(); @endphp
+                @if($crPending>0)<span class="badge bg-warning text-dark">{{ $crPending }}</span>@endif
+            </a>
             <a href="{{ route('ipcs.index') }}" class="{{ request()->routeIs('ipcs.*') ? 'active' : '' }}"><i class="fas fa-file-invoice-dollar"></i> Payment Certificates
                 @php $pc = \App\Models\Ipc::where('status','submitted')->count(); @endphp
                 @if($pc>0)<span class="badge bg-warning text-dark">{{ $pc }}</span>@endif
@@ -132,7 +136,10 @@
 
     <header class="topbar">
         <button class="btn-icon d-md-none" onclick="document.getElementById('sidebar').classList.toggle('open')"><i class="fas fa-bars"></i></button>
-        <div class="topbar-brand"><div class="topbar-logo">🏗️</div><div><div class="topbar-title">TNT Construction</div><div class="topbar-domain">www.tnt-constructions.com</div></div></div>
+        <div class="topbar-brand">
+            <img src="{{ asset('images/company-logo.png') }}" alt="TNT Logo" style="height:36px;width:36px;object-fit:contain;border-radius:6px;margin-right:10px;">
+            <div><div class="topbar-title">TNT Construction</div><div class="topbar-domain">ቲኤንቲ ኮንስትራክሽንና ንግድ ሥራዎች</div></div>
+        </div>
         <div class="search-box"><i class="fas fa-search"></i><input type="text" placeholder="Search..." onkeypress="if(event.key==='Enter'){window.location.href='{{ route('projects.index') }}?search='+this.value}"></div>
         <div class="topbar-actions">
             <div class="dropdown">
@@ -162,7 +169,7 @@
 
     <main class="main-content">
         @if(session('success'))<div class="alert alert-success alert-dismissible fade show" role="alert"><i class="fas fa-check-circle me-2"></i>{{ session('success') }}<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>@endif
-        @if($errors->any())<div class="alert alert-danger alert-dismissible fade show" role="alert"><i class="fas fa-exclamation-triangle me-2"></i><strong>Please fix:</strong><ul class="mb-0 mt-1">@foreach($errors->all() as $e)<li>{{ $e }}</li>@endforeach</ul><button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>@endif
+        @if(isset($errors) && $errors->any())<div class="alert alert-danger alert-dismissible fade show" role="alert"><i class="fas fa-exclamation-triangle me-2"></i><strong>Please fix:</strong><ul class="mb-0 mt-1">@foreach($errors->all() as $e)<li>{{ $e }}</li>@endforeach</ul><button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>@endif
         @if(session('error'))<div class="alert alert-danger alert-dismissible fade show" role="alert"><i class="fas fa-exclamation-circle me-2"></i>{{ session('error') }}<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>@endif
         @yield('content')
     </main>
