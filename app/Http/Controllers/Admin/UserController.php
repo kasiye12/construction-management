@@ -108,6 +108,57 @@ class UserController extends Controller
         return back()->with('success', 'Status toggled.');
     }
 
+    public function permissions(User $user)
+    {
+        $permissions = \App\Services\PermissionRegistry::getPermissionsGrouped();
+        $hasCustom = $user->custom_permissions !== null;
+        
+        // Calculate inherited role permissions
+        $roleName = $user->getRoleName();
+        $role = $user->roleRelation ?? ($user->role_id ? Role::find($user->role_id) : null);
+        if (!$role && !empty($user->role)) {
+            $role = Role::where('name', $user->role)->first();
+        }
+
+        if ($role && !empty($role->permissions)) {
+            $rolePerms = is_string($role->permissions) ? json_decode($role->permissions, true) : $role->permissions;
+            $rolePermissions = is_array($rolePerms) ? $rolePerms : [];
+        } else {
+            $defaultMap = \App\Services\PermissionRegistry::getDefaultRolePermissions();
+            $rolePermissions = $defaultMap[$roleName] ?? [];
+        }
+
+        // Active permissions for the checkboxes
+        $userPermissions = $hasCustom ? ($user->custom_permissions ?? []) : $rolePermissions;
+
+        return view('admin.users.permissions', compact('user', 'permissions', 'rolePermissions', 'userPermissions', 'hasCustom'));
+    }
+
+    public function updatePermissions(Request $request, User $user)
+    {
+        $validated = $request->validate([
+            'permission_mode' => 'required|in:inherit,custom',
+            'permissions' => 'nullable|array',
+            'is_super_admin' => 'nullable|boolean',
+        ]);
+
+        if ($validated['permission_mode'] === 'inherit') {
+            $user->custom_permissions = null;
+        } else {
+            $user->custom_permissions = $request->input('permissions', []);
+        }
+
+        // Update super admin status if provided
+        if ($request->has('is_super_admin')) {
+            $user->is_super_admin = $request->boolean('is_super_admin');
+        }
+
+        $user->save();
+
+        return redirect()->route('admin.users.index')
+            ->with('success', "Permissions updated successfully for {$user->name}.");
+    }
+
     public function profile()
     {
         $user = Auth::user()->load(['activityLogs' => function($q) { $q->latest()->take(20); }]);

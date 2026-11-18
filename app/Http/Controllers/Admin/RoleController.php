@@ -82,35 +82,6 @@ class RoleController extends Controller
 
     private function getAllPermissions(): array
     {
-        return [
-            'Projects' => [
-                'projects.view', 'projects.create', 'projects.edit', 'projects.delete',
-            ],
-            'BOQ & Costing' => [
-                'boq.view', 'boq.create', 'boq.edit', 'boq.delete',
-            ],
-            'IPCs & Payments' => [
-                'ipc.view', 'ipc.create', 'ipc.edit', 'ipc.approve', 'ipc.delete',
-            ],
-            'Subcontractors' => [
-                'subcontractors.view', 'subcontractors.create', 'subcontractors.edit', 'subcontractors.delete',
-            ],
-            'Cost Categories' => [
-                'cost-categories.view', 'cost-categories.create', 'cost-categories.edit', 'cost-categories.delete',
-            ],
-            'Reports' => [
-                'reports.view', 'reports.export',
-            ],
-            'Contractual Reports (CAD-01)' => [
-                'contractual-reports.view', 'contractual-reports.create', 'contractual-reports.edit', 'contractual-reports.delete', 'contractual-reports.export',
-            ],
-            'Equipment & Maintenance (EAMD)' => [
-                'equipment-maintenance.view', 'equipment-maintenance.create', 'equipment-maintenance.edit', 'equipment-maintenance.delete', 'equipment-maintenance.export',
-            ],
-            'Users & Roles' => [
-                'users.view', 'users.create', 'users.edit', 'users.delete',
-                'roles.view', 'roles.create', 'roles.edit', 'roles.delete',
-            ],
-        ];
+        return \App\Services\PermissionRegistry::getPermissionsGrouped();
     }
 }

@@ -23,16 +23,24 @@
                 <tr>
                     <td><strong>{{ $user->name }}</strong></td>
                     <td>{{ $user->email }}</td>
-                    <td><span class="badge bg-primary">{{ $user->role_label }}</span></td>
+                    <td>
+                        <span class="badge bg-primary">{{ $user->role_label }}</span>
+                        @if($user->is_super_admin)
+                            <span class="badge bg-danger" title="Super Admin"><i class="fas fa-crown"></i> Super</span>
+                        @elseif($user->custom_permissions !== null)
+                            <span class="badge bg-warning text-dark" title="Custom Permissions"><i class="fas fa-sliders-h"></i> Custom</span>
+                        @endif
+                    </td>
                     <td>{{ $user->department ?? 'N/A' }}</td>
                     <td><span class="badge {{ $user->is_active ? 'bg-success' : 'bg-secondary' }}">{{ $user->is_active ? 'Active' : 'Inactive' }}</span></td>
                     <td>
                         <div class="btn-group btn-group-sm">
                             @if(\App\Helpers\PermissionHelper::canView('users'))
-                            <a href="{{ route('admin.users.show', $user) }}" class="btn btn-info"><i class="fas fa-eye"></i></a>
+                            <a href="{{ route('admin.users.show', $user) }}" class="btn btn-info" title="View Profile"><i class="fas fa-eye"></i></a>
                             @endif
                             @if(\App\Helpers\PermissionHelper::canEdit('users'))
-                            <a href="{{ route('admin.users.edit', $user) }}" class="btn btn-warning"><i class="fas fa-edit"></i></a>
+                            <a href="{{ route('admin.users.permissions', $user) }}" class="btn btn-dark" title="Manage Permissions"><i class="fas fa-key"></i></a>
+                            <a href="{{ route('admin.users.edit', $user) }}" class="btn btn-warning" title="Edit Profile"><i class="fas fa-edit"></i></a>
                             @endif
                             @if(\App\Helpers\PermissionHelper::canDelete('users') && $user->id !== auth()->id())
                             <form action="{{ route('admin.users.destroy', $user) }}" method="POST" class="d-inline" onsubmit="return confirm('Delete?')">

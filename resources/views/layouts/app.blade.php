@@ -80,68 +80,124 @@
             <span>CMS Pro v2.0</span>
         </div>
         <nav class="sidebar-nav">
+            @auth
             <div class="sidebar-label">Main</div>
             <a href="{{ route('dashboard') }}" class="{{ request()->routeIs('dashboard') ? 'active' : '' }}"><i class="fas fa-th-large"></i> Dashboard</a>
+            @if(auth()->user()->hasPermission('projects.view'))
             <a href="{{ route('projects.index') }}" class="{{ request()->routeIs('projects.*') && !request()->routeIs('projects.team*') && !request()->routeIs('projects.subcontractors*') ? 'active' : '' }}"><i class="fas fa-hard-hat"></i> Projects</a>
+            @endif
             
+            {{-- Engineering Section --}}
+            @if(auth()->user()->hasAnyPermission(['boq.view', 'takeoff.view', 'takeoff-sheets.view', 'contractual-reports.view', 'ipc.view', 'deliveries.view', 'actual-costs.view', 'gantt.view']))
             <div class="sidebar-label">Engineering</div>
+            @if(auth()->user()->hasPermission('boq.view'))
             <a href="{{ route('boq-items.index') }}" class="{{ request()->routeIs('boq-items.*') ? 'active' : '' }}"><i class="fas fa-calculator"></i> BOQ & Costing</a>
+            @endif
+            @if(auth()->user()->hasPermission('takeoff.view'))
             <a href="{{ route('quantity-takeoffs.index') }}" class="{{ request()->routeIs('quantity-takeoffs.*') ? 'active' : '' }}"><i class="fas fa-ruler-combined"></i> Quantity Take-Off
                 @php $toPending = \App\Models\QuantityTakeoff::where('status','draft')->count(); @endphp
                 @if($toPending>0)<span class="badge bg-warning text-dark">{{ $toPending }}</span>@endif
             </a>
+            @endif
+            @if(auth()->user()->hasPermission('takeoff-sheets.view'))
             <a href="{{ route('takeoff-sheets.index') }}" class="{{ request()->routeIs('takeoff-sheets.*') ? 'active' : '' }}"><i class="fas fa-table"></i> Takeoff Sheets</a>
+            @endif
+            @if(auth()->user()->hasPermission('contractual-reports.view'))
             <a href="{{ route('contractual-reports.index') }}" class="{{ request()->routeIs('contractual-reports.*') ? 'active' : '' }}"><i class="fas fa-file-contract"></i> Contractual Follow-up (CAD-01)
                 @php $crPending = \App\Models\ContractualReport::whereIn('status', ['submitted', 'checked'])->count(); @endphp
                 @if($crPending>0)<span class="badge bg-warning text-dark">{{ $crPending }}</span>@endif
             </a>
+            @endif
+            @if(auth()->user()->hasPermission('ipc.view'))
             <a href="{{ route('ipcs.index') }}" class="{{ request()->routeIs('ipcs.*') ? 'active' : '' }}"><i class="fas fa-file-invoice-dollar"></i> Payment Certificates
                 @php $pc = \App\Models\Ipc::where('status','submitted')->count(); @endphp
                 @if($pc>0)<span class="badge bg-warning text-dark">{{ $pc }}</span>@endif
             </a>
+            @endif
+            @if(auth()->user()->hasPermission('deliveries.view'))
             <a href="{{ route('material-deliveries.index') }}" class="{{ request()->routeIs('material-deliveries.*') ? 'active' : '' }}"><i class="fas fa-truck-loading"></i> Material Deliveries</a>
+            @endif
+            @if(auth()->user()->hasPermission('actual-costs.view'))
             <a href="{{ route('actual-costs.index') }}" class="{{ request()->routeIs('actual-costs.*') ? 'active' : '' }}"><i class="fas fa-receipt"></i> Actual Costs</a>
+            @endif
+            @if(auth()->user()->hasPermission('gantt.view'))
             <a href="{{ route('gantt.index') }}" class="{{ request()->routeIs('gantt.*') ? 'active' : '' }}"><i class="fas fa-chart-gantt"></i> Gantt Chart</a>
+            @endif
+            @endif
             
+            {{-- Management Section --}}
+            @if(auth()->user()->hasAnyPermission(['subcontractors.view', 'cost-categories.view']))
             <div class="sidebar-label">Management</div>
+            @if(auth()->user()->hasPermission('subcontractors.view'))
             <a href="{{ route('subcontractors.index') }}" class="{{ request()->routeIs('subcontractors.*') ? 'active' : '' }}"><i class="fas fa-users"></i> Subcontractors</a>
+            @endif
+            @if(auth()->user()->hasPermission('cost-categories.view'))
             <a href="{{ route('cost-categories.index') }}" class="{{ request()->routeIs('cost-categories.*') ? 'active' : '' }}"><i class="fas fa-sitemap"></i> Cost Categories</a>
+            @endif
+            @endif
 
+            {{-- Plant & Equipment (EAMD) Section --}}
+            @if(auth()->user()->hasAnyPermission(['equipment.view', 'pm-schedules.view', 'equipment-breakdowns.view', 'equipment-logs.view']))
             <div class="sidebar-label">Plant & Equipment (EAMD)</div>
+            @if(auth()->user()->hasPermission('equipment.view'))
             <a href="{{ route('equipment.index') }}" class="{{ request()->routeIs('equipment.*') ? 'active' : '' }}"><i class="fas fa-truck-monster"></i> Fleet Registry</a>
+            @endif
+            @if(auth()->user()->hasPermission('pm-schedules.view'))
             <a href="{{ route('pm-schedules.index') }}" class="{{ request()->routeIs('pm-schedules.*') ? 'active' : '' }}"><i class="fas fa-calendar-check"></i> PM Schedule (OF/074)
                 @php $pmOverdue = \App\Models\PmScheduleItem::where('service_status', 'Overdue')->count(); @endphp
                 @if($pmOverdue > 0)<span class="badge bg-danger">{{ $pmOverdue }}</span>@endif
             </a>
+            @endif
+            @if(auth()->user()->hasPermission('equipment-breakdowns.view'))
             <a href="{{ route('equipment-breakdowns.index') }}" class="{{ request()->routeIs('equipment-breakdowns.*') ? 'active' : '' }}"><i class="fas fa-tools"></i> Breakdown Reports (OF/030)
                 @php $downCases = \App\Models\EquipmentBreakdownItem::where('repair_status', 'down')->count(); @endphp
                 @if($downCases > 0)<span class="badge bg-warning text-dark">{{ $downCases }}</span>@endif
             </a>
+            @endif
+            @if(auth()->user()->hasPermission('equipment-logs.view'))
             <a href="{{ route('equipment-logs.index') }}" class="{{ request()->routeIs('equipment-logs.*') ? 'active' : '' }}"><i class="fas fa-receipt"></i> Spare Parts Log</a>
+            @endif
+            @endif
             
+            {{-- Reports Section --}}
+            @if(auth()->user()->hasAnyPermission(['reports.view', 'actual-costs.view']))
             <div class="sidebar-label">Reports</div>
+            @if(auth()->user()->hasPermission('reports.view'))
             <a href="{{ route('reports.30-column') }}" class="{{ request()->routeIs('reports.*') ? 'active' : '' }}"><i class="fas fa-table"></i> 30-Column Report</a>
-            <a href="{{ route('actual-costs.variance') }}"><i class="fas fa-chart-bar"></i> Variance Report</a>
+            @endif
+            @if(auth()->user()->hasAnyPermission(['reports.view', 'actual-costs.view']))
+            <a href="{{ route('actual-costs.variance') }}" class="{{ request()->routeIs('actual-costs.variance') ? 'active' : '' }}"><i class="fas fa-chart-bar"></i> Variance Report</a>
+            @endif
+            @endif
             
-            @if(auth()->check() && auth()->user()->hasAnyPermission(['users.view','roles.view']))
+            {{-- Administration Section --}}
+            @if(auth()->user()->hasAnyPermission(['users.view', 'roles.view', 'workflow.manage', 'settings.manage', 'audit.view']))
             <div class="sidebar-label">Administration</div>
-            @if(\App\Helpers\PermissionHelper::canView('users'))
+            @if(auth()->user()->hasPermission('users.view'))
             <a href="{{ route('admin.users.index') }}" class="{{ request()->routeIs('admin.users.*') ? 'active' : '' }}"><i class="fas fa-user-cog"></i> Users</a>
             @endif
-            @if(\App\Helpers\PermissionHelper::canView('roles'))
+            @if(auth()->user()->hasPermission('roles.view'))
             <a href="{{ route('admin.roles.index') }}" class="{{ request()->routeIs('admin.roles.*') ? 'active' : '' }}"><i class="fas fa-shield-alt"></i> Roles</a>
             @endif
+            @if(auth()->user()->hasPermission('workflow.manage'))
             <a href="{{ route('admin.workflow.index') }}" class="{{ request()->routeIs('admin.workflow.*') ? 'active' : '' }}"><i class="fas fa-project-diagram"></i> Workflow Permissions</a>
+            @endif
+            @if(auth()->user()->hasPermission('settings.manage'))
             <a href="{{ route('admin.company-settings.index') }}" class="{{ request()->routeIs('admin.company-settings.*') ? 'active' : '' }}"><i class="fas fa-building"></i> Company Settings</a>
             <a href="{{ route('admin.settings.index') }}" class="{{ request()->routeIs('admin.settings.*') ? 'active' : '' }}"><i class="fas fa-cog"></i> Tax Settings</a>
+            @endif
+            @if(auth()->user()->hasPermission('audit.view'))
             <a href="{{ route('admin.audit.index') }}" class="{{ request()->routeIs('admin.audit.*') ? 'active' : '' }}"><i class="fas fa-history"></i> Audit Trail</a>
             @endif
+            @endif
             
+            {{-- Alerts / Notifications --}}
             <div class="sidebar-label">Alerts</div>
             <a href="{{ route('notifications.index') }}" class="{{ request()->routeIs('notifications.*') ? 'active' : '' }}"><i class="fas fa-bell"></i> Notifications
                 @php $unread = \App\Models\Notification::unreadCount(); @endphp
                 @if($unread>0)<span class="badge bg-danger">{{ $unread }}</span>@endif
             </a>
+            @endauth
         </nav>
         <div class="sidebar-footer">© {{ date('Y') }} TNT Construction</div>
     </aside>

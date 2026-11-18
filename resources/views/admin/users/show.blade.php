@@ -15,11 +15,16 @@
                 </ol>
             </nav>
         </div>
-        @if(auth()->user()->hasPermission('users.edit'))
-        <a href="{{ route('admin.users.edit', $user) }}" class="btn btn-warning btn-custom">
-            <i class="fas fa-edit me-2"></i>Edit
-        </a>
-        @endif
+        <div class="d-flex gap-2">
+            @if(auth()->user()->hasPermission('users.edit'))
+            <a href="{{ route('admin.users.permissions', $user) }}" class="btn btn-dark btn-custom">
+                <i class="fas fa-key me-2"></i>Permissions
+            </a>
+            <a href="{{ route('admin.users.edit', $user) }}" class="btn btn-warning btn-custom">
+                <i class="fas fa-edit me-2"></i>Edit
+            </a>
+            @endif
+        </div>
     </div>
 </div>
 
@@ -33,6 +38,15 @@
                 <tr><th>Email</th><td>{{ $user->email }}</td></tr>
                 <tr><th>Phone</th><td>{{ $user->phone ?? 'N/A' }}</td></tr>
                 <tr><th>Role</th><td><span class="badge bg-primary">{{ $user->role_label }}</span></td></tr>
+                <tr><th>Permissions</th><td>
+                    @if($user->is_super_admin)
+                        <span class="badge bg-danger"><i class="fas fa-crown me-1"></i> Super Admin (All Access)</span>
+                    @elseif($user->custom_permissions !== null)
+                        <span class="badge bg-warning text-dark"><i class="fas fa-sliders-h me-1"></i> Custom Permissions ({{ count($user->custom_permissions ?? []) }} granted)</span>
+                    @else
+                        <span class="badge bg-secondary"><i class="fas fa-users-cog me-1"></i> Inherited from {{ $user->role_label }}</span>
+                    @endif
+                </td></tr>
                 <tr><th>Department</th><td>{{ $user->department ?? 'N/A' }}</td></tr>
                 <tr><th>Position</th><td>{{ $user->position ?? 'N/A' }}</td></tr>
                 <tr><th>Status</th><td>

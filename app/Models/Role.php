@@ -30,41 +30,6 @@ class Role extends Model
 
     public static function getDefaultPermissions(): array
     {
-        return [
-            'admin' => ['*'],
-            'manager' => [
-                'projects.view', 'projects.create', 'projects.edit', 'projects.delete',
-                'boq.view', 'boq.create', 'boq.edit', 'boq.delete',
-                'ipc.view', 'ipc.create', 'ipc.approve',
-                'subcontractors.view', 'subcontractors.create', 'subcontractors.edit',
-                'cost-categories.view', 'cost-categories.create', 'cost-categories.edit',
-                'reports.view', 'reports.export',
-                'contractual-reports.view', 'contractual-reports.create', 'contractual-reports.edit', 'contractual-reports.delete', 'contractual-reports.export',
-                'users.view',
-            ],
-            'engineer' => [
-                'projects.view',
-                'boq.view', 'boq.create', 'boq.edit',
-                'ipc.view', 'ipc.create',
-                'subcontractors.view',
-                'cost-categories.view',
-                'reports.view',
-                'contractual-reports.view', 'contractual-reports.create', 'contractual-reports.edit', 'contractual-reports.export',
-            ],
-            'finance' => [
-                'projects.view',
-                'boq.view',
-                'ipc.view', 'ipc.approve',
-                'reports.view', 'reports.export',
-                'contractual-reports.view', 'contractual-reports.export',
-            ],
-            'viewer' => [
-                'projects.view',
-                'boq.view',
-                'ipc.view',
-                'reports.view',
-                'contractual-reports.view',
-            ],
-        ];
+        return \App\Services\PermissionRegistry::getDefaultRolePermissions();
     }
 }

@@ -64,16 +64,7 @@ class RoleHelper
      */
     public static function getPermissionGroups(): array
     {
-        return [
-            'Projects' => ['projects.view', 'projects.create', 'projects.edit', 'projects.delete'],
-            'BOQ & Costing' => ['boq.view', 'boq.create', 'boq.edit', 'boq.delete'],
-            'IPCs & Payments' => ['ipc.view', 'ipc.create', 'ipc.edit', 'ipc.approve', 'ipc.delete'],
-            'Subcontractors' => ['subcontractors.view', 'subcontractors.create', 'subcontractors.edit', 'subcontractors.delete'],
-            'Cost Categories' => ['cost-categories.view', 'cost-categories.create', 'cost-categories.edit', 'cost-categories.delete'],
-            'Reports' => ['reports.view', 'reports.export'],
-            'Users' => ['users.view', 'users.create', 'users.edit', 'users.delete'],
-            'Roles' => ['roles.view', 'roles.create', 'roles.edit', 'roles.delete'],
-        ];
+        return \App\Services\PermissionRegistry::getPermissionsGrouped();
     }
 
     /**
@@ -81,10 +72,14 @@ class RoleHelper
      */
     public static function getPermissionLabel(string $permission): string
     {
+        foreach (\App\Services\PermissionRegistry::getPermissionsGrouped() as $group => $perms) {
+            if (isset($perms[$permission])) {
+                return $perms[$permission];
+            }
+        }
         $parts = explode('.', $permission);
         $module = ucfirst(str_replace('-', ' ', $parts[0]));
         $action = ucfirst($parts[1] ?? '');
-        
         return "{$action} {$module}";
     }
 }

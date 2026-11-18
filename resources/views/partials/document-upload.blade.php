@@ -1,37 +1,44 @@
+@if(auth()->check() && auth()->user()->hasPermission('documents.view'))
 <div class="table-card mt-4">
     <div class="d-flex justify-content-between align-items-center mb-3">
-        <h5 class="mb-0">📎 Documents</h5>
+        <h5 class="mb-0">📎 Documents & Attachments</h5>
+        @if(auth()->user()->hasPermission('documents.upload'))
         <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#uploadModal{{ $model->id ?? '' }}">
-            <i class="fas fa-upload me-1"></i> Upload
+            <i class="fas fa-upload me-1"></i> Upload Document
         </button>
+        @endif
     </div>
     
     @if(isset($model) && $model->documents && $model->documents->count() > 0)
     <div class="table-responsive">
-        <table class="table table-sm">
-            <thead>
+        <table class="table table-sm table-hover align-middle">
+            <thead class="table-light">
                 <tr><th>File</th><th>Type</th><th>Size</th><th>Uploaded</th><th>Actions</th></tr>
             </thead>
             <tbody>
                 @foreach($model->documents as $doc)
                 <tr>
                     <td>
-                        <i class="fas fa-file me-2"></i>
+                        <i class="fas fa-file me-2 text-primary"></i>
                         {{ $doc->name }}
                     </td>
                     <td><span class="badge bg-secondary">{{ strtoupper($doc->file_type) }}</span></td>
                     <td>{{ $doc->file_size_formatted ?? 'N/A' }}</td>
                     <td><small>{{ $doc->created_at->diffForHumans() }}</small></td>
                     <td>
-                        <a href="{{ route('documents.download', $doc) }}" class="btn btn-sm btn-success" title="Download">
-                            <i class="fas fa-download"></i>
-                        </a>
-                        <form action="{{ route('documents.destroy', $doc) }}" method="POST" class="d-inline">
-                            @csrf @method('DELETE')
-                            <button class="btn btn-sm btn-danger" onclick="return confirm('Delete this file?')">
-                                <i class="fas fa-trash"></i>
-                            </button>
-                        </form>
+                        <div class="btn-group btn-group-sm">
+                            <a href="{{ route('documents.download', $doc) }}" class="btn btn-sm btn-success" title="Download">
+                                <i class="fas fa-download"></i>
+                            </a>
+                            @if(auth()->user()->hasPermission('documents.delete'))
+                            <form action="{{ route('documents.destroy', $doc) }}" method="POST" class="d-inline" onsubmit="return confirm('Delete this file?')">
+                                @csrf @method('DELETE')
+                                <button class="btn btn-sm btn-danger" title="Delete">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </form>
+                            @endif
+                        </div>
                     </td>
                 </tr>
                 @endforeach
@@ -39,10 +46,11 @@
         </table>
     </div>
     @else
-    <p class="text-muted">No documents uploaded yet.</p>
+    <p class="text-muted mb-0">No documents uploaded yet.</p>
     @endif
 </div>
 
+@if(auth()->user()->hasPermission('documents.upload'))
 <!-- Upload Modal -->
 <div class="modal fade" id="uploadModal{{ $model->id ?? '' }}" tabindex="-1">
     <div class="modal-dialog">
@@ -73,9 +81,11 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-primary">Upload</button>
+                    <button type="submit" class="btn btn-primary"><i class="fas fa-upload me-1"></i> Upload</button>
                 </div>
             </form>
         </div>
     </div>
 </div>
+@endif
+@endif

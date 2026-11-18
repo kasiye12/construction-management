@@ -18,16 +18,23 @@ class ProjectController extends Controller
     private function getUserProjects()
     {
         $user = Auth::user();
+        if (!$user) return Project::query()->whereRaw('1 = 0');
         
-        // Admin sees all projects
-        if ($user->isAdmin()) {
+        // Admin & Super Admin sees all projects
+        if ($user->isAdmin() || $user->is_super_admin) {
             return Project::query();
         }
         
-        // Other users see only assigned projects
-        return Project::whereHas('teamMembers', function($q) use ($user) {
+        // Other users see assigned projects, or all if granted projects.view without individual project assignments
+        $query = Project::whereHas('teamMembers', function($q) use ($user) {
             $q->where('user_id', $user->id)->where('project_user.is_active', true);
         });
+
+        if ($query->count() === 0 && $user->hasPermission('projects.view')) {
+            return Project::query();
+        }
+
+        return $query;
     }
 
     public function index()
@@ -42,7 +49,9 @@ class ProjectController extends Controller
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255|min:3',
+            'location' => 'nullable|string|max:255',
             'client_name' => 'nullable|string|max:255',
+            'consultant_name' => 'nullable|string|max:255',
             'contractor_name' => 'nullable|string|max:255',
             'start_date' => 'nullable|date',
             'end_date' => 'nullable|date|after_or_equal:start_date',
@@ -89,7 +98,9 @@ class ProjectController extends Controller
         
         $validated = $request->validate([
             'name' => 'required|string|max:255|min:3',
+            'location' => 'nullable|string|max:255',
             'client_name' => 'nullable|string|max:255',
+            'consultant_name' => 'nullable|string|max:255',
             'contractor_name' => 'nullable|string|max:255',
             'start_date' => 'nullable|date',
             'end_date' => 'nullable|date|after_or_equal:start_date',
@@ -122,7 +133,10 @@ class ProjectController extends Controller
         $recentProjects = (clone $projectQuery)->latest()->take(5)->get();
         
         // Get project IDs for filtering
-        $projectIds = $user->isAdmin() ? Project::pluck('id')->toArray() : $user->projects()->where('project_user.is_active', true)->pluck('projects.id')->toArray();
+        $projectIds = ($user->isAdmin() || $user->is_super_admin) ? Project::pluck('id')->toArray() : $user->projects()->where('project_user.is_active', true)->pluck('projects.id')->toArray();
+        if (empty($projectIds) && ($user->hasPermission('projects.view') || $user->hasPermission('contractual-reports.view'))) {
+            $projectIds = Project::pluck('id')->toArray();
+        }
         
         $totalRevenue = BoqItem::whereIn('project_id', $projectIds)->sum('revenue_amount') ?? 0;
         $totalBudget = DB::table('labor_resources')->whereIn('boq_item_id', BoqItem::whereIn('project_id', $projectIds)->pluck('id'))->sum('amount') + 
@@ -152,13 +166,36 @@ class ProjectController extends Controller
         $paidIpcs = Ipc::whereIn('project_id', $projectIds)->where('status','paid')->count();
         $totalPaidAmount = Ipc::whereIn('project_id', $projectIds)->where('status','paid')->sum('net_payment_amount') ?? 0;
         $totalPendingAmount = Ipc::whereIn('project_id', $projectIds)->where('status','submitted')->sum('net_payment_amount') ?? 0;
+
+        // Contractual Reports stats
+        $totalCadReports = \App\Models\ContractualReport::count();
+        $pendingCadReports = \App\Models\ContractualReport::whereIn('status', ['submitted', 'checked'])->count();
+        $approvedCadReports = \App\Models\ContractualReport::where('status', 'approved')->count();
+        $totalClaimEvents = \App\Models\ContractualClaimEvent::count();
+        $recentCadReports = \App\Models\ContractualReport::with('project')->latest()->take(5)->get();
+        $recentClaimEvents = \App\Models\ContractualClaimEvent::with('contractualReport.project')->latest()->take(5)->get();
+
+        // Equipment stats
+        $totalEquipment = \App\Models\Equipment::count();
+        $overduePmCount = \App\Models\PmScheduleItem::where('service_status', 'Overdue')->count();
+        $downBreakdownCount = \App\Models\EquipmentBreakdownItem::where('repair_status', 'down')->count();
+        $recentEquipment = \App\Models\Equipment::latest()->take(5)->get();
+
+        // Deliveries & Takeoff stats
+        $totalDeliveries = \App\Models\MaterialDelivery::count();
+        $recentDeliveries = \App\Models\MaterialDelivery::with('project')->latest()->take(5)->get();
+        $totalTakeoffs = \App\Models\QuantityTakeoff::count();
+        $recentTakeoffSheets = \App\Models\TakeoffSheet::latest()->take(5)->get();
         
         return view('dashboard', compact(
             'user','role','totalProjects','activeProjects','totalContractValue','recentProjects',
             'totalRevenue','totalBudget','profitLoss','totalIpcs','pendingIpcs','approvedIpcs','recentIpcs',
             'recentNotifications','unreadNotifications','projectStatusData',
             'totalUsers','activeUsers','totalRoles',
-            'myBoqItems','myIpcs','paidIpcs','totalPaidAmount','totalPendingAmount'
+            'myBoqItems','myIpcs','paidIpcs','totalPaidAmount','totalPendingAmount',
+            'totalCadReports', 'pendingCadReports', 'approvedCadReports', 'totalClaimEvents', 'recentCadReports', 'recentClaimEvents',
+            'totalEquipment', 'overduePmCount', 'downBreakdownCount', 'recentEquipment',
+            'totalDeliveries', 'recentDeliveries', 'totalTakeoffs', 'recentTakeoffSheets'
         ));
     }
 

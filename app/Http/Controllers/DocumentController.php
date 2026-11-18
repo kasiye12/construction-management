@@ -10,6 +10,10 @@ class DocumentController extends Controller
 {
     public function upload(Request $request)
     {
+        if (!Auth::user()->hasPermission('documents.upload')) {
+            abort(403, 'You do not have permission to upload documents.');
+        }
+
         $validated = $request->validate([
             'file' => 'required|file|max:10240', // 10MB max
             'name' => 'nullable|string|max:255',
@@ -42,6 +46,10 @@ class DocumentController extends Controller
 
     public function download(Document $document)
     {
+        if (!Auth::user()->hasPermission('documents.view')) {
+            abort(403, 'You do not have permission to view or download documents.');
+        }
+
         if (!Storage::disk('public')->exists($document->file_path)) {
             abort(404, 'File not found.');
         }
@@ -54,6 +62,10 @@ class DocumentController extends Controller
 
     public function destroy(Document $document)
     {
+        if (!Auth::user()->hasPermission('documents.delete')) {
+            abort(403, 'You do not have permission to delete documents.');
+        }
+
         // Delete file from storage
         if (Storage::disk('public')->exists($document->file_path)) {
             Storage::disk('public')->delete($document->file_path);
@@ -66,6 +78,10 @@ class DocumentController extends Controller
 
     public function preview(Document $document)
     {
+        if (!Auth::user()->hasPermission('documents.view')) {
+            abort(403, 'You do not have permission to preview documents.');
+        }
+
         if (!Storage::disk('public')->exists($document->file_path)) {
             abort(404);
         }

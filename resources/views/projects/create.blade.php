@@ -33,12 +33,25 @@
                     <div class="col-md-6 mb-3">
                         <label for="client_name" class="form-label">Client Name</label>
                         <input type="text" class="form-control" id="client_name" name="client_name" 
-                               value="{{ old('client_name') }}">
+                               value="{{ old('client_name') }}" placeholder="e.g. Addis Ababa City Administration">
                     </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="consultant_name" class="form-label">Consultant Name</label>
+                        <input type="text" class="form-control" id="consultant_name" name="consultant_name" 
+                               value="{{ old('consultant_name') }}" placeholder="e.g. Associated Engineering Consultants (AEC)">
+                    </div>
+                </div>
+                
+                <div class="row">
                     <div class="col-md-6 mb-3">
                         <label for="contractor_name" class="form-label">Contractor Name</label>
                         <input type="text" class="form-control" id="contractor_name" name="contractor_name" 
-                               value="{{ old('contractor_name') }}">
+                               value="{{ old('contractor_name', 'TNT Construction and Trading') }}" placeholder="TNT Construction and Trading">
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="location" class="form-label">Project Location / Site</label>
+                        <input type="text" class="form-control" id="location" name="location" 
+                               value="{{ old('location') }}" placeholder="e.g. Addis Ababa / Megenagna">
                     </div>
                 </div>
                 

@@ -82,8 +82,16 @@
                     <td>{{ $project->client_name ?? 'N/A' }}</td>
                 </tr>
                 <tr>
+                    <th>Consultant</th>
+                    <td><strong class="text-primary">{{ $project->consultant_name ?? 'N/A' }}</strong></td>
+                </tr>
+                <tr>
                     <th>Contractor</th>
                     <td>{{ $project->contractor_name ?? 'N/A' }}</td>
+                </tr>
+                <tr>
+                    <th>Location / Site</th>
+                    <td>{{ $project->location ?? 'N/A' }}</td>
                 </tr>
                 <tr>
                     <th>Status</th>

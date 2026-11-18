@@ -53,7 +53,7 @@
                     <select name="project_id" id="project_select" class="form-select @error('project_id') is-invalid @enderror" required>
                         @foreach($projects as $p)
                             <option value="{{ $p->id }}" 
-                                data-location="{{ $p->location ?? 'Addis Ababa' }}"
+                                data-location="{{ $p->location ?? '' }}"
                                 data-client="{{ $p->client_name ?? '' }}"
                                 data-consultant="{{ $p->consultant_name ?? '' }}"
                                 data-contractor="{{ $p->contractor_name ?? 'TNT Construction and Trading' }}"
@@ -471,8 +471,57 @@ function highlightChecked(cb) {
     }
 }
 
-// Load existing events
+// Auto-fill project details when a project is selected
+function applySelectedProjectDetails(isUserChange = false) {
+    const select = document.getElementById('project_select');
+    if (!select) return;
+    const option = select.options[select.selectedIndex];
+    if (!option || !option.value) return;
+
+    const location = option.getAttribute('data-location') || '';
+    const client = option.getAttribute('data-client') || '';
+    const consultant = option.getAttribute('data-consultant') || '';
+    const contractor = option.getAttribute('data-contractor') || 'TNT CONSTRUCTION AND TRADING';
+
+    const locInput = document.getElementById('project_location');
+    const clientInput = document.getElementById('client_name');
+    const consultantInput = document.getElementById('consultant_name');
+    const contractorInput = document.getElementById('contractor_name');
+
+    if (locInput) {
+        locInput.value = location;
+        if (isUserChange) flashField(locInput);
+    }
+    if (clientInput) {
+        clientInput.value = client;
+        if (isUserChange) flashField(clientInput);
+    }
+    if (consultantInput) {
+        consultantInput.value = consultant;
+        if (isUserChange) flashField(consultantInput);
+    }
+    if (contractorInput) {
+        contractorInput.value = contractor;
+        if (isUserChange) flashField(contractorInput);
+    }
+}
+
+function flashField(element) {
+    element.classList.add('bg-success', 'bg-opacity-10', 'border-success');
+    setTimeout(() => {
+        element.classList.remove('bg-success', 'bg-opacity-10', 'border-success');
+    }, 1200);
+}
+
+// Load existing events and initialize project select listener
 document.addEventListener('DOMContentLoaded', function() {
+    const projectSelect = document.getElementById('project_select');
+    if (projectSelect) {
+        projectSelect.addEventListener('change', function() {
+            applySelectedProjectDetails(true);
+        });
+    }
+
     const existingEvents = @json($contractualReport->claimEvents);
     if (existingEvents && existingEvents.length > 0) {
         existingEvents.forEach(evt => {

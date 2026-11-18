@@ -29,14 +29,21 @@ class ContractualReportController extends Controller
     {
         $user = Auth::user();
         if (!$user) return [];
-        if ($user->isAdmin()) return Project::pluck('id')->toArray();
-        return $user->projects()->where('project_user.is_active', true)->pluck('projects.id')->toArray();
+        if ($user->isAdmin() || $user->is_super_admin) return Project::pluck('id')->toArray();
+        $assigned = $user->projects()->where('project_user.is_active', true)->pluck('projects.id')->toArray();
+        if (empty($assigned) && $user->hasPermission('contractual-reports.view')) {
+            return Project::pluck('id')->toArray();
+        }
+        return $assigned;
     }
 
     private function getUserProjects()
     {
         $user = Auth::user();
-        return $user->isAdmin() ? Project::all() : Project::whereIn('id', $this->getUserProjectIds())->get();
+        if (!$user) return collect();
+        if ($user->isAdmin() || $user->is_super_admin) return Project::all();
+        $ids = $this->getUserProjectIds();
+        return Project::whereIn('id', $ids)->get();
     }
 
     // ==========================================

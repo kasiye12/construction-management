@@ -26,13 +26,14 @@
     <div class="table-responsive">
         <table class="table table-hover mb-0">
             <thead class="table-light">
-                <tr><th>Project</th><th>Client</th><th>Status</th><th>Amount</th><th>Actions</th></tr>
+                <tr><th>Project</th><th>Client</th><th>Consultant</th><th>Status</th><th>Amount</th><th>Actions</th></tr>
             </thead>
             <tbody>
                 @forelse($projects as $project)
                 <tr>
                     <td><a href="{{ route('projects.show', $project) }}" class="fw-bold text-decoration-none">{{ Str::limit($project->name, 40) }}</a></td>
                     <td>{{ $project->client_name ?? 'N/A' }}</td>
+                    <td><small class="text-muted">{{ Str::limit($project->consultant_name ?? 'N/A', 25) }}</small></td>
                     <td><span class="badge bg-{{ $project->status=='active'?'success':'secondary' }}">{{ ucfirst($project->status) }}</span></td>
                     <td>{{ number_format($project->contract_amount, 0) }} ETB</td>
                     <td>
@@ -53,7 +54,7 @@
                     </td>
                 </tr>
                 @empty
-                <tr><td colspan="5" class="text-center py-4">No projects found.</td></tr>
+                <tr><td colspan="6" class="text-center py-4">No projects found.</td></tr>
                 @endforelse
             </tbody>
         </table>

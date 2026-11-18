@@ -1,0 +1,1791 @@
+-- MySQL dump 10.13  Distrib 8.4.13, for Linux (x86_64)
+--
+-- Host: localhost    Database: construction_management
+-- ------------------------------------------------------
+-- Server version	8.4.13-0ubuntu0.26.04.2
+
+/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
+/*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
+/*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
+/*!50503 SET NAMES utf8mb4 */;
+/*!40103 SET @OLD_TIME_ZONE=@@TIME_ZONE */;
+/*!40103 SET TIME_ZONE='+00:00' */;
+/*!40014 SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0 */;
+/*!40014 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0 */;
+/*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;
+/*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
+
+--
+-- Table structure for table `activity_logs`
+--
+
+DROP TABLE IF EXISTS `activity_logs`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `activity_logs` (
+  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
+  `user_id` bigint unsigned DEFAULT NULL,
+  `action` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `module` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `description` text COLLATE utf8mb4_unicode_ci,
+  `old_values` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin,
+  `new_values` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin,
+  `ip_address` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `activity_logs_user_id_foreign` (`user_id`),
+  CONSTRAINT `activity_logs_user_id_foreign` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `activity_logs_chk_1` CHECK (json_valid(`old_values`)),
+  CONSTRAINT `activity_logs_chk_2` CHECK (json_valid(`new_values`))
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `activity_logs`
+--
+
+LOCK TABLES `activity_logs` WRITE;
+/*!40000 ALTER TABLE `activity_logs` DISABLE KEYS */;
+/*!40000 ALTER TABLE `activity_logs` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `actual_costs`
+--
+
+DROP TABLE IF EXISTS `actual_costs`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `actual_costs` (
+  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
+  `project_id` bigint unsigned NOT NULL,
+  `boq_item_id` bigint unsigned DEFAULT NULL,
+  `cost_type` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `description` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `amount` decimal(15,2) NOT NULL,
+  `cost_date` date NOT NULL,
+  `vendor` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `invoice_number` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `remarks` text COLLATE utf8mb4_unicode_ci,
+  `created_by` bigint unsigned DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `actual_costs_project_id_foreign` (`project_id`),
+  KEY `actual_costs_boq_item_id_foreign` (`boq_item_id`),
+  KEY `actual_costs_created_by_foreign` (`created_by`),
+  CONSTRAINT `actual_costs_boq_item_id_foreign` FOREIGN KEY (`boq_item_id`) REFERENCES `boq_items` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `actual_costs_created_by_foreign` FOREIGN KEY (`created_by`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `actual_costs_project_id_foreign` FOREIGN KEY (`project_id`) REFERENCES `projects` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `actual_costs`
+--
+
+LOCK TABLES `actual_costs` WRITE;
+/*!40000 ALTER TABLE `actual_costs` DISABLE KEYS */;
+INSERT INTO `actual_costs` VALUES (1,1,3,'equipment','gggggggggggg',500.00,'2026-07-13',NULL,NULL,NULL,1,'2026-07-13 19:18:12','2026-07-13 19:18:12'),(2,1,4,'equipment','sum ting',10000.00,'2026-07-14',NULL,NULL,NULL,1,'2026-07-14 01:59:17','2026-07-14 01:59:17');
+/*!40000 ALTER TABLE `actual_costs` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `audit_trails`
+--
+
+DROP TABLE IF EXISTS `audit_trails`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `audit_trails` (
+  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
+  `auditable_type` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `auditable_id` bigint unsigned NOT NULL,
+  `user_id` bigint unsigned DEFAULT NULL,
+  `action` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `field_name` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `old_value` text COLLATE utf8mb4_unicode_ci,
+  `new_value` text COLLATE utf8mb4_unicode_ci,
+  `ip_address` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `user_agent` text COLLATE utf8mb4_unicode_ci,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `audit_trails_auditable_type_auditable_id_index` (`auditable_type`,`auditable_id`),
+  KEY `audit_trails_user_id_foreign` (`user_id`),
+  CONSTRAINT `audit_trails_user_id_foreign` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL
+) ENGINE=InnoDB AUTO_INCREMENT=318 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `audit_trails`
+--
+
+LOCK TABLES `audit_trails` WRITE;
+/*!40000 ALTER TABLE `audit_trails` DISABLE KEYS */;
+INSERT INTO `audit_trails` VALUES (1,'App\\Models\\ContractualReport',1,NULL,'created',NULL,'{\"project_id\":1,\"report_number\":\"WCR-2026-0001\",\"document_code\":\"OF\\/TNT\\/CAD\\/01\",\"issue_no\":\"1\",\"project_location\":\"Site\",\"client_name\":\"Addis Ababa City Administration\",\"consultant_name\":null,\"contractor_name\":\"TNT CONSTRUCTION AND TRADING\",\"week_start_date\":\"2026-11-16 00:00:00\",\"week_end_date\":\"2026-11-22 23:59:59\",\"status\":\"draft\",\"prepared_by\":1,\"prepared_name\":\"Site Engineer\",\"prepared_at\":\"2026-11-17 08:45:21\",\"created_by\":1,\"updated_at\":\"2026-11-17 08:45:21\",\"created_at\":\"2026-11-17 08:45:21\",\"id\":1}',NULL,'127.0.0.1','Symfony','2026-11-17 05:45:21','2026-11-17 05:45:21'),(2,'App\\Models\\ContractualReport',1,NULL,'updated','page2_remark',NULL,'','127.0.0.1','Symfony','2026-11-17 05:45:21','2026-11-17 05:45:21'),(3,'App\\Models\\ContractualReport',1,NULL,'updated','page3_remark',NULL,'','127.0.0.1','Symfony','2026-11-17 05:45:21','2026-11-17 05:45:21'),(4,'App\\Models\\ContractualReport',1,NULL,'updated','status','draft','submitted','127.0.0.1','Symfony','2026-11-17 05:49:28','2026-11-17 05:49:28'),(5,'App\\Models\\ContractualReport',1,NULL,'updated','prepared_name','Site Engineer','System Administrator','127.0.0.1','Symfony','2026-11-17 05:49:28','2026-11-17 05:49:28'),(6,'App\\Models\\ContractualReport',1,NULL,'updated','prepared_at','2026-11-17 08:45:21','2026-11-17 08:49:28','127.0.0.1','Symfony','2026-11-17 05:49:28','2026-11-17 05:49:28'),(7,'App\\Models\\ContractualReport',1,NULL,'updated','status','submitted','checked','127.0.0.1','Symfony','2026-11-17 05:49:28','2026-11-17 05:49:28'),(8,'App\\Models\\ContractualReport',1,NULL,'updated','checked_by',NULL,'2','127.0.0.1','Symfony','2026-11-17 05:49:28','2026-11-17 05:49:28'),(9,'App\\Models\\ContractualReport',1,NULL,'updated','checked_name',NULL,'Abebe Kebede','127.0.0.1','Symfony','2026-11-17 05:49:28','2026-11-17 05:49:28'),(10,'App\\Models\\ContractualReport',1,NULL,'updated','checked_at',NULL,'2026-11-17 08:49:28','127.0.0.1','Symfony','2026-11-17 05:49:28','2026-11-17 05:49:28'),(11,'App\\Models\\ContractualReport',1,NULL,'updated','status','checked','approved','127.0.0.1','Symfony','2026-11-17 05:49:28','2026-11-17 05:49:28'),(12,'App\\Models\\ContractualReport',1,NULL,'updated','approved_by',NULL,'1','127.0.0.1','Symfony','2026-11-17 05:49:28','2026-11-17 05:49:28'),(13,'App\\Models\\ContractualReport',1,NULL,'updated','approved_name',NULL,'System Administrator','127.0.0.1','Symfony','2026-11-17 05:49:28','2026-11-17 05:49:28'),(14,'App\\Models\\ContractualReport',1,NULL,'updated','approved_at',NULL,'2026-11-17 08:49:28','127.0.0.1','Symfony','2026-11-17 05:49:28','2026-11-17 05:49:28'),(15,'App\\Models\\ContractualReport',1,1,'updated','page2_remark','',NULL,'127.0.0.1','Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/156.0.0.0 Safari/537.36','2026-11-17 05:49:42','2026-11-17 05:49:42'),(16,'App\\Models\\ContractualReport',1,1,'updated','page3_remark','',NULL,'127.0.0.1','Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/156.0.0.0 Safari/537.36','2026-11-17 05:49:42','2026-11-17 05:49:42'),(17,'App\\Models\\ContractualReport',2,1,'created',NULL,'{\"project_id\":1,\"report_number\":\"WCR-2026-0002\",\"document_code\":\"OF\\/TNT\\/CAD\\/01\",\"issue_no\":\"1\",\"project_location\":\"Site Location\",\"client_name\":\"Addis Ababa City Administration\",\"consultant_name\":null,\"contractor_name\":\"TNT Construction and Trading\",\"week_start_date\":\"2026-11-16 00:00:00\",\"week_end_date\":\"2026-11-22 00:00:00\",\"status\":\"draft\",\"prepared_by\":1,\"prepared_name\":\"System Administrator\",\"prepared_at\":\"2026-11-17 09:09:07\",\"page1_notes\":null,\"page2_remark\":null,\"page3_remark\":null,\"created_by\":1,\"updated_at\":\"2026-11-17 09:09:07\",\"created_at\":\"2026-11-17 09:09:07\",\"id\":2}',NULL,'127.0.0.1','Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/156.0.0.0 Safari/537.36','2026-11-17 06:09:07','2026-11-17 06:09:07'),(18,'App\\Models\\ContractualReport',2,1,'updated','status','draft','submitted','127.0.0.1','Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/156.0.0.0 Safari/537.36','2026-11-17 06:09:41','2026-11-17 06:09:41'),(19,'App\\Models\\ContractualReport',2,1,'updated','prepared_at','2026-11-17 09:09:07','2026-11-17 09:09:41','127.0.0.1','Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/156.0.0.0 Safari/537.36','2026-11-17 06:09:41','2026-11-17 06:09:41'),(20,'App\\Models\\ContractualReport',2,1,'updated','status','submitted','checked','127.0.0.1','Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/156.0.0.0 Safari/537.36','2026-11-17 06:09:46','2026-11-17 06:09:46'),(21,'App\\Models\\ContractualReport',2,1,'updated','checked_by',NULL,'1','127.0.0.1','Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/156.0.0.0 Safari/537.36','2026-11-17 06:09:46','2026-11-17 06:09:46'),(22,'App\\Models\\ContractualReport',2,1,'updated','checked_name',NULL,'System Administrator','127.0.0.1','Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/156.0.0.0 Safari/537.36','2026-11-17 06:09:46','2026-11-17 06:09:46'),(23,'App\\Models\\ContractualReport',2,1,'updated','checked_at',NULL,'2026-11-17 09:09:46','127.0.0.1','Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/156.0.0.0 Safari/537.36','2026-11-17 06:09:46','2026-11-17 06:09:46'),(24,'App\\Models\\ContractualReport',2,1,'updated','status','checked','approved','127.0.0.1','Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/156.0.0.0 Safari/537.36','2026-11-17 06:09:51','2026-11-17 06:09:51'),(25,'App\\Models\\ContractualReport',2,1,'updated','approved_by',NULL,'1','127.0.0.1','Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/156.0.0.0 Safari/537.36','2026-11-17 06:09:51','2026-11-17 06:09:51'),(26,'App\\Models\\ContractualReport',2,1,'updated','approved_name',NULL,'System Administrator','127.0.0.1','Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/156.0.0.0 Safari/537.36','2026-11-17 06:09:51','2026-11-17 06:09:51'),(27,'App\\Models\\ContractualReport',2,1,'updated','approved_at',NULL,'2026-11-17 09:09:51','127.0.0.1','Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/156.0.0.0 Safari/537.36','2026-11-17 06:09:51','2026-11-17 06:09:51'),(28,'App\\Models\\Equipment',1,NULL,'created',NULL,'{\"plate_serial_no\":\"EX-0889\",\"code\":\"EX-0889\",\"equipment_type\":\"EXCAVATOR\",\"category\":\"EARTH MOVING MACHINE\",\"make\":\"KOMATSU\",\"model\":\"PC200-8\",\"serial_no\":\"KMTPC200-98231\",\"location_name\":\"Central Workshop\",\"reading_unit\":\"hr\",\"current_reading\":8450,\"last_service_reading\":8327,\"last_service_date\":\"2026-08-15 00:00:00\",\"last_service_type\":\"B\",\"next_service_reading\":8500,\"next_service_type\":\"C\",\"status\":\"due_service\",\"project_id\":1,\"created_by\":1,\"current_reading_date\":\"2026-11-17 00:00:00\",\"updated_at\":\"2026-11-17 09:59:21\",\"created_at\":\"2026-11-17 09:59:21\",\"id\":1}',NULL,'127.0.0.1','Symfony','2026-11-17 06:59:21','2026-11-17 06:59:21'),(29,'App\\Models\\Equipment',2,NULL,'created',NULL,'{\"plate_serial_no\":\"EX-0601\",\"code\":\"EX-0601\",\"equipment_type\":\"EXCAVATOR\",\"category\":\"EARTH MOVING MACHINE\",\"make\":\"CATERPILLAR\",\"model\":\"CAT 320D\",\"serial_no\":\"CAT0320D-77218\",\"location_name\":\"Ambo Referral Project\",\"reading_unit\":\"hr\",\"current_reading\":9120,\"last_service_reading\":8958,\"last_service_date\":\"2026-09-01 00:00:00\",\"last_service_type\":\"A\",\"next_service_reading\":9100,\"next_service_type\":\"B\",\"status\":\"breakdown\",\"project_id\":1,\"created_by\":1,\"current_reading_date\":\"2026-11-17 00:00:00\",\"updated_at\":\"2026-11-17 09:59:21\",\"created_at\":\"2026-11-17 09:59:21\",\"id\":2}',NULL,'127.0.0.1','Symfony','2026-11-17 06:59:21','2026-11-17 06:59:21'),(30,'App\\Models\\Equipment',3,NULL,'created',NULL,'{\"plate_serial_no\":\"CMM-0095\",\"code\":\"CMM-0095\",\"equipment_type\":\"CARMIX\",\"category\":\"EARTH MOVING MACHINE\",\"make\":\"CARMIX\",\"model\":\"3.5 TT\",\"serial_no\":\"CMX35-44109\",\"location_name\":\"Ambo Referral Project\",\"reading_unit\":\"hr\",\"current_reading\":4320,\"last_service_reading\":4000,\"last_service_date\":\"2026-07-20 00:00:00\",\"last_service_type\":\"A\",\"next_service_reading\":4500,\"next_service_type\":\"B\",\"status\":\"under_maintenance\",\"project_id\":1,\"created_by\":1,\"current_reading_date\":\"2026-11-17 00:00:00\",\"updated_at\":\"2026-11-17 09:59:21\",\"created_at\":\"2026-11-17 09:59:21\",\"id\":3}',NULL,'127.0.0.1','Symfony','2026-11-17 06:59:21','2026-11-17 06:59:21'),(31,'App\\Models\\Equipment',4,NULL,'created',NULL,'{\"plate_serial_no\":\"LD-2232\",\"code\":\"LD-2232\",\"equipment_type\":\"BACKHOE LOADER\",\"category\":\"EARTH MOVING MACHINE\",\"make\":\"JCB\",\"model\":\"3CX\",\"serial_no\":\"JCB3CX-88412\",\"location_name\":\"Arba Minch Project\",\"reading_unit\":\"hr\",\"current_reading\":6100,\"last_service_reading\":5800,\"last_service_date\":\"2026-08-10 00:00:00\",\"last_service_type\":\"A\",\"next_service_reading\":6250,\"next_service_type\":\"B\",\"status\":\"active\",\"project_id\":1,\"created_by\":1,\"current_reading_date\":\"2026-11-17 00:00:00\",\"updated_at\":\"2026-11-17 09:59:21\",\"created_at\":\"2026-11-17 09:59:21\",\"id\":4}',NULL,'127.0.0.1','Symfony','2026-11-17 06:59:21','2026-11-17 06:59:21'),(32,'App\\Models\\Equipment',5,NULL,'created',NULL,'{\"plate_serial_no\":\"LD-1633\",\"code\":\"LD-1633\",\"equipment_type\":\"WHEEL LOADER\",\"category\":\"EARTH MOVING MACHINE\",\"make\":\"LIUGONG\",\"model\":\"CLG 856\",\"serial_no\":\"LG856-33910\",\"location_name\":\"Mega Project\",\"reading_unit\":\"hr\",\"current_reading\":7450,\"last_service_reading\":7200,\"last_service_date\":\"2026-07-15 00:00:00\",\"last_service_type\":\"B\",\"next_service_reading\":7700,\"next_service_type\":\"A\",\"status\":\"active\",\"project_id\":1,\"created_by\":1,\"current_reading_date\":\"2026-11-17 00:00:00\",\"updated_at\":\"2026-11-17 09:59:21\",\"created_at\":\"2026-11-17 09:59:21\",\"id\":5}',NULL,'127.0.0.1','Symfony','2026-11-17 06:59:21','2026-11-17 06:59:21'),(33,'App\\Models\\Equipment',6,NULL,'created',NULL,'{\"plate_serial_no\":\"CM-0562\",\"code\":\"CM-0562\",\"equipment_type\":\"ROLLER COMPACTOR\",\"category\":\"EARTH MOVING MACHINE\",\"make\":\"DYNAPAC\",\"model\":\"CA250D\",\"serial_no\":\"DYN250-1092\",\"location_name\":\"South Campus Project\",\"reading_unit\":\"hr\",\"current_reading\":5890,\"last_service_reading\":5650,\"last_service_date\":\"2026-06-25 00:00:00\",\"last_service_type\":\"A\",\"next_service_reading\":5900,\"next_service_type\":\"B\",\"status\":\"due_service\",\"project_id\":1,\"created_by\":1,\"current_reading_date\":\"2026-11-17 00:00:00\",\"updated_at\":\"2026-11-17 09:59:21\",\"created_at\":\"2026-11-17 09:59:21\",\"id\":6}',NULL,'127.0.0.1','Symfony','2026-11-17 06:59:21','2026-11-17 06:59:21'),(34,'App\\Models\\Equipment',7,NULL,'created',NULL,'{\"plate_serial_no\":\"3-50327\",\"code\":\"TRK-3-50327\",\"equipment_type\":\"DUMP TRUCK\",\"category\":\"DUMP TRUCK\",\"make\":\"SINOTRUK\",\"model\":\"HOWO 371\",\"serial_no\":\"SINO371-992381\",\"location_name\":\"Central Workshop\",\"reading_unit\":\"km\",\"current_reading\":124500,\"last_service_reading\":119500,\"last_service_date\":\"2026-08-01 00:00:00\",\"last_service_type\":\"B2\",\"next_service_reading\":125000,\"next_service_type\":\"C2\",\"status\":\"due_service\",\"project_id\":1,\"created_by\":1,\"current_reading_date\":\"2026-11-17 00:00:00\",\"updated_at\":\"2026-11-17 09:59:21\",\"created_at\":\"2026-11-17 09:59:21\",\"id\":7}',NULL,'127.0.0.1','Symfony','2026-11-17 06:59:21','2026-11-17 06:59:21'),(35,'App\\Models\\Equipment',8,NULL,'created',NULL,'{\"plate_serial_no\":\"3-32675\",\"code\":\"TRK-3-32675\",\"equipment_type\":\"WATER TRUCK\",\"category\":\"DUMP TRUCK\",\"make\":\"ISUZU\",\"model\":\"FSR 10,000L\",\"serial_no\":\"ISZFSR-33410\",\"location_name\":\"Bishoftu Site\",\"reading_unit\":\"km\",\"current_reading\":98400,\"last_service_reading\":93000,\"last_service_date\":\"2026-07-12 00:00:00\",\"last_service_type\":\"A2\",\"next_service_reading\":100000,\"next_service_type\":\"B2\",\"status\":\"active\",\"project_id\":1,\"created_by\":1,\"current_reading_date\":\"2026-11-17 00:00:00\",\"updated_at\":\"2026-11-17 09:59:21\",\"created_at\":\"2026-11-17 09:59:21\",\"id\":8}',NULL,'127.0.0.1','Symfony','2026-11-17 06:59:21','2026-11-17 06:59:21'),(36,'App\\Models\\Equipment',9,NULL,'created',NULL,'{\"plate_serial_no\":\"3-85963\",\"code\":\"TRK-3-85963\",\"equipment_type\":\"DUMP TRUCK\",\"category\":\"DUMP TRUCK\",\"make\":\"IVECO\",\"model\":\"TRAKKER 380\",\"serial_no\":\"IVCTRK-99120\",\"location_name\":\"Mega Project\",\"reading_unit\":\"km\",\"current_reading\":165800,\"last_service_reading\":160000,\"last_service_date\":\"2026-08-18 00:00:00\",\"last_service_type\":\"A2\",\"next_service_reading\":165000,\"next_service_type\":\"B2\",\"status\":\"breakdown\",\"project_id\":1,\"created_by\":1,\"current_reading_date\":\"2026-11-17 00:00:00\",\"updated_at\":\"2026-11-17 09:59:21\",\"created_at\":\"2026-11-17 09:59:21\",\"id\":9}',NULL,'127.0.0.1','Symfony','2026-11-17 06:59:21','2026-11-17 06:59:21'),(37,'App\\Models\\Equipment',10,NULL,'created',NULL,'{\"plate_serial_no\":\"3-A44801\",\"code\":\"VEH-3-A44801\",\"equipment_type\":\"PICK UP\",\"category\":\"LIGHT VEHICLES\",\"make\":\"TOYOTA\",\"model\":\"HILUX D4D 4WD\",\"serial_no\":\"TOYHLX-551029\",\"location_name\":\"Central Depot\",\"reading_unit\":\"km\",\"current_reading\":88400,\"last_service_reading\":83400,\"last_service_date\":\"2026-08-20 00:00:00\",\"last_service_type\":\"A2\",\"next_service_reading\":90000,\"next_service_type\":\"B2\",\"status\":\"active\",\"project_id\":1,\"created_by\":1,\"current_reading_date\":\"2026-11-17 00:00:00\",\"updated_at\":\"2026-11-17 09:59:21\",\"created_at\":\"2026-11-17 09:59:21\",\"id\":10}',NULL,'127.0.0.1','Symfony','2026-11-17 06:59:21','2026-11-17 06:59:21'),(38,'App\\Models\\Equipment',11,NULL,'created',NULL,'{\"plate_serial_no\":\"3-71050\",\"code\":\"VEH-3-71050\",\"equipment_type\":\"PICK UP\",\"category\":\"LIGHT VEHICLES\",\"make\":\"TOYOTA\",\"model\":\"HILUX DOUBLE CABIN\",\"serial_no\":\"TOYHLX-901182\",\"location_name\":\"Ambo Referral Project\",\"reading_unit\":\"km\",\"current_reading\":112300,\"last_service_reading\":107000,\"last_service_date\":\"2026-07-28 00:00:00\",\"last_service_type\":\"A2\",\"next_service_reading\":112000,\"next_service_type\":\"B2\",\"status\":\"active\",\"project_id\":1,\"created_by\":1,\"current_reading_date\":\"2026-11-17 00:00:00\",\"updated_at\":\"2026-11-17 09:59:21\",\"created_at\":\"2026-11-17 09:59:21\",\"id\":11}',NULL,'127.0.0.1','Symfony','2026-11-17 06:59:21','2026-11-17 06:59:21'),(39,'App\\Models\\Equipment',12,NULL,'created',NULL,'{\"plate_serial_no\":\"2-A47404\",\"code\":\"VEH-2-A47404\",\"equipment_type\":\"PICK UP\",\"category\":\"LIGHT VEHICLES\",\"make\":\"MITSUBISHI\",\"model\":\"L200 SPORTERO\",\"serial_no\":\"MITL200-44910\",\"location_name\":\"Central Workshop\",\"reading_unit\":\"km\",\"current_reading\":142000,\"last_service_reading\":135000,\"last_service_date\":\"2026-06-15 00:00:00\",\"last_service_type\":\"C2\",\"next_service_reading\":140000,\"next_service_type\":\"A2\",\"status\":\"under_maintenance\",\"project_id\":1,\"created_by\":1,\"current_reading_date\":\"2026-11-17 00:00:00\",\"updated_at\":\"2026-11-17 09:59:21\",\"created_at\":\"2026-11-17 09:59:21\",\"id\":12}',NULL,'127.0.0.1','Symfony','2026-11-17 06:59:21','2026-11-17 06:59:21'),(40,'App\\Models\\Equipment',13,NULL,'created',NULL,'{\"plate_serial_no\":\"132 KVA\",\"code\":\"GEN-AKSA-132\",\"equipment_type\":\"GENERATOR\",\"category\":\"AUXILIARY\",\"make\":\"AKSA\",\"model\":\"APD 132\",\"serial_no\":\"AKS132-77291\",\"location_name\":\"Central Depot\",\"reading_unit\":\"hr\",\"current_reading\":3120,\"last_service_reading\":2950,\"last_service_date\":\"2026-08-05 00:00:00\",\"last_service_type\":\"A\",\"next_service_reading\":3200,\"next_service_type\":\"B\",\"status\":\"active\",\"project_id\":1,\"created_by\":1,\"current_reading_date\":\"2026-11-17 00:00:00\",\"updated_at\":\"2026-11-17 09:59:21\",\"created_at\":\"2026-11-17 09:59:21\",\"id\":13}',NULL,'127.0.0.1','Symfony','2026-11-17 06:59:21','2026-11-17 06:59:21'),(41,'App\\Models\\Equipment',14,NULL,'created',NULL,'{\"plate_serial_no\":\"60 KVA\",\"code\":\"GEN-IVECO-60\",\"equipment_type\":\"GENERATOR\",\"category\":\"AUXILIARY\",\"make\":\"IVECO\",\"model\":\"GE 60\",\"serial_no\":\"IVC60-22104\",\"location_name\":\"Central Workshop\",\"reading_unit\":\"hr\",\"current_reading\":4560,\"last_service_reading\":4300,\"last_service_date\":\"2026-07-10 00:00:00\",\"last_service_type\":\"A\",\"next_service_reading\":4550,\"next_service_type\":\"B\",\"status\":\"breakdown\",\"project_id\":1,\"created_by\":1,\"current_reading_date\":\"2026-11-17 00:00:00\",\"updated_at\":\"2026-11-17 09:59:21\",\"created_at\":\"2026-11-17 09:59:21\",\"id\":14}',NULL,'127.0.0.1','Symfony','2026-11-17 06:59:21','2026-11-17 06:59:21'),(42,'App\\Models\\PmSchedule',1,NULL,'created',NULL,'{\"schedule_code\":\"PMS-2026-W46\",\"title\":\"Preventive Maintenance Schedule\",\"document_code\":\"OF\\/EAMD\\/074\",\"issue_no\":\"1\",\"page_no\":\"Page 1 of 1\",\"project_id\":1,\"project_location\":\"All Sites \\/ Central Workshop\",\"schedule_date\":\"2026-11-17 00:00:00\",\"period_start\":\"2026-11-16 00:00:00\",\"period_end\":\"2026-11-22 00:00:00\",\"status\":\"approved\",\"prepared_by\":1,\"prepared_name\":\"System Administrator\",\"prepared_at\":\"2026-11-15 09:59:21\",\"checked_by\":1,\"checked_name\":\"Equipment Manager\",\"checked_at\":\"2026-11-16 09:59:21\",\"approved_by\":1,\"approved_name\":\"Head of EAMD\",\"approved_at\":\"2026-11-17 09:59:21\",\"created_by\":1,\"updated_at\":\"2026-11-17 09:59:21\",\"created_at\":\"2026-11-17 09:59:21\",\"id\":1}',NULL,'127.0.0.1','Symfony','2026-11-17 06:59:21','2026-11-17 06:59:21'),(43,'App\\Models\\EquipmentBreakdownReport',1,NULL,'created',NULL,'{\"report_code\":\"MR-2026-W46\",\"title\":\"Maintenance Report\",\"document_code\":\"OF\\/TNT\\/ EAMD\\/030\",\"issue_no\":\"1\",\"page_no\":\"Page 1 of 1\",\"report_date\":\"2026-11-17 00:00:00\",\"project_id\":1,\"location_name\":\"Central Workshop & Project Sites\",\"status\":\"checked\",\"prepared_by\":1,\"prepared_name\":\"Getish Y.\",\"prepared_at\":\"2026-11-16 09:59:21\",\"checked_by\":1,\"checked_name\":\"Tewodros\",\"checked_at\":\"2026-11-17 09:59:21\",\"created_by\":1,\"updated_at\":\"2026-11-17 09:59:21\",\"created_at\":\"2026-11-17 09:59:21\",\"id\":1}',NULL,'127.0.0.1','Symfony','2026-11-17 06:59:21','2026-11-17 06:59:21'),(44,'App\\Models\\EquipmentMaintenanceLog',1,NULL,'created',NULL,'{\"po_no\":\"EQ-MPR000035\",\"spare_part_name\":\"Return spring and brake lining replacement\",\"equipment_id\":7,\"equipment_type\":\"SINO TRUCK\",\"equipment_plate\":\"3-50327\",\"unit\":\"PCS\",\"quantity\":2,\"unit_cost\":1956.52,\"total_cost_with_vat\":4500,\"supplier\":\"Abiye Eshetu Spare Parts\",\"log_date\":\"2026-11-05 00:00:00\",\"project_id\":1,\"logged_by\":1,\"updated_at\":\"2026-11-17 09:59:21\",\"created_at\":\"2026-11-17 09:59:21\",\"id\":1}',NULL,'127.0.0.1','Symfony','2026-11-17 06:59:21','2026-11-17 06:59:21'),(45,'App\\Models\\EquipmentMaintenanceLog',2,NULL,'created',NULL,'{\"po_no\":\"EQ-MPR000036\",\"spare_part_name\":\"Axle shaft extract and replace, differential housing welding\",\"equipment_id\":10,\"equipment_type\":\"TOYOTA PICKUP\",\"equipment_plate\":\"3-A44801\",\"unit\":\"SET\",\"quantity\":1,\"unit_cost\":8843.48,\"total_cost_with_vat\":10170,\"supplier\":\"Kasma Engineering\",\"log_date\":\"2026-11-04 00:00:00\",\"project_id\":1,\"logged_by\":1,\"updated_at\":\"2026-11-17 09:59:21\",\"created_at\":\"2026-11-17 09:59:21\",\"id\":2}',NULL,'127.0.0.1','Symfony','2026-11-17 06:59:21','2026-11-17 06:59:21'),(46,'App\\Models\\EquipmentMaintenanceLog',3,NULL,'created',NULL,'{\"po_no\":\"PBR-EQ000116\",\"spare_part_name\":\"Hydraulic oil top-up (ISO VG 68)\",\"equipment_id\":2,\"equipment_type\":\"EXCAVATOR\",\"equipment_plate\":\"EX-0601\",\"unit\":\"LIT\",\"quantity\":20,\"unit_cost\":250,\"total_cost_with_vat\":5750,\"supplier\":\"TotalEnergies Ethiopia\",\"log_date\":\"2026-11-09 00:00:00\",\"project_id\":1,\"logged_by\":1,\"updated_at\":\"2026-11-17 09:59:21\",\"created_at\":\"2026-11-17 09:59:21\",\"id\":3}',NULL,'127.0.0.1','Symfony','2026-11-17 06:59:21','2026-11-17 06:59:21'),(47,'App\\Models\\EquipmentMaintenanceLog',4,NULL,'created',NULL,'{\"po_no\":\"POEQ\\/16\\/00099\",\"spare_part_name\":\"Oil filter JS2021 & fuel filter FS19652 replacement\",\"equipment_id\":13,\"equipment_type\":\"GENERATOR\",\"equipment_plate\":\"132 KVA\",\"unit\":\"PCS\",\"quantity\":2,\"unit_cost\":1400,\"total_cost_with_vat\":3220,\"supplier\":\"Auto Zone Addis\",\"log_date\":\"2026-11-09 00:00:00\",\"project_id\":1,\"logged_by\":1,\"updated_at\":\"2026-11-17 09:59:21\",\"created_at\":\"2026-11-17 09:59:21\",\"id\":4}',NULL,'127.0.0.1','Symfony','2026-11-17 06:59:21','2026-11-17 06:59:21'),(48,'App\\Models\\PmSchedule',2,NULL,'created',NULL,'{\"schedule_code\":\"PMS-20261117-100155\",\"title\":\"Preventive Maintenance Schedule\",\"document_code\":\"OF\\/EAMD\\/074\",\"issue_no\":\"1\",\"page_no\":\"Page 1 of 1\",\"project_id\":null,\"schedule_date\":\"2026-11-17 00:00:00\",\"status\":\"draft\",\"created_by\":1,\"updated_at\":\"2026-11-17 10:01:55\",\"created_at\":\"2026-11-17 10:01:55\",\"id\":2}',NULL,'127.0.0.1','Symfony','2026-11-17 07:01:56','2026-11-17 07:01:56'),(49,'App\\Models\\EquipmentBreakdownReport',2,NULL,'created',NULL,'{\"report_code\":\"MR-20261117-100213\",\"title\":\"Maintenance Report\",\"document_code\":\"OF\\/TNT\\/ EAMD\\/030\",\"issue_no\":\"1\",\"page_no\":\"Page 1 of 1\",\"report_date\":\"2018-08-29 00:00:00\",\"project_id\":null,\"status\":\"draft\",\"created_by\":1,\"updated_at\":\"2026-11-17 10:02:13\",\"created_at\":\"2026-11-17 10:02:13\",\"id\":2}',NULL,'127.0.0.1','Symfony','2026-11-17 07:02:13','2026-11-17 07:02:13'),(50,'App\\Models\\Equipment',1,NULL,'updated','status','due_service','breakdown','127.0.0.1','Symfony','2026-11-17 07:02:13','2026-11-17 07:02:13'),(51,'App\\Models\\Equipment',3,NULL,'updated','status','under_maintenance','breakdown','127.0.0.1','Symfony','2026-11-17 07:02:13','2026-11-17 07:02:13'),(52,'App\\Models\\Equipment',4,NULL,'updated','status','active','breakdown','127.0.0.1','Symfony','2026-11-17 07:02:13','2026-11-17 07:02:13'),(53,'App\\Models\\Equipment',5,NULL,'updated','status','active','breakdown','127.0.0.1','Symfony','2026-11-17 07:02:13','2026-11-17 07:02:13'),(54,'App\\Models\\Equipment',6,NULL,'updated','status','due_service','breakdown','127.0.0.1','Symfony','2026-11-17 07:02:13','2026-11-17 07:02:13'),(55,'App\\Models\\Equipment',8,NULL,'updated','status','active','breakdown','127.0.0.1','Symfony','2026-11-17 07:02:13','2026-11-17 07:02:13'),(56,'App\\Models\\Equipment',12,NULL,'updated','status','under_maintenance','breakdown','127.0.0.1','Symfony','2026-11-17 07:02:13','2026-11-17 07:02:13'),(57,'App\\Models\\EquipmentMaintenanceLog',5,NULL,'created',NULL,'{\"equipment_id\":7,\"equipment_type\":\"sino truck\",\"equipment_plate\":\"3-50327\",\"spare_part_name\":\"maintenance\",\"po_no\":\"EQ-MPR000035\",\"unit\":\"pcs\",\"quantity\":1,\"unit_cost\":1956.52,\"total_cost_with_vat\":2250,\"supplier\":\"abiye eshetu\",\"log_date\":\"2015-01-11 00:00:00\",\"project_id\":null,\"logged_by\":1,\"updated_at\":\"2026-11-17 10:02:13\",\"created_at\":\"2026-11-17 10:02:13\",\"id\":5}',NULL,'127.0.0.1','Symfony','2026-11-17 07:02:13','2026-11-17 07:02:13'),(58,'App\\Models\\EquipmentMaintenanceLog',6,NULL,'created',NULL,'{\"equipment_id\":10,\"equipment_type\":\"toyota pickup\",\"equipment_plate\":\"3-A44801\",\"spare_part_name\":\"AXLE SHAFT EXTRACT AND REPLACE\",\"po_no\":\"eq-mpr000036\",\"unit\":\"pcs\",\"quantity\":2,\"unit_cost\":500,\"total_cost_with_vat\":10170,\"supplier\":\"KASMA ENGI\",\"log_date\":\"2015-01-11 00:00:00\",\"project_id\":null,\"logged_by\":1,\"updated_at\":\"2026-11-17 10:02:13\",\"created_at\":\"2026-11-17 10:02:13\",\"id\":6}',NULL,'127.0.0.1','Symfony','2026-11-17 07:02:13','2026-11-17 07:02:13'),(59,'App\\Models\\EquipmentMaintenanceLog',7,NULL,'created',NULL,'{\"equipment_id\":null,\"equipment_type\":\"EQUIPMENT\",\"equipment_plate\":\"\",\"spare_part_name\":\"DIFERENTIAL HOUSING WELDING\",\"po_no\":\"\",\"unit\":\"PCS\",\"quantity\":1,\"unit_cost\":3000,\"total_cost_with_vat\":3450,\"supplier\":\"\",\"log_date\":\"2026-11-17 00:00:00\",\"project_id\":null,\"logged_by\":1,\"updated_at\":\"2026-11-17 10:02:13\",\"created_at\":\"2026-11-17 10:02:13\",\"id\":7}',NULL,'127.0.0.1','Symfony','2026-11-17 07:02:13','2026-11-17 07:02:13'),(60,'App\\Models\\EquipmentMaintenanceLog',8,NULL,'created',NULL,'{\"equipment_id\":null,\"equipment_type\":\"EQUIPMENT\",\"equipment_plate\":\"\",\"spare_part_name\":\"DIFFERENTIAL STRAIGHTING\",\"po_no\":\"\",\"unit\":\"PCS\",\"quantity\":1,\"unit_cost\":5000,\"total_cost_with_vat\":5750,\"supplier\":\"\",\"log_date\":\"2026-11-17 00:00:00\",\"project_id\":null,\"logged_by\":1,\"updated_at\":\"2026-11-17 10:02:13\",\"created_at\":\"2026-11-17 10:02:13\",\"id\":8}',NULL,'127.0.0.1','Symfony','2026-11-17 07:02:13','2026-11-17 07:02:13'),(61,'App\\Models\\EquipmentMaintenanceLog',9,NULL,'created',NULL,'{\"equipment_id\":null,\"equipment_type\":\"ISUZU\",\"equipment_plate\":\"3-A53404\",\"spare_part_name\":\"BRAKEPADLINING &RIVETE\",\"po_no\":\"EQ-MPR000034\",\"unit\":\"PCS\",\"quantity\":4,\"unit_cost\":750,\"total_cost_with_vat\":3450,\"supplier\":\"PAULO\",\"log_date\":\"2015-01-11 00:00:00\",\"project_id\":null,\"logged_by\":1,\"updated_at\":\"2026-11-17 10:02:13\",\"created_at\":\"2026-11-17 10:02:13\",\"id\":9}',NULL,'127.0.0.1','Symfony','2026-11-17 07:02:13','2026-11-17 07:02:13'),(62,'App\\Models\\EquipmentMaintenanceLog',10,NULL,'created',NULL,'{\"equipment_id\":7,\"equipment_type\":\"sino truck\",\"equipment_plate\":\"3-50327\",\"spare_part_name\":\"RETURN SPRING WORK ADV.\",\"po_no\":\"NI-EQU000356\",\"unit\":\"PCS\",\"quantity\":1,\"unit_cost\":500,\"total_cost_with_vat\":500,\"supplier\":\"WORK ADVA\",\"log_date\":\"2015-01-11 00:00:00\",\"project_id\":null,\"logged_by\":1,\"updated_at\":\"2026-11-17 10:02:13\",\"created_at\":\"2026-11-17 10:02:13\",\"id\":10}',NULL,'127.0.0.1','Symfony','2026-11-17 07:02:13','2026-11-17 07:02:13'),(63,'App\\Models\\EquipmentMaintenanceLog',11,NULL,'created',NULL,'{\"equipment_id\":2,\"equipment_type\":\"EXCAVATOR\",\"equipment_plate\":\"EX-0601\",\"spare_part_name\":\"HYDRAULIC OIL,TOPUP\",\"po_no\":\"PBR-EQ000116\",\"unit\":\"LIT\",\"quantity\":10,\"unit_cost\":250,\"total_cost_with_vat\":2500,\"supplier\":\"AMBO\",\"log_date\":\"2015-01-11 00:00:00\",\"project_id\":null,\"logged_by\":1,\"updated_at\":\"2026-11-17 10:02:13\",\"created_at\":\"2026-11-17 10:02:13\",\"id\":11}',NULL,'127.0.0.1','Symfony','2026-11-17 07:02:13','2026-11-17 07:02:13'),(64,'App\\Models\\EquipmentMaintenanceLog',12,NULL,'created',NULL,'{\"equipment_id\":11,\"equipment_type\":\"toyota  PICUP\",\"equipment_plate\":\"3-71050\",\"spare_part_name\":\"DIFERENTIAL HOUSING WELDING\",\"po_no\":\"EQ-MPR\\/16\\/00003\",\"unit\":\"PCS\",\"quantity\":1,\"unit_cost\":3000,\"total_cost_with_vat\":9040,\"supplier\":\"KASMA ENGI\",\"log_date\":\"2015-03-11 00:00:00\",\"project_id\":null,\"logged_by\":1,\"updated_at\":\"2026-11-17 10:02:13\",\"created_at\":\"2026-11-17 10:02:13\",\"id\":12}',NULL,'127.0.0.1','Symfony','2026-11-17 07:02:13','2026-11-17 07:02:13'),(65,'App\\Models\\EquipmentMaintenanceLog',13,NULL,'created',NULL,'{\"equipment_id\":null,\"equipment_type\":\"EQUIPMENT\",\"equipment_plate\":\"\",\"spare_part_name\":\"DIFFERENTIAL STRAIGNTING\",\"po_no\":\"\",\"unit\":\"PCS\",\"quantity\":1,\"unit_cost\":5000,\"total_cost_with_vat\":5750,\"supplier\":\"\",\"log_date\":\"2026-11-17 00:00:00\",\"project_id\":null,\"logged_by\":1,\"updated_at\":\"2026-11-17 10:02:13\",\"created_at\":\"2026-11-17 10:02:13\",\"id\":13}',NULL,'127.0.0.1','Symfony','2026-11-17 07:02:13','2026-11-17 07:02:13'),(66,'App\\Models\\EquipmentMaintenanceLog',14,NULL,'created',NULL,'{\"equipment_id\":null,\"equipment_type\":\"CONCRET\",\"equipment_plate\":\"MAIN.\",\"spare_part_name\":\"VIBRATOR HOSE MAIN.\",\"po_no\":\"PBR-EQ\\/16\\/00001\",\"unit\":\"PCS\",\"quantity\":4,\"unit_cost\":800,\"total_cost_with_vat\":3200,\"supplier\":\"WOMEN\",\"log_date\":\"2015-03-11 00:00:00\",\"project_id\":null,\"logged_by\":1,\"updated_at\":\"2026-11-17 10:02:13\",\"created_at\":\"2026-11-17 10:02:13\",\"id\":14}',NULL,'127.0.0.1','Symfony','2026-11-17 07:02:13','2026-11-17 07:02:13'),(67,'App\\Models\\EquipmentMaintenanceLog',15,NULL,'created',NULL,'{\"equipment_id\":null,\"equipment_type\":\"WORK ADVANCE\",\"equipment_plate\":\"PETTY\",\"spare_part_name\":\"MAINTENANCE PETTY CASH\",\"po_no\":\"PBR-EQ\\/16\\/00002\",\"unit\":\"PCS\",\"quantity\":1,\"unit_cost\":5000,\"total_cost_with_vat\":5000,\"supplier\":\"AUGUSTA\",\"log_date\":\"2015-03-11 00:00:00\",\"project_id\":null,\"logged_by\":1,\"updated_at\":\"2026-11-17 10:02:13\",\"created_at\":\"2026-11-17 10:02:13\",\"id\":15}',NULL,'127.0.0.1','Symfony','2026-11-17 07:02:13','2026-11-17 07:02:13'),(68,'App\\Models\\EquipmentMaintenanceLog',16,NULL,'created',NULL,'{\"equipment_id\":null,\"equipment_type\":\"NISSAN  PICK UP\",\"equipment_plate\":\"3-A43688\",\"spare_part_name\":\"CARBON BRUSH\",\"po_no\":\"PBR-EQ\\/16\\/00003\",\"unit\":\"PCS\",\"quantity\":1,\"unit_cost\":1100,\"total_cost_with_vat\":1600,\"supplier\":\"DEBRE MARKOS\",\"log_date\":\"2015-03-11 00:00:00\",\"project_id\":null,\"logged_by\":1,\"updated_at\":\"2026-11-17 10:02:13\",\"created_at\":\"2026-11-17 10:02:13\",\"id\":16}',NULL,'127.0.0.1','Symfony','2026-11-17 07:02:13','2026-11-17 07:02:13'),(69,'App\\Models\\EquipmentMaintenanceLog',17,NULL,'created',NULL,'{\"equipment_id\":null,\"equipment_type\":\"EQUIPMENT\",\"equipment_plate\":\"\",\"spare_part_name\":\"MAIN LABOUR  COST\",\"po_no\":\"\",\"unit\":\"PCS\",\"quantity\":1,\"unit_cost\":500,\"total_cost_with_vat\":575,\"supplier\":\"\",\"log_date\":\"2026-11-17 00:00:00\",\"project_id\":null,\"logged_by\":1,\"updated_at\":\"2026-11-17 10:02:13\",\"created_at\":\"2026-11-17 10:02:13\",\"id\":17}',NULL,'127.0.0.1','Symfony','2026-11-17 07:02:13','2026-11-17 07:02:13'),(70,'App\\Models\\EquipmentMaintenanceLog',18,NULL,'created',NULL,'{\"equipment_id\":11,\"equipment_type\":\"PICK UP\",\"equipment_plate\":\"3-71050\",\"spare_part_name\":\"AXLE SHAFT EXTRACT AND REPLACE\",\"po_no\":\"EQ-MPR\\/16\\/00002\",\"unit\":\"PCS\",\"quantity\":2,\"unit_cost\":500,\"total_cost_with_vat\":1495,\"supplier\":\"KASMA ENGI\",\"log_date\":\"2015-03-11 00:00:00\",\"project_id\":null,\"logged_by\":1,\"updated_at\":\"2026-11-17 10:02:13\",\"created_at\":\"2026-11-17 10:02:13\",\"id\":18}',NULL,'127.0.0.1','Symfony','2026-11-17 07:02:13','2026-11-17 07:02:13'),(71,'App\\Models\\EquipmentMaintenanceLog',19,NULL,'created',NULL,'{\"equipment_id\":null,\"equipment_type\":\"EQUIPMENT\",\"equipment_plate\":\"\",\"spare_part_name\":\"BEARING AND DISC REFACE\",\"po_no\":\"\",\"unit\":\"PCS\",\"quantity\":1,\"unit_cost\":300,\"total_cost_with_vat\":345,\"supplier\":\"\",\"log_date\":\"2026-11-17 00:00:00\",\"project_id\":null,\"logged_by\":1,\"updated_at\":\"2026-11-17 10:02:13\",\"created_at\":\"2026-11-17 10:02:13\",\"id\":19}',NULL,'127.0.0.1','Symfony','2026-11-17 07:02:13','2026-11-17 07:02:13'),(72,'App\\Models\\EquipmentMaintenanceLog',20,NULL,'created',NULL,'{\"equipment_id\":6,\"equipment_type\":\"ROLLO COMPACTOR\",\"equipment_plate\":\"CM-0562\",\"spare_part_name\":\"CLUCH BOOSTER\",\"po_no\":\"POEQ\\/16\\/00006\",\"unit\":\"PCS\",\"quantity\":1,\"unit_cost\":8260.87,\"total_cost_with_vat\":16016.52,\"supplier\":\"JS CONST.\",\"log_date\":\"2015-03-11 00:00:00\",\"project_id\":null,\"logged_by\":1,\"updated_at\":\"2026-11-17 10:02:13\",\"created_at\":\"2026-11-17 10:02:13\",\"id\":20}',NULL,'127.0.0.1','Symfony','2026-11-17 07:02:13','2026-11-17 07:02:13'),(73,'App\\Models\\EquipmentMaintenanceLog',21,NULL,'created',NULL,'{\"equipment_id\":null,\"equipment_type\":\"EQUIPMENT\",\"equipment_plate\":\"\",\"spare_part_name\":\"CALIPER PISTON SEAL\",\"po_no\":\"\",\"unit\":\"PCS\",\"quantity\":8,\"unit_cost\":739.13,\"total_cost_with_vat\":6800,\"supplier\":\"\",\"log_date\":\"2026-11-17 00:00:00\",\"project_id\":null,\"logged_by\":1,\"updated_at\":\"2026-11-17 10:02:13\",\"created_at\":\"2026-11-17 10:02:13\",\"id\":21}',NULL,'127.0.0.1','Symfony','2026-11-17 07:02:13','2026-11-17 07:02:13'),(74,'App\\Models\\EquipmentMaintenanceLog',22,NULL,'created',NULL,'{\"equipment_id\":9,\"equipment_type\":\"IVECO TRUCK\",\"equipment_plate\":\"3-85963\",\"spare_part_name\":\"AIR DRYER\",\"po_no\":\"POEQ\\/16\\/00007\",\"unit\":\"PCS\",\"quantity\":1,\"unit_cost\":5000,\"total_cost_with_vat\":9775,\"supplier\":\"MITIKU\",\"log_date\":\"2015-03-11 00:00:00\",\"project_id\":null,\"logged_by\":1,\"updated_at\":\"2026-11-17 10:02:13\",\"created_at\":\"2026-11-17 10:02:13\",\"id\":22}',NULL,'127.0.0.1','Symfony','2026-11-17 07:02:13','2026-11-17 07:02:13'),(75,'App\\Models\\EquipmentMaintenanceLog',23,NULL,'created',NULL,'{\"equipment_id\":null,\"equipment_type\":\"EQUIPMENT\",\"equipment_plate\":\"\",\"spare_part_name\":\"FOUR WAY VALVE\",\"po_no\":\"\",\"unit\":\"PCS\",\"quantity\":1,\"unit_cost\":3500,\"total_cost_with_vat\":4025,\"supplier\":\"\",\"log_date\":\"2026-11-17 00:00:00\",\"project_id\":null,\"logged_by\":1,\"updated_at\":\"2026-11-17 10:02:13\",\"created_at\":\"2026-11-17 10:02:13\",\"id\":23}',NULL,'127.0.0.1','Symfony','2026-11-17 07:02:13','2026-11-17 07:02:13'),(76,'App\\Models\\EquipmentMaintenanceLog',24,NULL,'created',NULL,'{\"equipment_id\":null,\"equipment_type\":\"MITSUBISH\",\"equipment_plate\":\"2-78921\",\"spare_part_name\":\"PISTON STD\",\"po_no\":\"POEQ\\/16\\/00008\",\"unit\":\"PCS\",\"quantity\":4,\"unit_cost\":19000,\"total_cost_with_vat\":114130,\"supplier\":\"ABEBECH\",\"log_date\":\"2015-03-11 00:00:00\",\"project_id\":null,\"logged_by\":1,\"updated_at\":\"2026-11-17 10:02:13\",\"created_at\":\"2026-11-17 10:02:13\",\"id\":24}',NULL,'127.0.0.1','Symfony','2026-11-17 07:02:13','2026-11-17 07:02:13'),(77,'App\\Models\\EquipmentMaintenanceLog',25,NULL,'created',NULL,'{\"equipment_id\":null,\"equipment_type\":\"EQUIPMENT\",\"equipment_plate\":\"\",\"spare_part_name\":\"PISTON  RING STD\",\"po_no\":\"\",\"unit\":\"SET\",\"quantity\":1,\"unit_cost\":25000,\"total_cost_with_vat\":28750,\"supplier\":\"\",\"log_date\":\"2026-11-17 00:00:00\",\"project_id\":null,\"logged_by\":1,\"updated_at\":\"2026-11-17 10:02:13\",\"created_at\":\"2026-11-17 10:02:13\",\"id\":25}',NULL,'127.0.0.1','Symfony','2026-11-17 07:02:13','2026-11-17 07:02:13'),(78,'App\\Models\\EquipmentMaintenanceLog',26,NULL,'created',NULL,'{\"equipment_id\":null,\"equipment_type\":\"UD-TRUCK\",\"equipment_plate\":\"3-99425\",\"spare_part_name\":\"WHEEL BOLT\",\"po_no\":\"POEQ\\/16\\/00010\",\"unit\":\"PCS\",\"quantity\":5,\"unit_cost\":4500,\"total_cost_with_vat\":25425,\"supplier\":\"DERE UD VSP\",\"log_date\":\"2015-03-11 00:00:00\",\"project_id\":null,\"logged_by\":1,\"updated_at\":\"2026-11-17 10:02:13\",\"created_at\":\"2026-11-17 10:02:13\",\"id\":26}',NULL,'127.0.0.1','Symfony','2026-11-17 07:02:13','2026-11-17 07:02:13'),(79,'App\\Models\\EquipmentMaintenanceLog',27,NULL,'created',NULL,'{\"equipment_id\":null,\"equipment_type\":\"PICK UP\",\"equipment_plate\":\"3-47866\",\"spare_part_name\":\"BATTERY12V-70AH\",\"po_no\":\"POEQ\\/16\\/00009\",\"unit\":\"PCS\",\"quantity\":1,\"unit_cost\":11304.35,\"total_cost_with_vat\":12773.92,\"supplier\":\"MAEREG\",\"log_date\":\"2015-03-11 00:00:00\",\"project_id\":null,\"logged_by\":1,\"updated_at\":\"2026-11-17 10:02:13\",\"created_at\":\"2026-11-17 10:02:13\",\"id\":27}',NULL,'127.0.0.1','Symfony','2026-11-17 07:02:13','2026-11-17 07:02:13'),(80,'App\\Models\\EquipmentMaintenanceLog',28,NULL,'created',NULL,'{\"equipment_id\":7,\"equipment_type\":\"sino truck\",\"equipment_plate\":\"3-50327\",\"spare_part_name\":\"bolt wheel\",\"po_no\":\"POEQ\\/16\\/00005\",\"unit\":\"PCS\",\"quantity\":30,\"unit_cost\":278.26,\"total_cost_with_vat\":9600,\"supplier\":\"DANIEL ABEBE\",\"log_date\":\"2015-03-11 00:00:00\",\"project_id\":null,\"logged_by\":1,\"updated_at\":\"2026-11-17 10:02:13\",\"created_at\":\"2026-11-17 10:02:13\",\"id\":28}',NULL,'127.0.0.1','Symfony','2026-11-17 07:02:13','2026-11-17 07:02:13'),(81,'App\\Models\\EquipmentMaintenanceLog',29,NULL,'created',NULL,'{\"equipment_id\":null,\"equipment_type\":\"UD-TRUCK\",\"equipment_plate\":\"3-99464\",\"spare_part_name\":\"LEAF SPRING FRONT NO 1\",\"po_no\":\"POEQ\\/16\\/00011\",\"unit\":\"PCS\",\"quantity\":1,\"unit_cost\":4800,\"total_cost_with_vat\":18306,\"supplier\":\"DAWIT BONGER\",\"log_date\":\"2015-04-11 00:00:00\",\"project_id\":null,\"logged_by\":1,\"updated_at\":\"2026-11-17 10:02:13\",\"created_at\":\"2026-11-17 10:02:13\",\"id\":29}',NULL,'127.0.0.1','Symfony','2026-11-17 07:02:13','2026-11-17 07:02:13'),(82,'App\\Models\\EquipmentMaintenanceLog',30,NULL,'created',NULL,'{\"equipment_id\":null,\"equipment_type\":\"EQUIPMENT\",\"equipment_plate\":\"\",\"spare_part_name\":\"LEAF SPRING FRONT NO 3\",\"po_no\":\"\",\"unit\":\"PCS\",\"quantity\":1,\"unit_cost\":3000,\"total_cost_with_vat\":3450,\"supplier\":\"\",\"log_date\":\"2026-11-17 00:00:00\",\"project_id\":null,\"logged_by\":1,\"updated_at\":\"2026-11-17 10:02:13\",\"created_at\":\"2026-11-17 10:02:13\",\"id\":30}',NULL,'127.0.0.1','Symfony','2026-11-17 07:02:13','2026-11-17 07:02:13'),(83,'App\\Models\\EquipmentMaintenanceLog',31,NULL,'created',NULL,'{\"equipment_id\":null,\"equipment_type\":\"EQUIPMENT\",\"equipment_plate\":\"\",\"spare_part_name\":\"LEAF SPRING FRONT NO 5\",\"po_no\":\"\",\"unit\":\"PCS\",\"quantity\":1,\"unit_cost\":2500,\"total_cost_with_vat\":2875,\"supplier\":\"\",\"log_date\":\"2026-11-17 00:00:00\",\"project_id\":null,\"logged_by\":1,\"updated_at\":\"2026-11-17 10:02:13\",\"created_at\":\"2026-11-17 10:02:13\",\"id\":31}',NULL,'127.0.0.1','Symfony','2026-11-17 07:02:13','2026-11-17 07:02:13'),(84,'App\\Models\\EquipmentMaintenanceLog',32,NULL,'created',NULL,'{\"equipment_id\":null,\"equipment_type\":\"EQUIPMENT\",\"equipment_plate\":\"\",\"spare_part_name\":\"LEAF SPRING ASSY FRONT\",\"po_no\":\"\",\"unit\":\"ASSY\",\"quantity\":1,\"unit_cost\":2200,\"total_cost_with_vat\":2530,\"supplier\":\"\",\"log_date\":\"2026-11-17 00:00:00\",\"project_id\":null,\"logged_by\":1,\"updated_at\":\"2026-11-17 10:02:13\",\"created_at\":\"2026-11-17 10:02:13\",\"id\":32}',NULL,'127.0.0.1','Symfony','2026-11-17 07:02:13','2026-11-17 07:02:13'),(85,'App\\Models\\EquipmentMaintenanceLog',33,NULL,'created',NULL,'{\"equipment_id\":null,\"equipment_type\":\"EQUIPMENT\",\"equipment_plate\":\"\",\"spare_part_name\":\"LEAF SPRING ASSY FRONT\",\"po_no\":\"\",\"unit\":\"PCS\",\"quantity\":1,\"unit_cost\":1900,\"total_cost_with_vat\":2185,\"supplier\":\"\",\"log_date\":\"2026-11-17 00:00:00\",\"project_id\":null,\"logged_by\":1,\"updated_at\":\"2026-11-17 10:02:13\",\"created_at\":\"2026-11-17 10:02:13\",\"id\":33}',NULL,'127.0.0.1','Symfony','2026-11-17 07:02:13','2026-11-17 07:02:13'),(86,'App\\Models\\EquipmentMaintenanceLog',34,NULL,'created',NULL,'{\"equipment_id\":null,\"equipment_type\":\"EQUIPMENT\",\"equipment_plate\":\"\",\"spare_part_name\":\"LEAF SPRING  ASSY FRONT\",\"po_no\":\"\",\"unit\":\"PCS\",\"quantity\":1,\"unit_cost\":1500,\"total_cost_with_vat\":1725,\"supplier\":\"\",\"log_date\":\"2026-11-17 00:00:00\",\"project_id\":null,\"logged_by\":1,\"updated_at\":\"2026-11-17 10:02:13\",\"created_at\":\"2026-11-17 10:02:13\",\"id\":34}',NULL,'127.0.0.1','Symfony','2026-11-17 07:02:13','2026-11-17 07:02:13'),(87,'App\\Models\\EquipmentMaintenanceLog',35,NULL,'created',NULL,'{\"equipment_id\":null,\"equipment_type\":\"EQUIPMENT\",\"equipment_plate\":\"\",\"spare_part_name\":\"CENTER BOLT\",\"po_no\":\"\",\"unit\":\"PCS\",\"quantity\":1,\"unit_cost\":300,\"total_cost_with_vat\":345,\"supplier\":\"\",\"log_date\":\"2026-11-17 00:00:00\",\"project_id\":null,\"logged_by\":1,\"updated_at\":\"2026-11-17 10:02:13\",\"created_at\":\"2026-11-17 10:02:13\",\"id\":35}',NULL,'127.0.0.1','Symfony','2026-11-17 07:02:13','2026-11-17 07:02:13'),(88,'App\\Models\\EquipmentMaintenanceLog',36,NULL,'created',NULL,'{\"equipment_id\":null,\"equipment_type\":\"GENERATOR\",\"equipment_plate\":\"CUMMINS\",\"spare_part_name\":\"FILTER OIL\",\"po_no\":\"POEQ\\/16\\/00021\",\"unit\":\"PCS\",\"quantity\":3,\"unit_cost\":1300,\"total_cost_with_vat\":7245,\"supplier\":\"AUTO ZONE\\/mega\\/\",\"log_date\":\"2015-04-11 00:00:00\",\"project_id\":null,\"logged_by\":1,\"updated_at\":\"2026-11-17 10:02:13\",\"created_at\":\"2026-11-17 10:02:13\",\"id\":36}',NULL,'127.0.0.1','Symfony','2026-11-17 07:02:13','2026-11-17 07:02:13'),(89,'App\\Models\\EquipmentMaintenanceLog',37,NULL,'created',NULL,'{\"equipment_id\":null,\"equipment_type\":\"EQUIPMENT\",\"equipment_plate\":\"\",\"spare_part_name\":\"FUEL FILTER\",\"po_no\":\"\",\"unit\":\"PCS\",\"quantity\":3,\"unit_cost\":800,\"total_cost_with_vat\":2760,\"supplier\":\"\",\"log_date\":\"2026-11-17 00:00:00\",\"project_id\":null,\"logged_by\":1,\"updated_at\":\"2026-11-17 10:02:13\",\"created_at\":\"2026-11-17 10:02:13\",\"id\":37}',NULL,'127.0.0.1','Symfony','2026-11-17 07:02:13','2026-11-17 07:02:13'),(90,'App\\Models\\EquipmentMaintenanceLog',38,NULL,'created',NULL,'{\"equipment_id\":null,\"equipment_type\":\"BYD\",\"equipment_plate\":\"3-92735\",\"spare_part_name\":\"CHAIN ASSY\",\"po_no\":\"POEQ\\/16\\/00020\",\"unit\":\"PCS\",\"quantity\":1,\"unit_cost\":24500,\"total_cost_with_vat\":27685,\"supplier\":\"SAMSON\",\"log_date\":\"2015-04-11 00:00:00\",\"project_id\":null,\"logged_by\":1,\"updated_at\":\"2026-11-17 10:02:13\",\"created_at\":\"2026-11-17 10:02:13\",\"id\":38}',NULL,'127.0.0.1','Symfony','2026-11-17 07:02:13','2026-11-17 07:02:13'),(91,'App\\Models\\EquipmentMaintenanceLog',39,NULL,'created',NULL,'{\"equipment_id\":null,\"equipment_type\":\"ISUZU\",\"equipment_plate\":\"3-A40967\",\"spare_part_name\":\"ENGINE OIL 15W40 ,TOP UP\",\"po_no\":\"POEQ\\/16\\/00013\",\"unit\":\"LIT\",\"quantity\":4,\"unit_cost\":500,\"total_cost_with_vat\":2000,\"supplier\":\"TOTAL\",\"log_date\":\"2015-04-11 00:00:00\",\"project_id\":null,\"logged_by\":1,\"updated_at\":\"2026-11-17 10:02:13\",\"created_at\":\"2026-11-17 10:02:13\",\"id\":39}',NULL,'127.0.0.1','Symfony','2026-11-17 07:02:13','2026-11-17 07:02:13'),(92,'App\\Models\\EquipmentMaintenanceLog',40,NULL,'created',NULL,'{\"equipment_id\":null,\"equipment_type\":\"pump\",\"equipment_plate\":\"MAIN.\",\"spare_part_name\":\"SUMMERSUBLE PUMP\",\"po_no\":\"PBR-EQ\\/16\\/00013\",\"unit\":\"PCS\",\"quantity\":1,\"unit_cost\":1900,\"total_cost_with_vat\":1900,\"supplier\":\"D\\/BIRHAN UNIVERSITY\",\"log_date\":\"2015-04-11 00:00:00\",\"project_id\":null,\"logged_by\":1,\"updated_at\":\"2026-11-17 10:02:13\",\"created_at\":\"2026-11-17 10:02:13\",\"id\":40}',NULL,'127.0.0.1','Symfony','2026-11-17 07:02:13','2026-11-17 07:02:13'),(93,'App\\Models\\EquipmentMaintenanceLog',41,NULL,'created',NULL,'{\"equipment_id\":null,\"equipment_type\":\"SINO TRUCK\",\"equipment_plate\":\"3-55358\",\"spare_part_name\":\"BRAKE OIL\",\"po_no\":\"PBR-EQ\\/16\\/00009\",\"unit\":\"LIT\",\"quantity\":0.5,\"unit_cost\":400,\"total_cost_with_vat\":200,\"supplier\":\"ARBAMINCH WWT\",\"log_date\":\"2015-04-11 00:00:00\",\"project_id\":null,\"logged_by\":1,\"updated_at\":\"2026-11-17 10:02:13\",\"created_at\":\"2026-11-17 10:02:13\",\"id\":41}',NULL,'127.0.0.1','Symfony','2026-11-17 07:02:13','2026-11-17 07:02:13'),(94,'App\\Models\\EquipmentMaintenanceLog',42,NULL,'created',NULL,'{\"equipment_id\":null,\"equipment_type\":\"EQUIPMENT\",\"equipment_plate\":\"\",\"spare_part_name\":\"MAINTENANCE\",\"po_no\":\"PBR-EQ\\/16\\/00010\",\"unit\":\"PCS\",\"quantity\":1,\"unit_cost\":3000,\"total_cost_with_vat\":3000,\"supplier\":\"\",\"log_date\":\"2026-11-17 00:00:00\",\"project_id\":null,\"logged_by\":1,\"updated_at\":\"2026-11-17 10:02:13\",\"created_at\":\"2026-11-17 10:02:13\",\"id\":42}',NULL,'127.0.0.1','Symfony','2026-11-17 07:02:13','2026-11-17 07:02:13'),(95,'App\\Models\\EquipmentMaintenanceLog',43,NULL,'created',NULL,'{\"equipment_id\":null,\"equipment_type\":\"MITSUBISH\",\"equipment_plate\":\"3-51054\",\"spare_part_name\":\"WIPER MAIN.\",\"po_no\":\"PBR-EQ\\/16\\/00011\",\"unit\":\"PCS\",\"quantity\":1,\"unit_cost\":710,\"total_cost_with_vat\":710,\"supplier\":\"BAHIRDAR WWT\",\"log_date\":\"2015-04-11 00:00:00\",\"project_id\":null,\"logged_by\":1,\"updated_at\":\"2026-11-17 10:02:13\",\"created_at\":\"2026-11-17 10:02:13\",\"id\":43}',NULL,'127.0.0.1','Symfony','2026-11-17 07:02:14','2026-11-17 07:02:14'),(96,'App\\Models\\EquipmentMaintenanceLog',44,NULL,'created',NULL,'{\"equipment_id\":null,\"equipment_type\":\"VIBRATOR\",\"equipment_plate\":\"MAIN.\",\"spare_part_name\":\"HOSE MAIN.\",\"po_no\":\"PBR-EQ\\/16\\/00012\",\"unit\":\"PCS\",\"quantity\":3,\"unit_cost\":660,\"total_cost_with_vat\":6050,\"supplier\":\"MEGA\",\"log_date\":\"2015-04-11 00:00:00\",\"project_id\":null,\"logged_by\":1,\"updated_at\":\"2026-11-17 10:02:14\",\"created_at\":\"2026-11-17 10:02:14\",\"id\":44}',NULL,'127.0.0.1','Symfony','2026-11-17 07:02:14','2026-11-17 07:02:14'),(97,'App\\Models\\EquipmentMaintenanceLog',45,NULL,'created',NULL,'{\"equipment_id\":null,\"equipment_type\":\"SINO TRUCK\",\"equipment_plate\":\"3-55358\",\"spare_part_name\":\"STABLIZER BUSHING RR PUR.\",\"po_no\":\"PBR-EQ\\/16\\/00008\",\"unit\":\"PCS\",\"quantity\":2,\"unit_cost\":805,\"total_cost_with_vat\":8970,\"supplier\":\"ARBAMINCH WWT\",\"log_date\":\"2015-04-11 00:00:00\",\"project_id\":null,\"logged_by\":1,\"updated_at\":\"2026-11-17 10:02:14\",\"created_at\":\"2026-11-17 10:02:14\",\"id\":45}',NULL,'127.0.0.1','Symfony','2026-11-17 07:02:14','2026-11-17 07:02:14'),(98,'App\\Models\\EquipmentMaintenanceLog',46,NULL,'created',NULL,'{\"equipment_id\":null,\"equipment_type\":\"EQUIPMENT\",\"equipment_plate\":\"\",\"spare_part_name\":\"STABLIZER BUSHING FR PUR.\",\"po_no\":\"\",\"unit\":\"PCS\",\"quantity\":2,\"unit_cost\":805,\"total_cost_with_vat\":1851.5,\"supplier\":\"\",\"log_date\":\"2026-11-17 00:00:00\",\"project_id\":null,\"logged_by\":1,\"updated_at\":\"2026-11-17 10:02:14\",\"created_at\":\"2026-11-17 10:02:14\",\"id\":46}',NULL,'127.0.0.1','Symfony','2026-11-17 07:02:14','2026-11-17 07:02:14'),(99,'App\\Models\\EquipmentMaintenanceLog',47,NULL,'created',NULL,'{\"equipment_id\":null,\"equipment_type\":\"EQUIPMENT\",\"equipment_plate\":\"\",\"spare_part_name\":\"BUSHING PURCHASE\",\"po_no\":\"\",\"unit\":\"PCS\",\"quantity\":1,\"unit_cost\":4600,\"total_cost_with_vat\":5290,\"supplier\":\"\",\"log_date\":\"2026-11-17 00:00:00\",\"project_id\":null,\"logged_by\":1,\"updated_at\":\"2026-11-17 10:02:14\",\"created_at\":\"2026-11-17 10:02:14\",\"id\":47}',NULL,'127.0.0.1','Symfony','2026-11-17 07:02:14','2026-11-17 07:02:14'),(100,'App\\Models\\EquipmentMaintenanceLog',48,NULL,'created',NULL,'{\"equipment_id\":null,\"equipment_type\":\"EQUIPMENT\",\"equipment_plate\":\"\",\"spare_part_name\":\"TORQUE ROD BOLT DIA32\",\"po_no\":\"\",\"unit\":\"PCS\",\"quantity\":1,\"unit_cost\":575,\"total_cost_with_vat\":661.25,\"supplier\":\"\",\"log_date\":\"2026-11-17 00:00:00\",\"project_id\":null,\"logged_by\":1,\"updated_at\":\"2026-11-17 10:02:14\",\"created_at\":\"2026-11-17 10:02:14\",\"id\":48}',NULL,'127.0.0.1','Symfony','2026-11-17 07:02:14','2026-11-17 07:02:14'),(101,'App\\Models\\EquipmentMaintenanceLog',49,NULL,'created',NULL,'{\"equipment_id\":null,\"equipment_type\":\"EQUIPMENT\",\"equipment_plate\":\"\",\"spare_part_name\":\"ENGINE CUP PURCHASE\",\"po_no\":\"\",\"unit\":\"PCS\",\"quantity\":1,\"unit_cost\":575,\"total_cost_with_vat\":661.25,\"supplier\":\"\",\"log_date\":\"2026-11-17 00:00:00\",\"project_id\":null,\"logged_by\":1,\"updated_at\":\"2026-11-17 10:02:14\",\"created_at\":\"2026-11-17 10:02:14\",\"id\":49}',NULL,'127.0.0.1','Symfony','2026-11-17 07:02:14','2026-11-17 07:02:14'),(102,'App\\Models\\EquipmentMaintenanceLog',50,NULL,'created',NULL,'{\"equipment_id\":null,\"equipment_type\":\"UD-TRUCK\",\"equipment_plate\":\"3-99424\",\"spare_part_name\":\"BATTERY12V-150AH\",\"po_no\":\"POEQ\\/16\\/00012\",\"unit\":\"PCS\",\"quantity\":2,\"unit_cost\":22489.09,\"total_cost_with_vat\":50825.34,\"supplier\":\"MY WISH\",\"log_date\":\"2015-04-11 00:00:00\",\"project_id\":null,\"logged_by\":1,\"updated_at\":\"2026-11-17 10:02:14\",\"created_at\":\"2026-11-17 10:02:14\",\"id\":50}',NULL,'127.0.0.1','Symfony','2026-11-17 07:02:14','2026-11-17 07:02:14'),(103,'App\\Models\\EquipmentMaintenanceLog',51,NULL,'created',NULL,'{\"equipment_id\":null,\"equipment_type\":\"UD-TRUCK\",\"equipment_plate\":\"3-99425\",\"spare_part_name\":\"wheel MAINTENANCE\",\"po_no\":\"PBR-EQ\\/16\\/00005\",\"unit\":\"PCS\",\"quantity\":1,\"unit_cost\":1100,\"total_cost_with_vat\":1100,\"supplier\":\"BONGA WWT\",\"log_date\":\"2015-04-11 00:00:00\",\"project_id\":null,\"logged_by\":1,\"updated_at\":\"2026-11-17 10:02:14\",\"created_at\":\"2026-11-17 10:02:14\",\"id\":51}',NULL,'127.0.0.1','Symfony','2026-11-17 07:02:14','2026-11-17 07:02:14'),(104,'App\\Models\\EquipmentMaintenanceLog',52,NULL,'created',NULL,'{\"equipment_id\":null,\"equipment_type\":\"TOYOTA PICK UP\",\"equipment_plate\":\"3-A57479\",\"spare_part_name\":\"BRAKE PAD KIT\",\"po_no\":\"POEQ\\/16\\/00023\",\"unit\":\"PCS\",\"quantity\":1,\"unit_cost\":9000,\"total_cost_with_vat\":11187,\"supplier\":\"ZELALEM\",\"log_date\":\"2015-05-11 00:00:00\",\"project_id\":null,\"logged_by\":1,\"updated_at\":\"2026-11-17 10:02:14\",\"created_at\":\"2026-11-17 10:02:14\",\"id\":52}',NULL,'127.0.0.1','Symfony','2026-11-17 07:02:14','2026-11-17 07:02:14'),(105,'App\\Models\\EquipmentMaintenanceLog',53,NULL,'created',NULL,'{\"equipment_id\":null,\"equipment_type\":\"EQUIPMENT\",\"equipment_plate\":\"\",\"spare_part_name\":\"FILTER OIL\",\"po_no\":\"\",\"unit\":\"PCS\",\"quantity\":1,\"unit_cost\":900,\"total_cost_with_vat\":1035,\"supplier\":\"\",\"log_date\":\"2026-11-17 00:00:00\",\"project_id\":null,\"logged_by\":1,\"updated_at\":\"2026-11-17 10:02:14\",\"created_at\":\"2026-11-17 10:02:14\",\"id\":53}',NULL,'127.0.0.1','Symfony','2026-11-17 07:02:14','2026-11-17 07:02:14'),(106,'App\\Models\\EquipmentMaintenanceLog',54,NULL,'created',NULL,'{\"equipment_id\":null,\"equipment_type\":\"LOADER\",\"equipment_plate\":\"LD-2231\",\"spare_part_name\":\"BEARING\",\"po_no\":\"POEQ\\/16\\/00024\",\"unit\":\"PCS\",\"quantity\":2,\"unit_cost\":3000,\"total_cost_with_vat\":6900,\"supplier\":\"BELACHEW\",\"log_date\":\"2015-05-11 00:00:00\",\"project_id\":null,\"logged_by\":1,\"updated_at\":\"2026-11-17 10:02:14\",\"created_at\":\"2026-11-17 10:02:14\",\"id\":54}',NULL,'127.0.0.1','Symfony','2026-11-17 07:02:14','2026-11-17 07:02:14'),(107,'App\\Models\\EquipmentMaintenanceLog',55,NULL,'created',NULL,'{\"equipment_id\":null,\"equipment_type\":\"SINO TRUCK\",\"equipment_plate\":\"3-44978\",\"spare_part_name\":\"ENGINE OIL 15W40\",\"po_no\":\"PBR-EQ\\/16\\/00015\",\"unit\":\"LIT\",\"quantity\":30,\"unit_cost\":220,\"total_cost_with_vat\":13200,\"supplier\":\"AUGUSTA\",\"log_date\":\"2015-05-11 00:00:00\",\"project_id\":null,\"logged_by\":1,\"updated_at\":\"2026-11-17 10:02:14\",\"created_at\":\"2026-11-17 10:02:14\",\"id\":55}',NULL,'127.0.0.1','Symfony','2026-11-17 07:02:14','2026-11-17 07:02:14'),(108,'App\\Models\\EquipmentMaintenanceLog',56,NULL,'created',NULL,'{\"equipment_id\":null,\"equipment_type\":\"IVECO TRUCK\",\"equipment_plate\":\"3-82479\",\"spare_part_name\":\"ENGINE OIL 15W40\",\"po_no\":\"\",\"unit\":\"PCS\",\"quantity\":30,\"unit_cost\":220,\"total_cost_with_vat\":7590,\"supplier\":\"\",\"log_date\":\"2026-11-17 00:00:00\",\"project_id\":null,\"logged_by\":1,\"updated_at\":\"2026-11-17 10:02:14\",\"created_at\":\"2026-11-17 10:02:14\",\"id\":56}',NULL,'127.0.0.1','Symfony','2026-11-17 07:02:14','2026-11-17 07:02:14'),(109,'App\\Models\\EquipmentMaintenanceLog',57,NULL,'created',NULL,'{\"equipment_id\":null,\"equipment_type\":\"SINO TRUCK\",\"equipment_plate\":\"3-91935\",\"spare_part_name\":\"ENGINE OIL 15W40\",\"po_no\":\"PBR-EQ\\/16\\/00016\",\"unit\":\"LIT\",\"quantity\":30,\"unit_cost\":220,\"total_cost_with_vat\":6600,\"supplier\":\"MEGA\",\"log_date\":\"2015-05-11 00:00:00\",\"project_id\":null,\"logged_by\":1,\"updated_at\":\"2026-11-17 10:02:14\",\"created_at\":\"2026-11-17 10:02:14\",\"id\":57}',NULL,'127.0.0.1','Symfony','2026-11-17 07:02:14','2026-11-17 07:02:14'),(110,'App\\Models\\EquipmentMaintenanceLog',58,NULL,'created',NULL,'{\"equipment_id\":5,\"equipment_type\":\"LOADER\",\"equipment_plate\":\"LD-1633\",\"spare_part_name\":\"ENGINE OIL 15W40\",\"po_no\":\"PBR-EQ\\/16\\/00014\",\"unit\":\"LIT\",\"quantity\":20,\"unit_cost\":220,\"total_cost_with_vat\":4400,\"supplier\":\"D\\/BIRHAN UNIVERSITY\",\"log_date\":\"0215-11-05 00:00:00\",\"project_id\":null,\"logged_by\":1,\"updated_at\":\"2026-11-17 10:02:14\",\"created_at\":\"2026-11-17 10:02:14\",\"id\":58}',NULL,'127.0.0.1','Symfony','2026-11-17 07:02:14','2026-11-17 07:02:14'),(111,'App\\Models\\EquipmentMaintenanceLog',59,NULL,'created',NULL,'{\"equipment_id\":null,\"equipment_type\":\"BATCHING PLANT\",\"equipment_plate\":\"MAIN.\",\"spare_part_name\":\"AIR HOSE  MAIN.\",\"po_no\":\"PBR-EQ\\/16\\/00018\",\"unit\":\"PCS\",\"quantity\":1,\"unit_cost\":510,\"total_cost_with_vat\":867,\"supplier\":\"MEGA\",\"log_date\":\"2015-05-11 00:00:00\",\"project_id\":null,\"logged_by\":1,\"updated_at\":\"2026-11-17 10:02:14\",\"created_at\":\"2026-11-17 10:02:14\",\"id\":59}',NULL,'127.0.0.1','Symfony','2026-11-17 07:02:14','2026-11-17 07:02:14'),(112,'App\\Models\\EquipmentMaintenanceLog',60,NULL,'created',NULL,'{\"equipment_id\":null,\"equipment_type\":\"EQUIPMENT\",\"equipment_plate\":\"\",\"spare_part_name\":\"CONNECTOR  MAIN.\",\"po_no\":\"\",\"unit\":\"PCS\",\"quantity\":1,\"unit_cost\":357,\"total_cost_with_vat\":410.55,\"supplier\":\"\",\"log_date\":\"2026-11-17 00:00:00\",\"project_id\":null,\"logged_by\":1,\"updated_at\":\"2026-11-17 10:02:14\",\"created_at\":\"2026-11-17 10:02:14\",\"id\":60}',NULL,'127.0.0.1','Symfony','2026-11-17 07:02:14','2026-11-17 07:02:14'),(113,'App\\Models\\EquipmentMaintenanceLog',61,NULL,'created',NULL,'{\"equipment_id\":null,\"equipment_type\":\"WATER PUMP\",\"equipment_plate\":\"MAIN.\",\"spare_part_name\":\"WATER PUMP MAIN.\",\"po_no\":\"PBR-EQ\\/16\\/00019\",\"unit\":\"PCS\",\"quantity\":1,\"unit_cost\":700,\"total_cost_with_vat\":700,\"supplier\":\"BONGA WWT\",\"log_date\":\"2015-05-11 00:00:00\",\"project_id\":null,\"logged_by\":1,\"updated_at\":\"2026-11-17 10:02:14\",\"created_at\":\"2026-11-17 10:02:14\",\"id\":61}',NULL,'127.0.0.1','Symfony','2026-11-17 07:02:14','2026-11-17 07:02:14'),(114,'App\\Models\\EquipmentMaintenanceLog',62,NULL,'created',NULL,'{\"equipment_id\":null,\"equipment_type\":\"SINO TRUCK\",\"equipment_plate\":\"3-44951\",\"spare_part_name\":\"FLEXIABLE PIPE PURC.\",\"po_no\":\"PBR-EQ\\/16\\/00020\",\"unit\":\"PCS\",\"quantity\":1,\"unit_cost\":5500,\"total_cost_with_vat\":8400,\"supplier\":\"WOMEN\",\"log_date\":\"2015-05-11 00:00:00\",\"project_id\":null,\"logged_by\":1,\"updated_at\":\"2026-11-17 10:02:14\",\"created_at\":\"2026-11-17 10:02:14\",\"id\":62}',NULL,'127.0.0.1','Symfony','2026-11-17 07:02:14','2026-11-17 07:02:14'),(115,'App\\Models\\EquipmentMaintenanceLog',63,NULL,'created',NULL,'{\"equipment_id\":null,\"equipment_type\":\"EQUIPMENT\",\"equipment_plate\":\"\",\"spare_part_name\":\"GASKET PURCHASE\",\"po_no\":\"\",\"unit\":\"PCS\",\"quantity\":1,\"unit_cost\":1300,\"total_cost_with_vat\":1495,\"supplier\":\"\",\"log_date\":\"2026-11-17 00:00:00\",\"project_id\":null,\"logged_by\":1,\"updated_at\":\"2026-11-17 10:02:14\",\"created_at\":\"2026-11-17 10:02:14\",\"id\":63}',NULL,'127.0.0.1','Symfony','2026-11-17 07:02:14','2026-11-17 07:02:14'),(116,'App\\Models\\EquipmentMaintenanceLog',64,NULL,'created',NULL,'{\"equipment_id\":null,\"equipment_type\":\"EQUIPMENT\",\"equipment_plate\":\"\",\"spare_part_name\":\"OIL FILTER PURCHASE\",\"po_no\":\"\",\"unit\":\"PCS\",\"quantity\":2,\"unit_cost\":800,\"total_cost_with_vat\":1840,\"supplier\":\"\",\"log_date\":\"2026-11-17 00:00:00\",\"project_id\":null,\"logged_by\":1,\"updated_at\":\"2026-11-17 10:02:14\",\"created_at\":\"2026-11-17 10:02:14\",\"id\":64}',NULL,'127.0.0.1','Symfony','2026-11-17 07:02:14','2026-11-17 07:02:14'),(117,'App\\Models\\EquipmentMaintenanceLog',65,NULL,'created',NULL,'{\"equipment_id\":null,\"equipment_type\":\"SINO TRUCK\",\"equipment_plate\":\"3-44951\",\"spare_part_name\":\"EXAUST GASKET\",\"po_no\":\"PBR-EQ\\/16\\/00021\",\"unit\":\"PCS\",\"quantity\":1,\"unit_cost\":600,\"total_cost_with_vat\":4290,\"supplier\":\"WOMEN\",\"log_date\":\"2015-06-11 00:00:00\",\"project_id\":null,\"logged_by\":1,\"updated_at\":\"2026-11-17 10:02:14\",\"created_at\":\"2026-11-17 10:02:14\",\"id\":65}',NULL,'127.0.0.1','Symfony','2026-11-17 07:02:14','2026-11-17 07:02:14'),(118,'App\\Models\\EquipmentMaintenanceLog',66,NULL,'created',NULL,'{\"equipment_id\":null,\"equipment_type\":\"EQUIPMENT\",\"equipment_plate\":\"\",\"spare_part_name\":\"OIL TUNKER\",\"po_no\":\"\",\"unit\":\"PCS\",\"quantity\":1,\"unit_cost\":1500,\"total_cost_with_vat\":1725,\"supplier\":\"\",\"log_date\":\"2026-11-17 00:00:00\",\"project_id\":null,\"logged_by\":1,\"updated_at\":\"2026-11-17 10:02:14\",\"created_at\":\"2026-11-17 10:02:14\",\"id\":66}',NULL,'127.0.0.1','Symfony','2026-11-17 07:02:14','2026-11-17 07:02:14'),(119,'App\\Models\\EquipmentMaintenanceLog',67,NULL,'created',NULL,'{\"equipment_id\":null,\"equipment_type\":\"EQUIPMENT\",\"equipment_plate\":\"\",\"spare_part_name\":\"PERFORM KM\",\"po_no\":\"\",\"unit\":\"PCS\",\"quantity\":1,\"unit_cost\":690,\"total_cost_with_vat\":793.5,\"supplier\":\"\",\"log_date\":\"2026-11-17 00:00:00\",\"project_id\":null,\"logged_by\":1,\"updated_at\":\"2026-11-17 10:02:14\",\"created_at\":\"2026-11-17 10:02:14\",\"id\":67}',NULL,'127.0.0.1','Symfony','2026-11-17 07:02:14','2026-11-17 07:02:14'),(120,'App\\Models\\EquipmentMaintenanceLog',68,NULL,'created',NULL,'{\"equipment_id\":null,\"equipment_type\":\"EQUIPMENT\",\"equipment_plate\":\"\",\"spare_part_name\":\"LABOUR COST\",\"po_no\":\"\",\"unit\":\"PCS\",\"quantity\":1,\"unit_cost\":1500,\"total_cost_with_vat\":1725,\"supplier\":\"\",\"log_date\":\"2026-11-17 00:00:00\",\"project_id\":null,\"logged_by\":1,\"updated_at\":\"2026-11-17 10:02:14\",\"created_at\":\"2026-11-17 10:02:14\",\"id\":68}',NULL,'127.0.0.1','Symfony','2026-11-17 07:02:14','2026-11-17 07:02:14'),(121,'App\\Models\\EquipmentMaintenanceLog',69,NULL,'created',NULL,'{\"equipment_id\":null,\"equipment_type\":\"SINO TRUCK\",\"equipment_plate\":\"3-44951\",\"spare_part_name\":\"ENGINE OIL\",\"po_no\":\"PBR-EQ\\/16\\/00022\",\"unit\":\"LIT\",\"quantity\":30,\"unit_cost\":220,\"total_cost_with_vat\":6600,\"supplier\":\"WOMEN\",\"log_date\":\"2015-06-11 00:00:00\",\"project_id\":null,\"logged_by\":1,\"updated_at\":\"2026-11-17 10:02:14\",\"created_at\":\"2026-11-17 10:02:14\",\"id\":69}',NULL,'127.0.0.1','Symfony','2026-11-17 07:02:14','2026-11-17 07:02:14'),(122,'App\\Models\\EquipmentMaintenanceLog',70,NULL,'created',NULL,'{\"equipment_id\":null,\"equipment_type\":\"SINO TRUCK\",\"equipment_plate\":\"3-55356\",\"spare_part_name\":\"SPONDA WELDING\",\"po_no\":\"PBR-EQ\\/16\\/00023\",\"unit\":\"PCS\",\"quantity\":1,\"unit_cost\":3450,\"total_cost_with_vat\":3450,\"supplier\":\"WOMEN\",\"log_date\":\"2015-06-11 00:00:00\",\"project_id\":null,\"logged_by\":1,\"updated_at\":\"2026-11-17 10:02:14\",\"created_at\":\"2026-11-17 10:02:14\",\"id\":70}',NULL,'127.0.0.1','Symfony','2026-11-17 07:02:14','2026-11-17 07:02:14'),(123,'App\\Models\\EquipmentMaintenanceLog',71,NULL,'created',NULL,'{\"equipment_id\":null,\"equipment_type\":\"WATER PUMP\",\"equipment_plate\":\"PURCHASE\",\"spare_part_name\":\"IMPELLER PURCHASE\",\"po_no\":\"PBR-EQ\\/16\\/00024\",\"unit\":\"PCS\",\"quantity\":1,\"unit_cost\":5500,\"total_cost_with_vat\":5500,\"supplier\":\"DEBRE MARKOS\",\"log_date\":\"2015-06-11 00:00:00\",\"project_id\":null,\"logged_by\":1,\"updated_at\":\"2026-11-17 10:02:14\",\"created_at\":\"2026-11-17 10:02:14\",\"id\":71}',NULL,'127.0.0.1','Symfony','2026-11-17 07:02:14','2026-11-17 07:02:14'),(124,'App\\Models\\EquipmentMaintenanceLog',72,NULL,'created',NULL,'{\"equipment_id\":null,\"equipment_type\":\"CONCRET  PUMP\",\"equipment_plate\":\"PURCHASE\",\"spare_part_name\":\"FUEL FILTER\",\"po_no\":\"POEQ\\/16\\/00027\",\"unit\":\"PCS\",\"quantity\":2,\"unit_cost\":2000,\"total_cost_with_vat\":6210,\"supplier\":\"AUTO ZONE\",\"log_date\":\"2015-06-11 00:00:00\",\"project_id\":null,\"logged_by\":1,\"updated_at\":\"2026-11-17 10:02:14\",\"created_at\":\"2026-11-17 10:02:14\",\"id\":72}',NULL,'127.0.0.1','Symfony','2026-11-17 07:02:14','2026-11-17 07:02:14'),(125,'App\\Models\\EquipmentMaintenanceLog',73,NULL,'created',NULL,'{\"equipment_id\":null,\"equipment_type\":\"EQUIPMENT\",\"equipment_plate\":\"\",\"spare_part_name\":\"OIL FILTER\",\"po_no\":\"\",\"unit\":\"PCS\",\"quantity\":1,\"unit_cost\":1400,\"total_cost_with_vat\":1610,\"supplier\":\"\",\"log_date\":\"2026-11-17 00:00:00\",\"project_id\":null,\"logged_by\":1,\"updated_at\":\"2026-11-17 10:02:14\",\"created_at\":\"2026-11-17 10:02:14\",\"id\":73}',NULL,'127.0.0.1','Symfony','2026-11-17 07:02:14','2026-11-17 07:02:14'),(126,'App\\Models\\EquipmentMaintenanceLog',74,NULL,'created',NULL,'{\"equipment_id\":null,\"equipment_type\":\"PICK UP\",\"equipment_plate\":\"3-A21717\",\"spare_part_name\":\"UPPER ARM BUSHING\",\"po_no\":\"POEQ\\/16\\/00028\",\"unit\":\"PCS\",\"quantity\":2,\"unit_cost\":2200,\"total_cost_with_vat\":5060,\"supplier\":\"MOHAMMED\",\"log_date\":\"2015-06-11 00:00:00\",\"project_id\":null,\"logged_by\":1,\"updated_at\":\"2026-11-17 10:02:14\",\"created_at\":\"2026-11-17 10:02:14\",\"id\":74}',NULL,'127.0.0.1','Symfony','2026-11-17 07:02:14','2026-11-17 07:02:14'),(127,'App\\Models\\EquipmentMaintenanceLog',75,NULL,'created',NULL,'{\"equipment_id\":null,\"equipment_type\":\"TRUCK MIXER\",\"equipment_plate\":\"3-A19838\",\"spare_part_name\":\"ENGINE OIL 15W40\",\"po_no\":\"PBR-EQ\\/16\\/00030\",\"unit\":\"LIT\",\"quantity\":30,\"unit_cost\":350,\"total_cost_with_vat\":21000,\"supplier\":\"WOMEN\",\"log_date\":\"2015-07-11 00:00:00\",\"project_id\":null,\"logged_by\":1,\"updated_at\":\"2026-11-17 10:02:14\",\"created_at\":\"2026-11-17 10:02:14\",\"id\":75}',NULL,'127.0.0.1','Symfony','2026-11-17 07:02:14','2026-11-17 07:02:14'),(128,'App\\Models\\EquipmentMaintenanceLog',76,NULL,'created',NULL,'{\"equipment_id\":null,\"equipment_type\":\"EQUIPMENT\",\"equipment_plate\":\"3-A19839\",\"spare_part_name\":\"ENGINE OIL 15W 40\",\"po_no\":\"\",\"unit\":\"PCS\",\"quantity\":30,\"unit_cost\":350,\"total_cost_with_vat\":12075,\"supplier\":\"\",\"log_date\":\"2026-11-17 00:00:00\",\"project_id\":null,\"logged_by\":1,\"updated_at\":\"2026-11-17 10:02:14\",\"created_at\":\"2026-11-17 10:02:14\",\"id\":76}',NULL,'127.0.0.1','Symfony','2026-11-17 07:02:14','2026-11-17 07:02:14'),(129,'App\\Models\\EquipmentMaintenanceLog',77,NULL,'created',NULL,'{\"equipment_id\":null,\"equipment_type\":\"UD-TRUCK\",\"equipment_plate\":\"3-99464\",\"spare_part_name\":\"CENTER BOLT\",\"po_no\":\"PBR-EQ\\/16\\/00031\",\"unit\":\"PCS\",\"quantity\":1,\"unit_cost\":330,\"total_cost_with_vat\":330,\"supplier\":\"MEGA\",\"log_date\":\"2015-07-11 00:00:00\",\"project_id\":null,\"logged_by\":1,\"updated_at\":\"2026-11-17 10:02:14\",\"created_at\":\"2026-11-17 10:02:14\",\"id\":77}',NULL,'127.0.0.1','Symfony','2026-11-17 07:02:14','2026-11-17 07:02:14'),(130,'App\\Models\\EquipmentMaintenanceLog',78,NULL,'created',NULL,'{\"equipment_id\":null,\"equipment_type\":\"Toyota platz\",\"equipment_plate\":\"3-A22996\",\"spare_part_name\":\"bearing seat welding main.\",\"po_no\":\"EQ-MPR\\/16\\/00006\",\"unit\":\"PCS\",\"quantity\":1,\"unit_cost\":300,\"total_cost_with_vat\":300,\"supplier\":\"CENTRAL\",\"log_date\":\"2015-07-11 00:00:00\",\"project_id\":null,\"logged_by\":1,\"updated_at\":\"2026-11-17 10:02:14\",\"created_at\":\"2026-11-17 10:02:14\",\"id\":78}',NULL,'127.0.0.1','Symfony','2026-11-17 07:02:14','2026-11-17 07:02:14'),(131,'App\\Models\\EquipmentMaintenanceLog',79,NULL,'created',NULL,'{\"equipment_id\":null,\"equipment_type\":\"BATCHING PLANYT\",\"equipment_plate\":\"PURCHASE\",\"spare_part_name\":\"GREASE HOSE\",\"po_no\":\"PBR-EQ\\/16\\/00032\",\"unit\":\"PCS\",\"quantity\":1,\"unit_cost\":690,\"total_cost_with_vat\":690,\"supplier\":\"MEGA\",\"log_date\":\"2015-07-11 00:00:00\",\"project_id\":null,\"logged_by\":1,\"updated_at\":\"2026-11-17 10:02:14\",\"created_at\":\"2026-11-17 10:02:14\",\"id\":79}',NULL,'127.0.0.1','Symfony','2026-11-17 07:02:14','2026-11-17 07:02:14'),(132,'App\\Models\\EquipmentMaintenanceLog',80,NULL,'created',NULL,'{\"equipment_id\":null,\"equipment_type\":\"SINO TRUCK\",\"equipment_plate\":\"3-55358\",\"spare_part_name\":\"CLUCH MASTER CYL.HOSE\",\"po_no\":\"PBR-EQ\\/16\\/00033\",\"unit\":\"PCS\",\"quantity\":1,\"unit_cost\":1725,\"total_cost_with_vat\":1725,\"supplier\":\"ARBAMINCH WWT\",\"log_date\":\"2015-07-11 00:00:00\",\"project_id\":null,\"logged_by\":1,\"updated_at\":\"2026-11-17 10:02:14\",\"created_at\":\"2026-11-17 10:02:14\",\"id\":80}',NULL,'127.0.0.1','Symfony','2026-11-17 07:02:14','2026-11-17 07:02:14'),(133,'App\\Models\\EquipmentMaintenanceLog',81,NULL,'created',NULL,'{\"equipment_id\":null,\"equipment_type\":\"SINO TRUCK\",\"equipment_plate\":\"3-55358\",\"spare_part_name\":\"BRAKE FLUID\",\"po_no\":\"PBR-EQ\\/16\\/00034\",\"unit\":\"LIT\",\"quantity\":1,\"unit_cost\":400,\"total_cost_with_vat\":400,\"supplier\":\"\",\"log_date\":\"2026-11-17 00:00:00\",\"project_id\":null,\"logged_by\":1,\"updated_at\":\"2026-11-17 10:02:14\",\"created_at\":\"2026-11-17 10:02:14\",\"id\":81}',NULL,'127.0.0.1','Symfony','2026-11-17 07:02:14','2026-11-17 07:02:14'),(134,'App\\Models\\EquipmentMaintenanceLog',82,NULL,'created',NULL,'{\"equipment_id\":null,\"equipment_type\":\"GRADER\",\"equipment_plate\":\"GR-0905\",\"spare_part_name\":\"HYDRAULIC OIL,TOPUP\",\"po_no\":\"PBR-EQ\\/16\\/00026\",\"unit\":\"LIT\",\"quantity\":5,\"unit_cost\":220,\"total_cost_with_vat\":3050,\"supplier\":\"AUGUSTA\",\"log_date\":\"2015-06-11 00:00:00\",\"project_id\":null,\"logged_by\":1,\"updated_at\":\"2026-11-17 10:02:14\",\"created_at\":\"2026-11-17 10:02:14\",\"id\":82}',NULL,'127.0.0.1','Symfony','2026-11-17 07:02:14','2026-11-17 07:02:14'),(135,'App\\Models\\EquipmentMaintenanceLog',83,NULL,'created',NULL,'{\"equipment_id\":6,\"equipment_type\":\"ROLLO\",\"equipment_plate\":\"CM-0562\",\"spare_part_name\":\"BRAKE FLUID\",\"po_no\":\"\",\"unit\":\"PCS\",\"quantity\":1.5,\"unit_cost\":1300,\"total_cost_with_vat\":2242.5,\"supplier\":\"\",\"log_date\":\"2026-11-17 00:00:00\",\"project_id\":null,\"logged_by\":1,\"updated_at\":\"2026-11-17 10:02:14\",\"created_at\":\"2026-11-17 10:02:14\",\"id\":83}',NULL,'127.0.0.1','Symfony','2026-11-17 07:02:14','2026-11-17 07:02:14'),(136,'App\\Models\\EquipmentMaintenanceLog',84,NULL,'created',NULL,'{\"equipment_id\":null,\"equipment_type\":\"SINO TRUCK\",\"equipment_plate\":\"3-55358\",\"spare_part_name\":\"BATTERY CHARGING AND ACID REFILL\",\"po_no\":\"PBR-EQ\\/16\\/00027\",\"unit\":\"PCS\",\"quantity\":1,\"unit_cost\":600,\"total_cost_with_vat\":600,\"supplier\":\"ARBAMINCH WWT\",\"log_date\":\"2015-06-11 00:00:00\",\"project_id\":null,\"logged_by\":1,\"updated_at\":\"2026-11-17 10:02:14\",\"created_at\":\"2026-11-17 10:02:14\",\"id\":84}',NULL,'127.0.0.1','Symfony','2026-11-17 07:02:14','2026-11-17 07:02:14'),(137,'App\\Models\\EquipmentMaintenanceLog',85,NULL,'created',NULL,'{\"equipment_id\":null,\"equipment_type\":\"toyota platz\",\"equipment_plate\":\"3-A22996\",\"spare_part_name\":\"CHACK ELECTRIC SYSTEM &HOSE\",\"po_no\":\"eq-mpr\\/16\\/00005\",\"unit\":\"PCS\",\"quantity\":1,\"unit_cost\":630,\"total_cost_with_vat\":630,\"supplier\":\"WORK ADVA\",\"log_date\":\"2015-08-11 00:00:00\",\"project_id\":null,\"logged_by\":1,\"updated_at\":\"2026-11-17 10:02:14\",\"created_at\":\"2026-11-17 10:02:14\",\"id\":85}',NULL,'127.0.0.1','Symfony','2026-11-17 07:02:14','2026-11-17 07:02:14'),(138,'App\\Models\\EquipmentMaintenanceLog',86,NULL,'created',NULL,'{\"equipment_id\":5,\"equipment_type\":\"LOADER\",\"equipment_plate\":\"LD-1633\",\"spare_part_name\":\"LOADER MAIN.&GENERATOR\",\"po_no\":\"PBR-EQ\\/16\\/00035\",\"unit\":\"PCS\",\"quantity\":1,\"unit_cost\":950,\"total_cost_with_vat\":950,\"supplier\":\"D\\/BIRHAN UNIVERSITY\",\"log_date\":\"2015-08-11 00:00:00\",\"project_id\":null,\"logged_by\":1,\"updated_at\":\"2026-11-17 10:02:14\",\"created_at\":\"2026-11-17 10:02:14\",\"id\":86}',NULL,'127.0.0.1','Symfony','2026-11-17 07:02:14','2026-11-17 07:02:14'),(139,'App\\Models\\EquipmentMaintenanceLog',87,NULL,'created',NULL,'{\"equipment_id\":11,\"equipment_type\":\"PICK UP\",\"equipment_plate\":\"3-71050\",\"spare_part_name\":\"BRAKE SHOE\",\"po_no\":\"POEQ\\/16\\/00034\",\"unit\":\"PCS\",\"quantity\":1,\"unit_cost\":8000,\"total_cost_with_vat\":9200,\"supplier\":\"ZELALEM\",\"log_date\":\"2015-08-11 00:00:00\",\"project_id\":null,\"logged_by\":1,\"updated_at\":\"2026-11-17 10:02:14\",\"created_at\":\"2026-11-17 10:02:14\",\"id\":87}',NULL,'127.0.0.1','Symfony','2026-11-17 07:02:14','2026-11-17 07:02:14'),(140,'App\\Models\\EquipmentMaintenanceLog',88,NULL,'created',NULL,'{\"equipment_id\":null,\"equipment_type\":\"MITSUBISH\",\"equipment_plate\":\"3-A50302\",\"spare_part_name\":\"HUB BEARING\",\"po_no\":\"POEQ\\/16\\/00032\",\"unit\":\"PCS\",\"quantity\":1,\"unit_cost\":14000,\"total_cost_with_vat\":15820,\"supplier\":\"HUSSEN\",\"log_date\":\"2015-08-11 00:00:00\",\"project_id\":null,\"logged_by\":1,\"updated_at\":\"2026-11-17 10:02:14\",\"created_at\":\"2026-11-17 10:02:14\",\"id\":88}',NULL,'127.0.0.1','Symfony','2026-11-17 07:02:14','2026-11-17 07:02:14'),(141,'App\\Models\\EquipmentMaintenanceLog',89,NULL,'created',NULL,'{\"equipment_id\":null,\"equipment_type\":\"PICK UP\",\"equipment_plate\":\"3-47866\",\"spare_part_name\":\"HAND PRIME PUMP\",\"po_no\":\"POEQ\\/16\\/00033\",\"unit\":\"PCS\",\"quantity\":1,\"unit_cost\":9000,\"total_cost_with_vat\":10350,\"supplier\":\"ZELALEM\",\"log_date\":\"2015-08-11 00:00:00\",\"project_id\":null,\"logged_by\":1,\"updated_at\":\"2026-11-17 10:02:14\",\"created_at\":\"2026-11-17 10:02:14\",\"id\":89}',NULL,'127.0.0.1','Symfony','2026-11-17 07:02:14','2026-11-17 07:02:14'),(142,'App\\Models\\EquipmentMaintenanceLog',90,NULL,'created',NULL,'{\"equipment_id\":2,\"equipment_type\":\"EXCAVATOR\",\"equipment_plate\":\"EX-0601\",\"spare_part_name\":\"TORNO\",\"po_no\":\"EQ-MPR\\/16\\/00007\",\"unit\":\"PCS\",\"quantity\":2,\"unit_cost\":4000,\"total_cost_with_vat\":71190,\"supplier\":\"ANTENEH \\/AMBO\\/\",\"log_date\":\"2015-10-11 00:00:00\",\"project_id\":null,\"logged_by\":1,\"updated_at\":\"2026-11-17 10:02:14\",\"created_at\":\"2026-11-17 10:02:14\",\"id\":90}',NULL,'127.0.0.1','Symfony','2026-11-17 07:02:14','2026-11-17 07:02:14'),(143,'App\\Models\\EquipmentMaintenanceLog',91,NULL,'created',NULL,'{\"equipment_id\":null,\"equipment_type\":\"EQUIPMENT\",\"equipment_plate\":\"\",\"spare_part_name\":\"DIA 90 PIN\",\"po_no\":\"\",\"unit\":\"PCS\",\"quantity\":1,\"unit_cost\":5000,\"total_cost_with_vat\":5750,\"supplier\":\"\",\"log_date\":\"2026-11-17 00:00:00\",\"project_id\":null,\"logged_by\":1,\"updated_at\":\"2026-11-17 10:02:14\",\"created_at\":\"2026-11-17 10:02:14\",\"id\":91}',NULL,'127.0.0.1','Symfony','2026-11-17 07:02:14','2026-11-17 07:02:14'),(144,'App\\Models\\EquipmentMaintenanceLog',92,NULL,'created',NULL,'{\"equipment_id\":null,\"equipment_type\":\"EQUIPMENT\",\"equipment_plate\":\"\",\"spare_part_name\":\"DIA 90 BRONZ BUSHING\",\"po_no\":\"\",\"unit\":\"PCS\",\"quantity\":2,\"unit_cost\":5000,\"total_cost_with_vat\":11500,\"supplier\":\"\",\"log_date\":\"2026-11-17 00:00:00\",\"project_id\":null,\"logged_by\":1,\"updated_at\":\"2026-11-17 10:02:14\",\"created_at\":\"2026-11-17 10:02:14\",\"id\":92}',NULL,'127.0.0.1','Symfony','2026-11-17 07:02:14','2026-11-17 07:02:14'),(145,'App\\Models\\EquipmentMaintenanceLog',93,NULL,'created',NULL,'{\"equipment_id\":null,\"equipment_type\":\"EQUIPMENT\",\"equipment_plate\":\"\",\"spare_part_name\":\"D\\u00c9COR SEAL\",\"po_no\":\"\",\"unit\":\"PCS\",\"quantity\":4,\"unit_cost\":5000,\"total_cost_with_vat\":23000,\"supplier\":\"\",\"log_date\":\"2026-11-17 00:00:00\",\"project_id\":null,\"logged_by\":1,\"updated_at\":\"2026-11-17 10:02:14\",\"created_at\":\"2026-11-17 10:02:14\",\"id\":93}',NULL,'127.0.0.1','Symfony','2026-11-17 07:02:14','2026-11-17 07:02:14'),(146,'App\\Models\\EquipmentMaintenanceLog',94,NULL,'created',NULL,'{\"equipment_id\":null,\"equipment_type\":\"EQUIPMENT\",\"equipment_plate\":\"\",\"spare_part_name\":\"WELDING,TORNO&ASSYM.\",\"po_no\":\"\",\"unit\":\"PCS\",\"quantity\":1,\"unit_cost\":20000,\"total_cost_with_vat\":23000,\"supplier\":\"\",\"log_date\":\"2026-11-17 00:00:00\",\"project_id\":null,\"logged_by\":1,\"updated_at\":\"2026-11-17 10:02:14\",\"created_at\":\"2026-11-17 10:02:14\",\"id\":94}',NULL,'127.0.0.1','Symfony','2026-11-17 07:02:14','2026-11-17 07:02:14'),(147,'App\\Models\\EquipmentMaintenanceLog',95,NULL,'created',NULL,'{\"equipment_id\":null,\"equipment_type\":\"GENERATOR\",\"equipment_plate\":\"\",\"spare_part_name\":\"ENGINE OIL 15W40\",\"po_no\":\"PBR-EQ\\/16\\/00037\",\"unit\":\"LIT\",\"quantity\":25,\"unit_cost\":340,\"total_cost_with_vat\":22340,\"supplier\":\"MEGA\",\"log_date\":\"2015-10-11 00:00:00\",\"project_id\":null,\"logged_by\":1,\"updated_at\":\"2026-11-17 10:02:14\",\"created_at\":\"2026-11-17 10:02:14\",\"id\":95}',NULL,'127.0.0.1','Symfony','2026-11-17 07:02:14','2026-11-17 07:02:14'),(148,'App\\Models\\EquipmentMaintenanceLog',96,NULL,'created',NULL,'{\"equipment_id\":null,\"equipment_type\":\"ROLLO\",\"equipment_plate\":\"CM-0993\",\"spare_part_name\":\"ENGINE OIL 15W40\",\"po_no\":\"\",\"unit\":\"PCS\",\"quantity\":20,\"unit_cost\":220,\"total_cost_with_vat\":5060,\"supplier\":\"\",\"log_date\":\"2026-11-17 00:00:00\",\"project_id\":null,\"logged_by\":1,\"updated_at\":\"2026-11-17 10:02:14\",\"created_at\":\"2026-11-17 10:02:14\",\"id\":96}',NULL,'127.0.0.1','Symfony','2026-11-17 07:02:14','2026-11-17 07:02:14'),(149,'App\\Models\\EquipmentMaintenanceLog',97,NULL,'created',NULL,'{\"equipment_id\":null,\"equipment_type\":\"PICK UP\",\"equipment_plate\":\"3-36613\",\"spare_part_name\":\"ENGINE OIL 20W50\",\"po_no\":\"\",\"unit\":\"PCS\",\"quantity\":4,\"unit_cost\":600,\"total_cost_with_vat\":2760,\"supplier\":\"\",\"log_date\":\"2026-11-17 00:00:00\",\"project_id\":null,\"logged_by\":1,\"updated_at\":\"2026-11-17 10:02:14\",\"created_at\":\"2026-11-17 10:02:14\",\"id\":97}',NULL,'127.0.0.1','Symfony','2026-11-17 07:02:14','2026-11-17 07:02:14'),(150,'App\\Models\\EquipmentMaintenanceLog',98,NULL,'created',NULL,'{\"equipment_id\":null,\"equipment_type\":\"MITSUBISH\",\"equipment_plate\":\"3-50302\",\"spare_part_name\":\"ENGINE OIL15W40\",\"po_no\":\"\",\"unit\":\"PCS\",\"quantity\":2,\"unit_cost\":220,\"total_cost_with_vat\":506,\"supplier\":\"\",\"log_date\":\"2026-11-17 00:00:00\",\"project_id\":null,\"logged_by\":1,\"updated_at\":\"2026-11-17 10:02:14\",\"created_at\":\"2026-11-17 10:02:14\",\"id\":98}',NULL,'127.0.0.1','Symfony','2026-11-17 07:02:14','2026-11-17 07:02:14'),(151,'App\\Models\\EquipmentMaintenanceLog',99,NULL,'created',NULL,'{\"equipment_id\":null,\"equipment_type\":\"LOADER\",\"equipment_plate\":\"LD-0910\",\"spare_part_name\":\"ENGINE OIL 15W40\",\"po_no\":\"\",\"unit\":\"PCS\",\"quantity\":30,\"unit_cost\":220,\"total_cost_with_vat\":7590,\"supplier\":\"\",\"log_date\":\"2026-11-17 00:00:00\",\"project_id\":null,\"logged_by\":1,\"updated_at\":\"2026-11-17 10:02:14\",\"created_at\":\"2026-11-17 10:02:14\",\"id\":99}',NULL,'127.0.0.1','Symfony','2026-11-17 07:02:14','2026-11-17 07:02:14'),(152,'App\\Models\\EquipmentMaintenanceLog',100,NULL,'created',NULL,'{\"equipment_id\":null,\"equipment_type\":\"MAIN.\",\"equipment_plate\":\"PETTY\",\"spare_part_name\":\"MAIN PETTY CASH\",\"po_no\":\"PBR-EQ\\/16\\/00038\",\"unit\":\"PCS\",\"quantity\":1,\"unit_cost\":10000,\"total_cost_with_vat\":10000,\"supplier\":\"WOMEN\",\"log_date\":\"2015-10-11 00:00:00\",\"project_id\":null,\"logged_by\":1,\"updated_at\":\"2026-11-17 10:02:14\",\"created_at\":\"2026-11-17 10:02:14\",\"id\":100}',NULL,'127.0.0.1','Symfony','2026-11-17 07:02:14','2026-11-17 07:02:14'),(153,'App\\Models\\EquipmentMaintenanceLog',101,NULL,'created',NULL,'{\"equipment_id\":null,\"equipment_type\":\"SINO TRUCK\",\"equipment_plate\":\"3-05663\",\"spare_part_name\":\"HEAD LAMP RHS\",\"po_no\":\"POEQ\\/16\\/00035\",\"unit\":\"PCS\",\"quantity\":1,\"unit_cost\":5652.17,\"total_cost_with_vat\":6500,\"supplier\":\"LEALEM\",\"log_date\":\"2015-10-11 00:00:00\",\"project_id\":null,\"logged_by\":1,\"updated_at\":\"2026-11-17 10:02:14\",\"created_at\":\"2026-11-17 10:02:14\",\"id\":101}',NULL,'127.0.0.1','Symfony','2026-11-17 07:02:14','2026-11-17 07:02:14'),(154,'App\\Models\\EquipmentMaintenanceLog',102,NULL,'created',NULL,'{\"equipment_id\":null,\"equipment_type\":\"LOADER\",\"equipment_plate\":\"LD-2231\",\"spare_part_name\":\"BEARING\",\"po_no\":\"POEQ\\/16\\/00036\",\"unit\":\"PCS\",\"quantity\":2,\"unit_cost\":6000,\"total_cost_with_vat\":13560,\"supplier\":\"BELACHEW\",\"log_date\":\"2015-10-11 00:00:00\",\"project_id\":null,\"logged_by\":1,\"updated_at\":\"2026-11-17 10:02:14\",\"created_at\":\"2026-11-17 10:02:14\",\"id\":102}',NULL,'127.0.0.1','Symfony','2026-11-17 07:02:14','2026-11-17 07:02:14'),(155,'App\\Models\\EquipmentMaintenanceLog',103,NULL,'created',NULL,'{\"equipment_id\":11,\"equipment_type\":\"PICK UP\",\"equipment_plate\":\"3-71050\",\"spare_part_name\":\"\\/ATF\\/\",\"po_no\":\"POEQ\\/16\\/00037\",\"unit\":\"LIT\",\"quantity\":2,\"unit_cost\":400,\"total_cost_with_vat\":800,\"supplier\":\"TOTAL\",\"log_date\":\"2015-10-11 00:00:00\",\"project_id\":null,\"logged_by\":1,\"updated_at\":\"2026-11-17 10:02:14\",\"created_at\":\"2026-11-17 10:02:14\",\"id\":103}',NULL,'127.0.0.1','Symfony','2026-11-17 07:02:14','2026-11-17 07:02:14'),(156,'App\\Models\\EquipmentMaintenanceLog',104,NULL,'created',NULL,'{\"equipment_id\":null,\"equipment_type\":\"GRADER\",\"equipment_plate\":\"GR-0905\",\"spare_part_name\":\"HYDRAULIC OIL 10W\",\"po_no\":\"PBR-EQ\\/16\\/00040\",\"unit\":\"LIT\",\"quantity\":10,\"unit_cost\":220,\"total_cost_with_vat\":2200,\"supplier\":\"AUGUSTA\",\"log_date\":\"2015-11-11 00:00:00\",\"project_id\":null,\"logged_by\":1,\"updated_at\":\"2026-11-17 10:02:14\",\"created_at\":\"2026-11-17 10:02:14\",\"id\":104}',NULL,'127.0.0.1','Symfony','2026-11-17 07:02:14','2026-11-17 07:02:14'),(157,'App\\Models\\EquipmentMaintenanceLog',105,NULL,'created',NULL,'{\"equipment_id\":null,\"equipment_type\":\"PICK UP\",\"equipment_plate\":\"3-21717\",\"spare_part_name\":\"UPPER ARM BUSHING\",\"po_no\":\"POEQ\\/16\\/00038\",\"unit\":\"PCS\",\"quantity\":2,\"unit_cost\":2200,\"total_cost_with_vat\":15481,\"supplier\":\"MOHAMMED\",\"log_date\":\"2015-11-11 00:00:00\",\"project_id\":null,\"logged_by\":1,\"updated_at\":\"2026-11-17 10:02:14\",\"created_at\":\"2026-11-17 10:02:14\",\"id\":105}',NULL,'127.0.0.1','Symfony','2026-11-17 07:02:14','2026-11-17 07:02:14'),(158,'App\\Models\\EquipmentMaintenanceLog',106,NULL,'created',NULL,'{\"equipment_id\":null,\"equipment_type\":\"EQUIPMENT\",\"equipment_plate\":\"\",\"spare_part_name\":\"SHOCK ABSORBER FR\",\"po_no\":\"\",\"unit\":\"PCS\",\"quantity\":1,\"unit_cost\":4800,\"total_cost_with_vat\":5520,\"supplier\":\"\",\"log_date\":\"2026-11-17 00:00:00\",\"project_id\":null,\"logged_by\":1,\"updated_at\":\"2026-11-17 10:02:14\",\"created_at\":\"2026-11-17 10:02:14\",\"id\":106}',NULL,'127.0.0.1','Symfony','2026-11-17 07:02:14','2026-11-17 07:02:14'),(159,'App\\Models\\EquipmentMaintenanceLog',107,NULL,'created',NULL,'{\"equipment_id\":null,\"equipment_type\":\"EQUIPMENT\",\"equipment_plate\":\"\",\"spare_part_name\":\"SHOCK ABSORBER RR\",\"po_no\":\"\",\"unit\":\"PCS\",\"quantity\":1,\"unit_cost\":4500,\"total_cost_with_vat\":5175,\"supplier\":\"\",\"log_date\":\"2026-11-17 00:00:00\",\"project_id\":null,\"logged_by\":1,\"updated_at\":\"2026-11-17 10:02:14\",\"created_at\":\"2026-11-17 10:02:14\",\"id\":107}',NULL,'127.0.0.1','Symfony','2026-11-17 07:02:14','2026-11-17 07:02:14'),(160,'App\\Models\\EquipmentMaintenanceLog',108,NULL,'created',NULL,'{\"equipment_id\":null,\"equipment_type\":\"MITSUBISH\",\"equipment_plate\":\"3-59332\",\"spare_part_name\":\"CALLIPER KIT\",\"po_no\":\"POEQ\\/16\\/00039\",\"unit\":\"KIT\",\"quantity\":1,\"unit_cost\":4500,\"total_cost_with_vat\":5175,\"supplier\":\"HUSSEN\",\"log_date\":\"2015-11-11 00:00:00\",\"project_id\":null,\"logged_by\":1,\"updated_at\":\"2026-11-17 10:02:14\",\"created_at\":\"2026-11-17 10:02:14\",\"id\":108}',NULL,'127.0.0.1','Symfony','2026-11-17 07:02:14','2026-11-17 07:02:14'),(161,'App\\Models\\EquipmentMaintenanceLog',109,NULL,'created',NULL,'{\"equipment_id\":null,\"equipment_type\":\"loader\",\"equipment_plate\":\"LD-1644\",\"spare_part_name\":\"GEARBOX OIL 90W\",\"po_no\":\"PBR-EQ\\/16\\/00044\",\"unit\":\"LIT\",\"quantity\":10,\"unit_cost\":265,\"total_cost_with_vat\":2650,\"supplier\":\"DEBRE MARKOS\",\"log_date\":\"2015-12-11 00:00:00\",\"project_id\":null,\"logged_by\":1,\"updated_at\":\"2026-11-17 10:02:14\",\"created_at\":\"2026-11-17 10:02:14\",\"id\":109}',NULL,'127.0.0.1','Symfony','2026-11-17 07:02:14','2026-11-17 07:02:14'),(162,'App\\Models\\EquipmentMaintenanceLog',110,NULL,'created',NULL,'{\"equipment_id\":null,\"equipment_type\":\"PICK UP\",\"equipment_plate\":\"3-A21717\",\"spare_part_name\":\"FILTER OIL\",\"po_no\":\"POEQ\\/16\\/00043\",\"unit\":\"PCS\",\"quantity\":1,\"unit_cost\":1600,\"total_cost_with_vat\":4715,\"supplier\":\"QUALITY\",\"log_date\":\"2015-12-11 00:00:00\",\"project_id\":null,\"logged_by\":1,\"updated_at\":\"2026-11-17 10:02:14\",\"created_at\":\"2026-11-17 10:02:14\",\"id\":110}',NULL,'127.0.0.1','Symfony','2026-11-17 07:02:14','2026-11-17 07:02:14'),(163,'App\\Models\\EquipmentMaintenanceLog',111,NULL,'created',NULL,'{\"equipment_id\":null,\"equipment_type\":\"EQUIPMENT\",\"equipment_plate\":\"\",\"spare_part_name\":\"FILTER FUEL\",\"po_no\":\"\",\"unit\":\"PCS\",\"quantity\":1,\"unit_cost\":2500,\"total_cost_with_vat\":2875,\"supplier\":\"\",\"log_date\":\"2026-11-17 00:00:00\",\"project_id\":null,\"logged_by\":1,\"updated_at\":\"2026-11-17 10:02:14\",\"created_at\":\"2026-11-17 10:02:14\",\"id\":111}',NULL,'127.0.0.1','Symfony','2026-11-17 07:02:14','2026-11-17 07:02:14'),(164,'App\\Models\\EquipmentMaintenanceLog',112,NULL,'created',NULL,'{\"equipment_id\":9,\"equipment_type\":\"IVECO TRUCK\",\"equipment_plate\":\"3-85963\",\"spare_part_name\":\"AIR DRYER KIT\",\"po_no\":\"POEQ\\/16\\/00045\",\"unit\":\"PCS\",\"quantity\":1,\"unit_cost\":2500,\"total_cost_with_vat\":2875,\"supplier\":\"ZEKARIYAS\",\"log_date\":\"2015-12-11 00:00:00\",\"project_id\":null,\"logged_by\":1,\"updated_at\":\"2026-11-17 10:02:14\",\"created_at\":\"2026-11-17 10:02:14\",\"id\":112}',NULL,'127.0.0.1','Symfony','2026-11-17 07:02:14','2026-11-17 07:02:14'),(165,'App\\Models\\EquipmentMaintenanceLog',113,NULL,'created',NULL,'{\"equipment_id\":null,\"equipment_type\":\"EQUIPMENT\",\"equipment_plate\":\"\",\"spare_part_name\":\"AIR DRYER FILTER\",\"po_no\":\"POEQ\\/16\\/00046\",\"unit\":\"PCS\",\"quantity\":1,\"unit_cost\":2869.56,\"total_cost_with_vat\":6100,\"supplier\":\"SDV BUSINESS\",\"log_date\":\"2026-11-17 00:00:00\",\"project_id\":null,\"logged_by\":1,\"updated_at\":\"2026-11-17 10:02:14\",\"created_at\":\"2026-11-17 10:02:14\",\"id\":113}',NULL,'127.0.0.1','Symfony','2026-11-17 07:02:14','2026-11-17 07:02:14'),(166,'App\\Models\\EquipmentMaintenanceLog',114,NULL,'created',NULL,'{\"equipment_id\":null,\"equipment_type\":\"EQUIPMENT\",\"equipment_plate\":\"\",\"spare_part_name\":\"FOUR WAY VALVE KIT\",\"po_no\":\"\",\"unit\":\"PCS\",\"quantity\":1,\"unit_cost\":2434.78,\"total_cost_with_vat\":2800,\"supplier\":\"\",\"log_date\":\"2026-11-17 00:00:00\",\"project_id\":null,\"logged_by\":1,\"updated_at\":\"2026-11-17 10:02:14\",\"created_at\":\"2026-11-17 10:02:14\",\"id\":114}',NULL,'127.0.0.1','Symfony','2026-11-17 07:02:14','2026-11-17 07:02:14'),(167,'App\\Models\\EquipmentMaintenanceLog',115,NULL,'created',NULL,'{\"equipment_id\":null,\"equipment_type\":\"GRADER\",\"equipment_plate\":\"GR-0905\",\"spare_part_name\":\"OIL FILTER\",\"po_no\":\"POEQ\\/16\\/00047\",\"unit\":\"PCS\",\"quantity\":1,\"unit_cost\":5200,\"total_cost_with_vat\":9660,\"supplier\":\"GETACHEW\",\"log_date\":\"2015-12-11 00:00:00\",\"project_id\":null,\"logged_by\":1,\"updated_at\":\"2026-11-17 10:02:14\",\"created_at\":\"2026-11-17 10:02:14\",\"id\":115}',NULL,'127.0.0.1','Symfony','2026-11-17 07:02:14','2026-11-17 07:02:14'),(168,'App\\Models\\EquipmentMaintenanceLog',116,NULL,'created',NULL,'{\"equipment_id\":null,\"equipment_type\":\"EQUIPMENT\",\"equipment_plate\":\"\",\"spare_part_name\":\"FUEL FILTOR SEC.\",\"po_no\":\"\",\"unit\":\"PCS\",\"quantity\":1,\"unit_cost\":3200,\"total_cost_with_vat\":3680,\"supplier\":\"\",\"log_date\":\"2026-11-17 00:00:00\",\"project_id\":null,\"logged_by\":1,\"updated_at\":\"2026-11-17 10:02:14\",\"created_at\":\"2026-11-17 10:02:14\",\"id\":116}',NULL,'127.0.0.1','Symfony','2026-11-17 07:02:14','2026-11-17 07:02:14'),(169,'App\\Models\\EquipmentMaintenanceLog',117,NULL,'created',NULL,'{\"equipment_id\":null,\"equipment_type\":\"SINO TRUCK\",\"equipment_plate\":\"3-91935\",\"spare_part_name\":\"SERVO\",\"po_no\":\"POEQ\\/16\\/00049\",\"unit\":\"PCS\",\"quantity\":1,\"unit_cost\":6521.74,\"total_cost_with_vat\":7500,\"supplier\":\"DANIEL ABEBE\",\"log_date\":\"2015-11-13 00:00:00\",\"project_id\":null,\"logged_by\":1,\"updated_at\":\"2026-11-17 10:02:14\",\"created_at\":\"2026-11-17 10:02:14\",\"id\":117}',NULL,'127.0.0.1','Symfony','2026-11-17 07:02:14','2026-11-17 07:02:14'),(170,'App\\Models\\EquipmentMaintenanceLog',118,NULL,'created',NULL,'{\"equipment_id\":null,\"equipment_type\":\"ISUZU\",\"equipment_plate\":\"3-30156\",\"spare_part_name\":\"BEARING\",\"po_no\":\"POEQ\\/16\\/00048\",\"unit\":\"PCS\",\"quantity\":1,\"unit_cost\":1000,\"total_cost_with_vat\":1150,\"supplier\":\"BELACHEW\",\"log_date\":\"2015-11-13 00:00:00\",\"project_id\":null,\"logged_by\":1,\"updated_at\":\"2026-11-17 10:02:14\",\"created_at\":\"2026-11-17 10:02:14\",\"id\":118}',NULL,'127.0.0.1','Symfony','2026-11-17 07:02:14','2026-11-17 07:02:14'),(171,'App\\Models\\EquipmentMaintenanceLog',119,NULL,'created',NULL,'{\"equipment_id\":null,\"equipment_type\":\"NISSAN  PICK UP\",\"equipment_plate\":\"3-43688\",\"spare_part_name\":\"FILTER OIL\",\"po_no\":\"POEQ\\/16\\/00051\",\"unit\":\"PCS\",\"quantity\":2,\"unit_cost\":1930.63,\"total_cost_with_vat\":4440,\"supplier\":\"NYALA\",\"log_date\":\"2015-11-13 00:00:00\",\"project_id\":null,\"logged_by\":1,\"updated_at\":\"2026-11-17 10:02:14\",\"created_at\":\"2026-11-17 10:02:14\",\"id\":119}',NULL,'127.0.0.1','Symfony','2026-11-17 07:02:14','2026-11-17 07:02:14'),(172,'App\\Models\\EquipmentMaintenanceLog',120,NULL,'created',NULL,'{\"equipment_id\":null,\"equipment_type\":\"EQUIPMENT\",\"equipment_plate\":\"\",\"spare_part_name\":\"FUEL FILTER\",\"po_no\":\"POEQ\\/16\\/00052\",\"unit\":\"PCS\",\"quantity\":2,\"unit_cost\":5780,\"total_cost_with_vat\":13062.8,\"supplier\":\"BEEMNET\",\"log_date\":\"2026-11-17 00:00:00\",\"project_id\":null,\"logged_by\":1,\"updated_at\":\"2026-11-17 10:02:14\",\"created_at\":\"2026-11-17 10:02:14\",\"id\":120}',NULL,'127.0.0.1','Symfony','2026-11-17 07:02:14','2026-11-17 07:02:14'),(173,'App\\Models\\EquipmentMaintenanceLog',121,NULL,'created',NULL,'{\"equipment_id\":null,\"equipment_type\":\"WORK ADVANCE\",\"equipment_plate\":\"PETTY\",\"spare_part_name\":\"WORK ADVANCE MAIN.\",\"po_no\":\"EQ-MPR\\/16\\/00009\",\"unit\":\"PCS\",\"quantity\":1,\"unit_cost\":10000,\"total_cost_with_vat\":10000,\"supplier\":\"GETESH\",\"log_date\":\"2015-11-14 00:00:00\",\"project_id\":null,\"logged_by\":1,\"updated_at\":\"2026-11-17 10:02:14\",\"created_at\":\"2026-11-17 10:02:14\",\"id\":121}',NULL,'127.0.0.1','Symfony','2026-11-17 07:02:14','2026-11-17 07:02:14'),(174,'App\\Models\\EquipmentMaintenanceLog',122,NULL,'created',NULL,'{\"equipment_id\":12,\"equipment_type\":\"MITSUBISH\",\"equipment_plate\":\"2-A47404\",\"spare_part_name\":\"REAR CHANSIS L&R ,CARRY BOY BODY ,EXAUST GASKET HUNGER RAINFORCMENT WELDING&LABOUR COST\",\"po_no\":\"EQ-MPR\\/16\\/00010\",\"unit\":\"PCS\",\"quantity\":1,\"unit_cost\":18260,\"total_cost_with_vat\":20634.78,\"supplier\":\"BASHAW\",\"log_date\":\"2015-11-14 00:00:00\",\"project_id\":null,\"logged_by\":1,\"updated_at\":\"2026-11-17 10:02:14\",\"created_at\":\"2026-11-17 10:02:14\",\"id\":122}',NULL,'127.0.0.1','Symfony','2026-11-17 07:02:14','2026-11-17 07:02:14'),(175,'App\\Models\\EquipmentMaintenanceLog',123,NULL,'created',NULL,'{\"equipment_id\":null,\"equipment_type\":\"MITSUBISH\",\"equipment_plate\":\"2-A78921\",\"spare_part_name\":\"\",\"po_no\":\"EQ-MPR\\/16\\/00011\",\"unit\":\"PCS\",\"quantity\":4,\"unit_cost\":3000,\"total_cost_with_vat\":13921.6,\"supplier\":\"ANBO PLC\",\"log_date\":\"2015-11-14 00:00:00\",\"project_id\":null,\"logged_by\":1,\"updated_at\":\"2026-11-17 10:02:14\",\"created_at\":\"2026-11-17 10:02:14\",\"id\":123}',NULL,'127.0.0.1','Symfony','2026-11-17 07:02:14','2026-11-17 07:02:14'),(176,'App\\Models\\EquipmentMaintenanceLog',124,NULL,'created',NULL,'{\"equipment_id\":null,\"equipment_type\":\"TRUCK MIXER\",\"equipment_plate\":\"3-82479\",\"spare_part_name\":\"ROLLER RECONDITION &MANUFACTUR NEW SHAFT\",\"po_no\":\"EQ-MPR\\/16\\/00012\",\"unit\":\"PCS\",\"quantity\":1,\"unit_cost\":30000,\"total_cost_with_vat\":33900,\"supplier\":\"DAS\",\"log_date\":\"2015-11-14 00:00:00\",\"project_id\":null,\"logged_by\":1,\"updated_at\":\"2026-11-17 10:02:14\",\"created_at\":\"2026-11-17 10:02:14\",\"id\":124}',NULL,'127.0.0.1','Symfony','2026-11-17 07:02:14','2026-11-17 07:02:14'),(177,'App\\Models\\EquipmentMaintenanceLog',125,NULL,'created',NULL,'{\"equipment_id\":null,\"equipment_type\":\"PICK UP\",\"equipment_plate\":\"3-44801\",\"spare_part_name\":\"DIFFERENTIAL OIL 140W\",\"po_no\":\"PBR-EQ\\/16\\/00047\",\"unit\":\"LIT\",\"quantity\":4,\"unit_cost\":500,\"total_cost_with_vat\":2000,\"supplier\":\"AMBO REFERRAL\",\"log_date\":\"2015-11-14 00:00:00\",\"project_id\":null,\"logged_by\":1,\"updated_at\":\"2026-11-17 10:02:14\",\"created_at\":\"2026-11-17 10:02:14\",\"id\":125}',NULL,'127.0.0.1','Symfony','2026-11-17 07:02:14','2026-11-17 07:02:14'),(178,'App\\Models\\EquipmentMaintenanceLog',126,NULL,'created',NULL,'{\"equipment_id\":null,\"equipment_type\":\"EQUIPMENT\",\"equipment_plate\":\"\",\"spare_part_name\":\"U-BOLT PURCHASE\",\"po_no\":\"PBR-EQ\\/16\\/00048\",\"unit\":\"PCS\",\"quantity\":2,\"unit_cost\":400,\"total_cost_with_vat\":800,\"supplier\":\"\",\"log_date\":\"2026-11-17 00:00:00\",\"project_id\":null,\"logged_by\":1,\"updated_at\":\"2026-11-17 10:02:14\",\"created_at\":\"2026-11-17 10:02:14\",\"id\":126}',NULL,'127.0.0.1','Symfony','2026-11-17 07:02:14','2026-11-17 07:02:14'),(179,'App\\Models\\EquipmentMaintenanceLog',127,NULL,'created',NULL,'{\"equipment_id\":null,\"equipment_type\":\"TRUCK MIXER\",\"equipment_plate\":\"3-82479\",\"spare_part_name\":\"BEARING\",\"po_no\":\"POEQ\\/16\\/00054\",\"unit\":\"PCS\",\"quantity\":2,\"unit_cost\":8000,\"total_cost_with_vat\":18080,\"supplier\":\"BELACHEW\",\"log_date\":\"2015-11-13 00:00:00\",\"project_id\":null,\"logged_by\":1,\"updated_at\":\"2026-11-17 10:02:14\",\"created_at\":\"2026-11-17 10:02:14\",\"id\":127}',NULL,'127.0.0.1','Symfony','2026-11-17 07:02:14','2026-11-17 07:02:14'),(180,'App\\Models\\EquipmentMaintenanceLog',128,NULL,'created',NULL,'{\"equipment_id\":null,\"equipment_type\":\"NISSAN UD -TRUCK\",\"equipment_plate\":\"3-99424\",\"spare_part_name\":\"LEAF SPRING FRONT NO1\",\"po_no\":\"POEQ\\/16\\/00053\",\"unit\":\"PCS\",\"quantity\":1,\"unit_cost\":4300,\"total_cost_with_vat\":9947.5,\"supplier\":\"DAWIT BONGER\",\"log_date\":\"2026-11-17 00:00:00\",\"project_id\":null,\"logged_by\":1,\"updated_at\":\"2026-11-17 10:02:14\",\"created_at\":\"2026-11-17 10:02:14\",\"id\":128}',NULL,'127.0.0.1','Symfony','2026-11-17 07:02:14','2026-11-17 07:02:14'),(181,'App\\Models\\EquipmentMaintenanceLog',129,NULL,'created',NULL,'{\"equipment_id\":null,\"equipment_type\":\"EQUIPMENT\",\"equipment_plate\":\"\",\"spare_part_name\":\"LEAF SPRING FRONT NO2\",\"po_no\":\"\",\"unit\":\"PCS\",\"quantity\":1,\"unit_cost\":4100,\"total_cost_with_vat\":4715,\"supplier\":\"\",\"log_date\":\"2015-11-14 00:00:00\",\"project_id\":null,\"logged_by\":1,\"updated_at\":\"2026-11-17 10:02:14\",\"created_at\":\"2026-11-17 10:02:14\",\"id\":129}',NULL,'127.0.0.1','Symfony','2026-11-17 07:02:14','2026-11-17 07:02:14'),(182,'App\\Models\\EquipmentMaintenanceLog',130,NULL,'created',NULL,'{\"equipment_id\":null,\"equipment_type\":\"EQUIPMENT\",\"equipment_plate\":\"\",\"spare_part_name\":\"CLAMP\",\"po_no\":\"\",\"unit\":\"PCS\",\"quantity\":1,\"unit_cost\":250,\"total_cost_with_vat\":287.5,\"supplier\":\"\",\"log_date\":\"2026-11-17 00:00:00\",\"project_id\":null,\"logged_by\":1,\"updated_at\":\"2026-11-17 10:02:14\",\"created_at\":\"2026-11-17 10:02:14\",\"id\":130}',NULL,'127.0.0.1','Symfony','2026-11-17 07:02:14','2026-11-17 07:02:14'),(183,'App\\Models\\EquipmentMaintenanceLog',131,NULL,'created',NULL,'{\"equipment_id\":null,\"equipment_type\":\"CRUSHER\",\"equipment_plate\":\"MEGA\",\"spare_part_name\":\"OVER HAUL GASKET\",\"po_no\":\"POEQ\\/16\\/00055\",\"unit\":\"SET\",\"quantity\":1,\"unit_cost\":6800,\"total_cost_with_vat\":7820,\"supplier\":\"NASIR JEMAL\",\"log_date\":\"2015-11-14 00:00:00\",\"project_id\":null,\"logged_by\":1,\"updated_at\":\"2026-11-17 10:02:14\",\"created_at\":\"2026-11-17 10:02:14\",\"id\":131}',NULL,'127.0.0.1','Symfony','2026-11-17 07:02:14','2026-11-17 07:02:14'),(184,'App\\Models\\EquipmentMaintenanceLog',132,NULL,'created',NULL,'{\"equipment_id\":null,\"equipment_type\":\"LOADER\",\"equipment_plate\":\"LD-2231\",\"spare_part_name\":\"BRAKECHAMBER HOSE\",\"po_no\":\"POEQ\\/16\\/00056\",\"unit\":\"PCS\",\"quantity\":1.5,\"unit_cost\":130.43,\"total_cost_with_vat\":225,\"supplier\":\"FETHIYA\",\"log_date\":\"2015-11-14 00:00:00\",\"project_id\":null,\"logged_by\":1,\"updated_at\":\"2026-11-17 10:02:14\",\"created_at\":\"2026-11-17 10:02:14\",\"id\":132}',NULL,'127.0.0.1','Symfony','2026-11-17 07:02:14','2026-11-17 07:02:14'),(185,'App\\Models\\EquipmentMaintenanceLog',133,NULL,'created',NULL,'{\"equipment_id\":null,\"equipment_type\":\"SINO TRUCK\",\"equipment_plate\":\"3-85965\",\"spare_part_name\":\"KING PIN KIT\",\"po_no\":\"POEQ\\/16\\/00058\",\"unit\":\"KIT\",\"quantity\":2,\"unit_cost\":4000,\"total_cost_with_vat\":9200,\"supplier\":\"LEALEM\",\"log_date\":\"2026-11-17 00:00:00\",\"project_id\":null,\"logged_by\":1,\"updated_at\":\"2026-11-17 10:02:14\",\"created_at\":\"2026-11-17 10:02:14\",\"id\":133}',NULL,'127.0.0.1','Symfony','2026-11-17 07:02:14','2026-11-17 07:02:14'),(186,'App\\Models\\EquipmentMaintenanceLog',134,NULL,'created',NULL,'{\"equipment_id\":null,\"equipment_type\":\"EQUIPMENT\",\"equipment_plate\":\"\",\"spare_part_name\":\"STEERING BALL JOINT\",\"po_no\":\"POEQ\\/16\\/00059\",\"unit\":\"PCS\",\"quantity\":2,\"unit_cost\":1500,\"total_cost_with_vat\":3450,\"supplier\":\"MITIKU\",\"log_date\":\"2015-11-14 00:00:00\",\"project_id\":null,\"logged_by\":1,\"updated_at\":\"2026-11-17 10:02:14\",\"created_at\":\"2026-11-17 10:02:14\",\"id\":134}',NULL,'127.0.0.1','Symfony','2026-11-17 07:02:14','2026-11-17 07:02:14'),(187,'App\\Models\\EquipmentMaintenanceLog',135,NULL,'created',NULL,'{\"equipment_id\":2,\"equipment_type\":\"EXCAVATOR\",\"equipment_plate\":\"EX-0601\",\"spare_part_name\":\"GREASE NIPPLE MAIN.\",\"po_no\":\"PBR-EQ\\/16\\/00050\",\"unit\":\"PCS\",\"quantity\":1,\"unit_cost\":300,\"total_cost_with_vat\":580,\"supplier\":\"AMBO REFERRAL\",\"log_date\":\"2015-11-15 00:00:00\",\"project_id\":null,\"logged_by\":1,\"updated_at\":\"2026-11-17 10:02:14\",\"created_at\":\"2026-11-17 10:02:14\",\"id\":135}',NULL,'127.0.0.1','Symfony','2026-11-17 07:02:14','2026-11-17 07:02:14'),(188,'App\\Models\\EquipmentMaintenanceLog',136,NULL,'created',NULL,'{\"equipment_id\":10,\"equipment_type\":\"PICK UP\",\"equipment_plate\":\"3-A44801\",\"spare_part_name\":\"AXLE HOUSING MAIN.\",\"po_no\":\"\",\"unit\":\"PCS\",\"quantity\":1,\"unit_cost\":200,\"total_cost_with_vat\":230,\"supplier\":\"\",\"log_date\":\"2026-11-17 00:00:00\",\"project_id\":null,\"logged_by\":1,\"updated_at\":\"2026-11-17 10:02:14\",\"created_at\":\"2026-11-17 10:02:14\",\"id\":136}',NULL,'127.0.0.1','Symfony','2026-11-17 07:02:14','2026-11-17 07:02:14'),(189,'App\\Models\\EquipmentMaintenanceLog',137,NULL,'created',NULL,'{\"equipment_id\":null,\"equipment_type\":\"MITSUBISH\",\"equipment_plate\":\"3-A51944\",\"spare_part_name\":\"LEAF SPRING BUSHING\",\"po_no\":\"POEQ\\/16\\/00089\",\"unit\":\"PCS\",\"quantity\":4,\"unit_cost\":368.26,\"total_cost_with_vat\":3388,\"supplier\":\"ETHIO-NIPPON\",\"log_date\":\"2015-11-15 00:00:00\",\"project_id\":null,\"logged_by\":1,\"updated_at\":\"2026-11-17 10:02:14\",\"created_at\":\"2026-11-17 10:02:14\",\"id\":137}',NULL,'127.0.0.1','Symfony','2026-11-17 07:02:14','2026-11-17 07:02:14'),(190,'App\\Models\\EquipmentMaintenanceLog',138,NULL,'created',NULL,'{\"equipment_id\":null,\"equipment_type\":\"EQUIPMENT\",\"equipment_plate\":\"\",\"spare_part_name\":\"LEAF SPRING BUSHING\",\"po_no\":\"\",\"unit\":\"PCS\",\"quantity\":4,\"unit_cost\":368.26,\"total_cost_with_vat\":1694,\"supplier\":\"\",\"log_date\":\"2026-11-17 00:00:00\",\"project_id\":null,\"logged_by\":1,\"updated_at\":\"2026-11-17 10:02:14\",\"created_at\":\"2026-11-17 10:02:14\",\"id\":138}',NULL,'127.0.0.1','Symfony','2026-11-17 07:02:14','2026-11-17 07:02:14'),(191,'App\\Models\\EquipmentMaintenanceLog',139,NULL,'created',NULL,'{\"equipment_id\":4,\"equipment_type\":\"LOADER\",\"equipment_plate\":\"LD-2232\",\"spare_part_name\":\"RADIATOR CAP\",\"po_no\":\"POEQ\\/16\\/00061\",\"unit\":\"PCS\",\"quantity\":1,\"unit_cost\":1043.48,\"total_cost_with_vat\":1200,\"supplier\":\"JS CONST.\",\"log_date\":\"2015-11-15 00:00:00\",\"project_id\":null,\"logged_by\":1,\"updated_at\":\"2026-11-17 10:02:14\",\"created_at\":\"2026-11-17 10:02:14\",\"id\":139}',NULL,'127.0.0.1','Symfony','2026-11-17 07:02:14','2026-11-17 07:02:14'),(192,'App\\Models\\EquipmentMaintenanceLog',140,NULL,'created',NULL,'{\"equipment_id\":null,\"equipment_type\":\"MITSUBISH\",\"equipment_plate\":\"3-59322\",\"spare_part_name\":\"CALIPER PISTON SEAL\",\"po_no\":\"POEQ\\/16\\/00064\",\"unit\":\"PCS\",\"quantity\":1,\"unit_cost\":3253.8,\"total_cost_with_vat\":3741.81,\"supplier\":\"ETHIO-NIPPON\",\"log_date\":\"2015-11-15 00:00:00\",\"project_id\":null,\"logged_by\":1,\"updated_at\":\"2026-11-17 10:02:14\",\"created_at\":\"2026-11-17 10:02:14\",\"id\":140}',NULL,'127.0.0.1','Symfony','2026-11-17 07:02:14','2026-11-17 07:02:14'),(193,'App\\Models\\EquipmentMaintenanceLog',141,NULL,'created',NULL,'{\"equipment_id\":null,\"equipment_type\":\"MITSUBISH\",\"equipment_plate\":\"3-86392\",\"spare_part_name\":\"FILTER FUEL\",\"po_no\":\"POEQ\\/16\\/00065\",\"unit\":\"PCS\",\"quantity\":1,\"unit_cost\":6837.5,\"total_cost_with_vat\":7863.13,\"supplier\":\"ETHIO-NIPPON\",\"log_date\":\"2015-11-15 00:00:00\",\"project_id\":null,\"logged_by\":1,\"updated_at\":\"2026-11-17 10:02:14\",\"created_at\":\"2026-11-17 10:02:14\",\"id\":141}',NULL,'127.0.0.1','Symfony','2026-11-17 07:02:14','2026-11-17 07:02:14'),(194,'App\\Models\\EquipmentMaintenanceLog',142,NULL,'created',NULL,'{\"equipment_id\":null,\"equipment_type\":\"MINIBUS\",\"equipment_plate\":\"3-94774\",\"spare_part_name\":\"BRAKE SHOE KIT\",\"po_no\":\"POEQ\\/16\\/00066\",\"unit\":\"SET\",\"quantity\":1,\"unit_cost\":6436.93,\"total_cost_with_vat\":11442.74,\"supplier\":\"MOENCO\",\"log_date\":\"2015-11-15 00:00:00\",\"project_id\":null,\"logged_by\":1,\"updated_at\":\"2026-11-17 10:02:14\",\"created_at\":\"2026-11-17 10:02:14\",\"id\":142}',NULL,'127.0.0.1','Symfony','2026-11-17 07:02:14','2026-11-17 07:02:14'),(195,'App\\Models\\EquipmentMaintenanceLog',143,NULL,'created',NULL,'{\"equipment_id\":null,\"equipment_type\":\"EQUIPMENT\",\"equipment_plate\":\"\",\"spare_part_name\":\"BERAKE PAD FERMO\",\"po_no\":\"\",\"unit\":\"KIT\",\"quantity\":1,\"unit_cost\":3513.28,\"total_cost_with_vat\":4040.27,\"supplier\":\"\",\"log_date\":\"2026-11-17 00:00:00\",\"project_id\":null,\"logged_by\":1,\"updated_at\":\"2026-11-17 10:02:14\",\"created_at\":\"2026-11-17 10:02:14\",\"id\":143}',NULL,'127.0.0.1','Symfony','2026-11-17 07:02:14','2026-11-17 07:02:14'),(196,'App\\Models\\EquipmentMaintenanceLog',144,NULL,'created',NULL,'{\"equipment_id\":null,\"equipment_type\":\"EQUIPMENT\",\"equipment_plate\":\"\",\"spare_part_name\":\"CALLIPER KIT\",\"po_no\":\"POEQ\\/16\\/00019\",\"unit\":\"KIT\",\"quantity\":2,\"unit_cost\":4800,\"total_cost_with_vat\":16272,\"supplier\":\"QUALITY\",\"log_date\":\"2026-11-17 00:00:00\",\"project_id\":null,\"logged_by\":1,\"updated_at\":\"2026-11-17 10:02:14\",\"created_at\":\"2026-11-17 10:02:14\",\"id\":144}',NULL,'127.0.0.1','Symfony','2026-11-17 07:02:14','2026-11-17 07:02:14'),(197,'App\\Models\\EquipmentMaintenanceLog',145,NULL,'created',NULL,'{\"equipment_id\":null,\"equipment_type\":\"EQUIPMENT\",\"equipment_plate\":\"\",\"spare_part_name\":\"WHEEL CYLINDR (RR)\",\"po_no\":\"\",\"unit\":\"PCS\",\"quantity\":1,\"unit_cost\":4800,\"total_cost_with_vat\":5520,\"supplier\":\"\",\"log_date\":\"2026-11-17 00:00:00\",\"project_id\":null,\"logged_by\":1,\"updated_at\":\"2026-11-17 10:02:14\",\"created_at\":\"2026-11-17 10:02:14\",\"id\":145}',NULL,'127.0.0.1','Symfony','2026-11-17 07:02:14','2026-11-17 07:02:14'),(198,'App\\Models\\EquipmentMaintenanceLog',146,NULL,'created',NULL,'{\"equipment_id\":null,\"equipment_type\":\"EQUIPMENT\",\"equipment_plate\":\"\",\"spare_part_name\":\"FR BRAKE PAD\",\"po_no\":\"POEQ\\/16\\/00042\",\"unit\":\"KIT\",\"quantity\":1,\"unit_cost\":5000,\"total_cost_with_vat\":10350,\"supplier\":\"ZELALEM\",\"log_date\":\"2026-11-17 00:00:00\",\"project_id\":null,\"logged_by\":1,\"updated_at\":\"2026-11-17 10:02:14\",\"created_at\":\"2026-11-17 10:02:14\",\"id\":146}',NULL,'127.0.0.1','Symfony','2026-11-17 07:02:14','2026-11-17 07:02:14'),(199,'App\\Models\\EquipmentMaintenanceLog',147,NULL,'created',NULL,'{\"equipment_id\":null,\"equipment_type\":\"EQUIPMENT\",\"equipment_plate\":\"\",\"spare_part_name\":\"STEERING BALL JOINT\",\"po_no\":\"\",\"unit\":\"PCS\",\"quantity\":2,\"unit_cost\":2000,\"total_cost_with_vat\":4600,\"supplier\":\"\",\"log_date\":\"2026-11-17 00:00:00\",\"project_id\":null,\"logged_by\":1,\"updated_at\":\"2026-11-17 10:02:14\",\"created_at\":\"2026-11-17 10:02:14\",\"id\":147}',NULL,'127.0.0.1','Symfony','2026-11-17 07:02:14','2026-11-17 07:02:14'),(200,'App\\Models\\EquipmentMaintenanceLog',148,NULL,'created',NULL,'{\"equipment_id\":null,\"equipment_type\":\"WHEEL BARREN\",\"equipment_plate\":\"\",\"spare_part_name\":\"WHEEL BARREN MAIN. LABOUR COST\",\"po_no\":\"PBR-EQ\\/16\\/00052\",\"unit\":\"PCS\",\"quantity\":1,\"unit_cost\":2000,\"total_cost_with_vat\":2000,\"supplier\":\"ZAMBIYA\",\"log_date\":\"2015-11-17 00:00:00\",\"project_id\":null,\"logged_by\":1,\"updated_at\":\"2026-11-17 10:02:14\",\"created_at\":\"2026-11-17 10:02:14\",\"id\":148}',NULL,'127.0.0.1','Symfony','2026-11-17 07:02:14','2026-11-17 07:02:14'),(201,'App\\Models\\EquipmentMaintenanceLog',149,NULL,'created',NULL,'{\"equipment_id\":null,\"equipment_type\":\"MAIN.\",\"equipment_plate\":\"PETTY\",\"spare_part_name\":\"MAINTENANCE PETTY CASH\",\"po_no\":\"PBR-EQ\\/16\\/00054\",\"unit\":\"PCS\",\"quantity\":1,\"unit_cost\":5000,\"total_cost_with_vat\":5000,\"supplier\":\"MEGA\",\"log_date\":\"2015-11-17 00:00:00\",\"project_id\":null,\"logged_by\":1,\"updated_at\":\"2026-11-17 10:02:14\",\"created_at\":\"2026-11-17 10:02:14\",\"id\":149}',NULL,'127.0.0.1','Symfony','2026-11-17 07:02:14','2026-11-17 07:02:14'),(202,'App\\Models\\EquipmentMaintenanceLog',150,NULL,'created',NULL,'{\"equipment_id\":null,\"equipment_type\":\"ALL EQUIPMENT\",\"equipment_plate\":\"PURCHASE\",\"spare_part_name\":\"GREASE  PURCHASE\",\"po_no\":\"PBR-EQ\\/16\\/00055\",\"unit\":\"KG\",\"quantity\":12,\"unit_cost\":400,\"total_cost_with_vat\":4800,\"supplier\":\"ARBAMINCH WWT\",\"log_date\":\"2015-11-17 00:00:00\",\"project_id\":null,\"logged_by\":1,\"updated_at\":\"2026-11-17 10:02:14\",\"created_at\":\"2026-11-17 10:02:14\",\"id\":150}',NULL,'127.0.0.1','Symfony','2026-11-17 07:02:14','2026-11-17 07:02:14'),(203,'App\\Models\\EquipmentMaintenanceLog',151,NULL,'created',NULL,'{\"equipment_id\":null,\"equipment_type\":\"MIXER 350\",\"equipment_plate\":\"350\",\"spare_part_name\":\"MAIN.LABOUR COST\",\"po_no\":\"PBR-EQ\\/16\\/00056\",\"unit\":\"PCS\",\"quantity\":1,\"unit_cost\":750,\"total_cost_with_vat\":750,\"supplier\":\"ARBAMINCH WWT\",\"log_date\":\"2015-11-17 00:00:00\",\"project_id\":null,\"logged_by\":1,\"updated_at\":\"2026-11-17 10:02:14\",\"created_at\":\"2026-11-17 10:02:14\",\"id\":151}',NULL,'127.0.0.1','Symfony','2026-11-17 07:02:14','2026-11-17 07:02:14'),(204,'App\\Models\\EquipmentMaintenanceLog',152,NULL,'created',NULL,'{\"equipment_id\":null,\"equipment_type\":\"ALL EQUIPMENT\",\"equipment_plate\":\"\",\"spare_part_name\":\"ENGINE OIL 15W40\",\"po_no\":\"PBR-EQ\\/16\\/00057\",\"unit\":\"LIT\",\"quantity\":200,\"unit_cost\":340,\"total_cost_with_vat\":68000,\"supplier\":\"DEBRE MARKOS\",\"log_date\":\"2015-11-17 00:00:00\",\"project_id\":null,\"logged_by\":1,\"updated_at\":\"2026-11-17 10:02:14\",\"created_at\":\"2026-11-17 10:02:14\",\"id\":152}',NULL,'127.0.0.1','Symfony','2026-11-17 07:02:14','2026-11-17 07:02:14'),(205,'App\\Models\\EquipmentMaintenanceLog',153,NULL,'created',NULL,'{\"equipment_id\":null,\"equipment_type\":\"GENERATOR\",\"equipment_plate\":\"\",\"spare_part_name\":\"ENGINE OIL 15W40\",\"po_no\":\"PBR-EQ\\/16\\/00058\",\"unit\":\"LIT\",\"quantity\":20,\"unit_cost\":220,\"total_cost_with_vat\":4400,\"supplier\":\"AASTU\",\"log_date\":\"2015-11-17 00:00:00\",\"project_id\":null,\"logged_by\":1,\"updated_at\":\"2026-11-17 10:02:14\",\"created_at\":\"2026-11-17 10:02:14\",\"id\":153}',NULL,'127.0.0.1','Symfony','2026-11-17 07:02:14','2026-11-17 07:02:14'),(206,'App\\Models\\EquipmentMaintenanceLog',154,NULL,'created',NULL,'{\"equipment_id\":null,\"equipment_type\":\"GOING LIFT\",\"equipment_plate\":\"ALTERNATER\",\"spare_part_name\":\"PAINTING VARNISH\",\"po_no\":\"PBR-EQ\\/16\\/00059\",\"unit\":\"PCS\",\"quantity\":1,\"unit_cost\":2500,\"total_cost_with_vat\":2500,\"supplier\":\"AMBO REFERRAL\",\"log_date\":\"2015-11-17 00:00:00\",\"project_id\":null,\"logged_by\":1,\"updated_at\":\"2026-11-17 10:02:14\",\"created_at\":\"2026-11-17 10:02:14\",\"id\":154}',NULL,'127.0.0.1','Symfony','2026-11-17 07:02:14','2026-11-17 07:02:14'),(207,'App\\Models\\EquipmentMaintenanceLog',155,NULL,'created',NULL,'{\"equipment_id\":null,\"equipment_type\":\"UD-TRUCK\",\"equipment_plate\":\"3-99424\",\"spare_part_name\":\"U-BOLT WORKSHOP COST\",\"po_no\":\"PBR-EQ\\/16\\/00060\",\"unit\":\"PCS\",\"quantity\":1,\"unit_cost\":440,\"total_cost_with_vat\":440,\"supplier\":\"MEGA\",\"log_date\":\"2015-11-17 00:00:00\",\"project_id\":null,\"logged_by\":1,\"updated_at\":\"2026-11-17 10:02:14\",\"created_at\":\"2026-11-17 10:02:14\",\"id\":155}',NULL,'127.0.0.1','Symfony','2026-11-17 07:02:14','2026-11-17 07:02:14'),(208,'App\\Models\\EquipmentMaintenanceLog',156,NULL,'created',NULL,'{\"equipment_id\":null,\"equipment_type\":\"EQUIPMENT\",\"equipment_plate\":\"\",\"spare_part_name\":\"BOLT PURCHASE\",\"po_no\":\"PBR-EQ\\/16\\/00061\",\"unit\":\"PCS\",\"quantity\":1,\"unit_cost\":100,\"total_cost_with_vat\":100,\"supplier\":\"MEGA\",\"log_date\":\"2015-11-17 00:00:00\",\"project_id\":null,\"logged_by\":1,\"updated_at\":\"2026-11-17 10:02:14\",\"created_at\":\"2026-11-17 10:02:14\",\"id\":156}',NULL,'127.0.0.1','Symfony','2026-11-17 07:02:14','2026-11-17 07:02:14'),(209,'App\\Models\\EquipmentMaintenanceLog',157,NULL,'created',NULL,'{\"equipment_id\":null,\"equipment_type\":\"SINO TRUCK\",\"equipment_plate\":\"3-44951\",\"spare_part_name\":\"AULTERNATOR BELT\",\"po_no\":\"PBR-EQ\\/16\\/00062\",\"unit\":\"PCS\",\"quantity\":1,\"unit_cost\":1380,\"total_cost_with_vat\":1380,\"supplier\":\"WOMEN\",\"log_date\":\"2015-11-17 00:00:00\",\"project_id\":null,\"logged_by\":1,\"updated_at\":\"2026-11-17 10:02:14\",\"created_at\":\"2026-11-17 10:02:14\",\"id\":157}',NULL,'127.0.0.1','Symfony','2026-11-17 07:02:14','2026-11-17 07:02:14'),(210,'App\\Models\\EquipmentMaintenanceLog',158,NULL,'created',NULL,'{\"equipment_id\":null,\"equipment_type\":\"MITSUBISH\",\"equipment_plate\":\"3-86392\",\"spare_part_name\":\"STABILIZER LINK\",\"po_no\":\"POEQ\\/16\\/00070\",\"unit\":\"PCS\",\"quantity\":1,\"unit_cost\":5500,\"total_cost_with_vat\":6325,\"supplier\":\"HUSSEN\",\"log_date\":\"2015-11-17 00:00:00\",\"project_id\":null,\"logged_by\":1,\"updated_at\":\"2026-11-17 10:02:14\",\"created_at\":\"2026-11-17 10:02:14\",\"id\":158}',NULL,'127.0.0.1','Symfony','2026-11-17 07:02:14','2026-11-17 07:02:14'),(211,'App\\Models\\EquipmentMaintenanceLog',159,NULL,'created',NULL,'{\"equipment_id\":null,\"equipment_type\":\"CRUSHER\",\"equipment_plate\":\"\",\"spare_part_name\":\"BATTERY 12V-70AH  ,C17A2C29X3341,2932B2D3341\",\"po_no\":\"POEQ\\/16\\/00068\",\"unit\":\"PCS\",\"quantity\":1,\"unit_cost\":10500,\"total_cost_with_vat\":11865,\"supplier\":\"MELAK\",\"log_date\":\"2015-11-17 00:00:00\",\"project_id\":null,\"logged_by\":1,\"updated_at\":\"2026-11-17 10:02:14\",\"created_at\":\"2026-11-17 10:02:14\",\"id\":159}',NULL,'127.0.0.1','Symfony','2026-11-17 07:02:14','2026-11-17 07:02:14'),(212,'App\\Models\\EquipmentMaintenanceLog',160,NULL,'created',NULL,'{\"equipment_id\":null,\"equipment_type\":\"CRUSHER\",\"equipment_plate\":\"\",\"spare_part_name\":\"BATTERY 12V-70AH\",\"po_no\":\"POEQ\\/16\\/00069\",\"unit\":\"PCS\",\"quantity\":1,\"unit_cost\":10500,\"total_cost_with_vat\":11865,\"supplier\":\"MELAK\",\"log_date\":\"2015-11-17 00:00:00\",\"project_id\":null,\"logged_by\":1,\"updated_at\":\"2026-11-17 10:02:14\",\"created_at\":\"2026-11-17 10:02:14\",\"id\":160}',NULL,'127.0.0.1','Symfony','2026-11-17 07:02:14','2026-11-17 07:02:14'),(213,'App\\Models\\EquipmentMaintenanceLog',161,NULL,'created',NULL,'{\"equipment_id\":null,\"equipment_type\":\"LOADER\",\"equipment_plate\":\"LD-1644\",\"spare_part_name\":\"OIL FILTER\",\"po_no\":\"POEQ\\/16\\/00071\",\"unit\":\"PCS\",\"quantity\":1,\"unit_cost\":1173.91,\"total_cost_with_vat\":3380,\"supplier\":\"AUTOTECH\",\"log_date\":\"2015-11-17 00:00:00\",\"project_id\":null,\"logged_by\":1,\"updated_at\":\"2026-11-17 10:02:14\",\"created_at\":\"2026-11-17 10:02:14\",\"id\":161}',NULL,'127.0.0.1','Symfony','2026-11-17 07:02:14','2026-11-17 07:02:14'),(214,'App\\Models\\EquipmentMaintenanceLog',162,NULL,'created',NULL,'{\"equipment_id\":null,\"equipment_type\":\"EQUIPMENT\",\"equipment_plate\":\"\",\"spare_part_name\":\"FUEL FILTER\",\"po_no\":\"\",\"unit\":\"PCS\",\"quantity\":1,\"unit_cost\":826.09,\"total_cost_with_vat\":950,\"supplier\":\"\",\"log_date\":\"2026-11-17 00:00:00\",\"project_id\":null,\"logged_by\":1,\"updated_at\":\"2026-11-17 10:02:14\",\"created_at\":\"2026-11-17 10:02:14\",\"id\":162}',NULL,'127.0.0.1','Symfony','2026-11-17 07:02:14','2026-11-17 07:02:14'),(215,'App\\Models\\EquipmentMaintenanceLog',163,NULL,'created',NULL,'{\"equipment_id\":null,\"equipment_type\":\"EQUIPMENT\",\"equipment_plate\":\"\",\"spare_part_name\":\"FUEL FILTER\",\"po_no\":\"\",\"unit\":\"PCS\",\"quantity\":1,\"unit_cost\":939.13,\"total_cost_with_vat\":1080,\"supplier\":\"\",\"log_date\":\"2026-11-17 00:00:00\",\"project_id\":null,\"logged_by\":1,\"updated_at\":\"2026-11-17 10:02:14\",\"created_at\":\"2026-11-17 10:02:14\",\"id\":163}',NULL,'127.0.0.1','Symfony','2026-11-17 07:02:14','2026-11-17 07:02:14'),(216,'App\\Models\\EquipmentMaintenanceLog',164,NULL,'created',NULL,'{\"equipment_id\":5,\"equipment_type\":\"LOADER\",\"equipment_plate\":\"LD-1633\",\"spare_part_name\":\"OIL FILTER\",\"po_no\":\"POEQ\\/16\\/00072\",\"unit\":\"PCS\",\"quantity\":1,\"unit_cost\":1173.91,\"total_cost_with_vat\":3380,\"supplier\":\"AUTOTECH\",\"log_date\":\"2015-11-17 00:00:00\",\"project_id\":null,\"logged_by\":1,\"updated_at\":\"2026-11-17 10:02:14\",\"created_at\":\"2026-11-17 10:02:14\",\"id\":164}',NULL,'127.0.0.1','Symfony','2026-11-17 07:02:15','2026-11-17 07:02:15'),(217,'App\\Models\\EquipmentMaintenanceLog',165,NULL,'created',NULL,'{\"equipment_id\":null,\"equipment_type\":\"EQUIPMENT\",\"equipment_plate\":\"\",\"spare_part_name\":\"FUEL FILTER\",\"po_no\":\"\",\"unit\":\"PCS\",\"quantity\":1,\"unit_cost\":826.09,\"total_cost_with_vat\":950,\"supplier\":\"\",\"log_date\":\"2026-11-17 00:00:00\",\"project_id\":null,\"logged_by\":1,\"updated_at\":\"2026-11-17 10:02:15\",\"created_at\":\"2026-11-17 10:02:15\",\"id\":165}',NULL,'127.0.0.1','Symfony','2026-11-17 07:02:15','2026-11-17 07:02:15'),(218,'App\\Models\\EquipmentMaintenanceLog',166,NULL,'created',NULL,'{\"equipment_id\":null,\"equipment_type\":\"EQUIPMENT\",\"equipment_plate\":\"\",\"spare_part_name\":\"FUEL FILTER\",\"po_no\":\"\",\"unit\":\"PCS\",\"quantity\":1,\"unit_cost\":939.13,\"total_cost_with_vat\":1080,\"supplier\":\"\",\"log_date\":\"2026-11-17 00:00:00\",\"project_id\":null,\"logged_by\":1,\"updated_at\":\"2026-11-17 10:02:15\",\"created_at\":\"2026-11-17 10:02:15\",\"id\":166}',NULL,'127.0.0.1','Symfony','2026-11-17 07:02:15','2026-11-17 07:02:15'),(219,'App\\Models\\EquipmentMaintenanceLog',167,NULL,'created',NULL,'{\"equipment_id\":null,\"equipment_type\":\"LOADER\",\"equipment_plate\":\"LD-1460\",\"spare_part_name\":\"OIL FILTER\",\"po_no\":\"POEQ\\/16\\/00073\",\"unit\":\"PCS\",\"quantity\":1,\"unit_cost\":1173.91,\"total_cost_with_vat\":3380,\"supplier\":\"AUTOTECH\",\"log_date\":\"2015-11-17 00:00:00\",\"project_id\":null,\"logged_by\":1,\"updated_at\":\"2026-11-17 10:02:15\",\"created_at\":\"2026-11-17 10:02:15\",\"id\":167}',NULL,'127.0.0.1','Symfony','2026-11-17 07:02:15','2026-11-17 07:02:15'),(220,'App\\Models\\EquipmentMaintenanceLog',168,NULL,'created',NULL,'{\"equipment_id\":null,\"equipment_type\":\"EQUIPMENT\",\"equipment_plate\":\"\",\"spare_part_name\":\"FUEL FILTER\",\"po_no\":\"\",\"unit\":\"PCS\",\"quantity\":1,\"unit_cost\":826.09,\"total_cost_with_vat\":950,\"supplier\":\"\",\"log_date\":\"2026-11-17 00:00:00\",\"project_id\":null,\"logged_by\":1,\"updated_at\":\"2026-11-17 10:02:15\",\"created_at\":\"2026-11-17 10:02:15\",\"id\":168}',NULL,'127.0.0.1','Symfony','2026-11-17 07:02:15','2026-11-17 07:02:15'),(221,'App\\Models\\EquipmentMaintenanceLog',169,NULL,'created',NULL,'{\"equipment_id\":null,\"equipment_type\":\"EQUIPMENT\",\"equipment_plate\":\"\",\"spare_part_name\":\"FUEL FILTER\",\"po_no\":\"\",\"unit\":\"PCS\",\"quantity\":1,\"unit_cost\":939.13,\"total_cost_with_vat\":1080,\"supplier\":\"\",\"log_date\":\"2026-11-17 00:00:00\",\"project_id\":null,\"logged_by\":1,\"updated_at\":\"2026-11-17 10:02:15\",\"created_at\":\"2026-11-17 10:02:15\",\"id\":169}',NULL,'127.0.0.1','Symfony','2026-11-17 07:02:15','2026-11-17 07:02:15'),(222,'App\\Models\\EquipmentMaintenanceLog',170,NULL,'created',NULL,'{\"equipment_id\":null,\"equipment_type\":\"LOADER\",\"equipment_plate\":\"LD-0910\",\"spare_part_name\":\"OIL FILTER\",\"po_no\":\"POEQ\\/16\\/00076\",\"unit\":\"PCS\",\"quantity\":1,\"unit_cost\":1173.91,\"total_cost_with_vat\":3380,\"supplier\":\"AUTOTECH\",\"log_date\":\"2015-11-17 00:00:00\",\"project_id\":null,\"logged_by\":1,\"updated_at\":\"2026-11-17 10:02:15\",\"created_at\":\"2026-11-17 10:02:15\",\"id\":170}',NULL,'127.0.0.1','Symfony','2026-11-17 07:02:15','2026-11-17 07:02:15'),(223,'App\\Models\\EquipmentMaintenanceLog',171,NULL,'created',NULL,'{\"equipment_id\":null,\"equipment_type\":\"EQUIPMENT\",\"equipment_plate\":\"\",\"spare_part_name\":\"FUEL FILTER\",\"po_no\":\"\",\"unit\":\"PCS\",\"quantity\":1,\"unit_cost\":826.09,\"total_cost_with_vat\":950,\"supplier\":\"\",\"log_date\":\"2026-11-17 00:00:00\",\"project_id\":null,\"logged_by\":1,\"updated_at\":\"2026-11-17 10:02:15\",\"created_at\":\"2026-11-17 10:02:15\",\"id\":171}',NULL,'127.0.0.1','Symfony','2026-11-17 07:02:15','2026-11-17 07:02:15'),(224,'App\\Models\\EquipmentMaintenanceLog',172,NULL,'created',NULL,'{\"equipment_id\":null,\"equipment_type\":\"EQUIPMENT\",\"equipment_plate\":\"\",\"spare_part_name\":\"FUEL FILTER\",\"po_no\":\"\",\"unit\":\"PCS\",\"quantity\":1,\"unit_cost\":939.13,\"total_cost_with_vat\":1080,\"supplier\":\"\",\"log_date\":\"2026-11-17 00:00:00\",\"project_id\":null,\"logged_by\":1,\"updated_at\":\"2026-11-17 10:02:15\",\"created_at\":\"2026-11-17 10:02:15\",\"id\":172}',NULL,'127.0.0.1','Symfony','2026-11-17 07:02:15','2026-11-17 07:02:15'),(225,'App\\Models\\EquipmentMaintenanceLog',173,NULL,'created',NULL,'{\"equipment_id\":null,\"equipment_type\":\"ROLLO\",\"equipment_plate\":\"CM-0993\",\"spare_part_name\":\"STEERING OIL\",\"po_no\":\"PBR-EQ\\/16\\/00063\",\"unit\":\"LIT\",\"quantity\":2,\"unit_cost\":400,\"total_cost_with_vat\":800,\"supplier\":\"MEGA\",\"log_date\":\"2015-11-18 00:00:00\",\"project_id\":null,\"logged_by\":1,\"updated_at\":\"2026-11-17 10:02:15\",\"created_at\":\"2026-11-17 10:02:15\",\"id\":173}',NULL,'127.0.0.1','Symfony','2026-11-17 07:02:15','2026-11-17 07:02:15'),(226,'App\\Models\\EquipmentMaintenanceLog',174,NULL,'created',NULL,'{\"equipment_id\":null,\"equipment_type\":\"ALL EQUIPMENT\",\"equipment_plate\":\"\",\"spare_part_name\":\"GREASE for loader,truck mixer,batc.plant,750 mixer\",\"po_no\":\"PBR-EQ\\/16\\/00064\",\"unit\":\"KG\",\"quantity\":30,\"unit_cost\":310,\"total_cost_with_vat\":9300,\"supplier\":\"WOMEN\",\"log_date\":\"2015-11-18 00:00:00\",\"project_id\":null,\"logged_by\":1,\"updated_at\":\"2026-11-17 10:02:15\",\"created_at\":\"2026-11-17 10:02:15\",\"id\":174}',NULL,'127.0.0.1','Symfony','2026-11-17 07:02:15','2026-11-17 07:02:15'),(227,'App\\Models\\EquipmentMaintenanceLog',175,NULL,'created',NULL,'{\"equipment_id\":6,\"equipment_type\":\"ROLLO\",\"equipment_plate\":\"CM-0562\",\"spare_part_name\":\"GEARBOX OIL 90W\",\"po_no\":\"PBR-EQ\\/16\\/00065\",\"unit\":\"LIT\",\"quantity\":5,\"unit_cost\":240,\"total_cost_with_vat\":1200,\"supplier\":\"AUGUSTA\",\"log_date\":\"2015-11-18 00:00:00\",\"project_id\":null,\"logged_by\":1,\"updated_at\":\"2026-11-17 10:02:15\",\"created_at\":\"2026-11-17 10:02:15\",\"id\":175}',NULL,'127.0.0.1','Symfony','2026-11-17 07:02:15','2026-11-17 07:02:15'),(228,'App\\Models\\EquipmentMaintenanceLog',176,NULL,'created',NULL,'{\"equipment_id\":null,\"equipment_type\":\"LOWBED TRUCK\",\"equipment_plate\":\"3-61727\",\"spare_part_name\":\"HOSE MAIN.\",\"po_no\":\"PBR-EQ\\/16\\/00066\",\"unit\":\"PCS\",\"quantity\":1,\"unit_cost\":2800,\"total_cost_with_vat\":2800,\"supplier\":\"MEGA\",\"log_date\":\"2015-11-18 00:00:00\",\"project_id\":null,\"logged_by\":1,\"updated_at\":\"2026-11-17 10:02:15\",\"created_at\":\"2026-11-17 10:02:15\",\"id\":176}',NULL,'127.0.0.1','Symfony','2026-11-17 07:02:15','2026-11-17 07:02:15'),(229,'App\\Models\\EquipmentMaintenanceLog',177,NULL,'created',NULL,'{\"equipment_id\":null,\"equipment_type\":\"LOWBED\",\"equipment_plate\":\"3-61727\",\"spare_part_name\":\"BRAKE FILUD\",\"po_no\":\"PBR-EQ\\/16\\/00067\",\"unit\":\"LIT\",\"quantity\":1,\"unit_cost\":500,\"total_cost_with_vat\":500,\"supplier\":\"MEGA\",\"log_date\":\"2015-11-18 00:00:00\",\"project_id\":null,\"logged_by\":1,\"updated_at\":\"2026-11-17 10:02:15\",\"created_at\":\"2026-11-17 10:02:15\",\"id\":177}',NULL,'127.0.0.1','Symfony','2026-11-17 07:02:15','2026-11-17 07:02:15'),(230,'App\\Models\\EquipmentMaintenanceLog',178,NULL,'created',NULL,'{\"equipment_id\":null,\"equipment_type\":\"sino truck\",\"equipment_plate\":\"3-91934\",\"spare_part_name\":\"main.\",\"po_no\":\"EQ-MPR\\/16\\/00016\",\"unit\":\"PCS\",\"quantity\":4,\"unit_cost\":1717.39,\"total_cost_with_vat\":7762.6,\"supplier\":\"MELKAMU\",\"log_date\":\"2015-11-19 00:00:00\",\"project_id\":null,\"logged_by\":1,\"updated_at\":\"2026-11-17 10:02:15\",\"created_at\":\"2026-11-17 10:02:15\",\"id\":178}',NULL,'127.0.0.1','Symfony','2026-11-17 07:02:15','2026-11-17 07:02:15'),(231,'App\\Models\\EquipmentMaintenanceLog',179,NULL,'created',NULL,'{\"equipment_id\":null,\"equipment_type\":\"MIXER 350\",\"equipment_plate\":\"350\",\"spare_part_name\":\"MAIN.LABOUR COST\",\"po_no\":\"PBR-EQ\\/16\\/00068\",\"unit\":\"PCS\",\"quantity\":1,\"unit_cost\":800,\"total_cost_with_vat\":800,\"supplier\":\"ARBAMINCH  WWT\",\"log_date\":\"2015-11-19 00:00:00\",\"project_id\":null,\"logged_by\":1,\"updated_at\":\"2026-11-17 10:02:15\",\"created_at\":\"2026-11-17 10:02:15\",\"id\":179}',NULL,'127.0.0.1','Symfony','2026-11-17 07:02:15','2026-11-17 07:02:15'),(232,'App\\Models\\EquipmentMaintenanceLog',180,NULL,'created',NULL,'{\"equipment_id\":4,\"equipment_type\":\"LOADER\",\"equipment_plate\":\"LD-2232\",\"spare_part_name\":\"BRAKE FLUID\",\"po_no\":\"PBR-EQ\\/16\\/00070\",\"unit\":\"LIT\",\"quantity\":1.5,\"unit_cost\":1300,\"total_cost_with_vat\":1950,\"supplier\":\"AUGUSTA\",\"log_date\":\"2015-11-19 00:00:00\",\"project_id\":null,\"logged_by\":1,\"updated_at\":\"2026-11-17 10:02:15\",\"created_at\":\"2026-11-17 10:02:15\",\"id\":180}',NULL,'127.0.0.1','Symfony','2026-11-17 07:02:15','2026-11-17 07:02:15'),(233,'App\\Models\\EquipmentMaintenanceLog',181,NULL,'created',NULL,'{\"equipment_id\":null,\"equipment_type\":\"ALL EQUIPMENT\",\"equipment_plate\":\"TOP UP\",\"spare_part_name\":\"ENGINEOIL20W50 VIBRATOR,WATERPUMP,FUELPUMP\",\"po_no\":\"PBR-EQ\\/16\\/00071\",\"unit\":\"LIT\",\"quantity\":20,\"unit_cost\":220,\"total_cost_with_vat\":4400,\"supplier\":\"MEGA\",\"log_date\":\"2015-11-19 00:00:00\",\"project_id\":null,\"logged_by\":1,\"updated_at\":\"2026-11-17 10:02:15\",\"created_at\":\"2026-11-17 10:02:15\",\"id\":181}',NULL,'127.0.0.1','Symfony','2026-11-17 07:02:15','2026-11-17 07:02:15'),(234,'App\\Models\\EquipmentMaintenanceLog',182,NULL,'created',NULL,'{\"equipment_id\":null,\"equipment_type\":\"SINO TRUCK\",\"equipment_plate\":\"3-91934\",\"spare_part_name\":\"CLUCH DISC\",\"po_no\":\"POEQ\\/16\\/00081\",\"unit\":\"PCS\",\"quantity\":1,\"unit_cost\":8000,\"total_cost_with_vat\":9200,\"supplier\":\"DANIEL ABEBE\",\"log_date\":\"2015-11-19 00:00:00\",\"project_id\":null,\"logged_by\":1,\"updated_at\":\"2026-11-17 10:02:15\",\"created_at\":\"2026-11-17 10:02:15\",\"id\":182}',NULL,'127.0.0.1','Symfony','2026-11-17 07:02:15','2026-11-17 07:02:15'),(235,'App\\Models\\EquipmentMaintenanceLog',183,NULL,'created',NULL,'{\"equipment_id\":null,\"equipment_type\":\"ISUZU TRUCK\",\"equipment_plate\":\"3-A40967\",\"spare_part_name\":\"OIL FILTER\",\"po_no\":\"POEQ\\/16\\/00083\",\"unit\":\"PCS\",\"quantity\":3,\"unit_cost\":2124.94,\"total_cost_with_vat\":14727.38,\"supplier\":\"KAKI PLC\",\"log_date\":\"2015-11-19 00:00:00\",\"project_id\":null,\"logged_by\":1,\"updated_at\":\"2026-11-17 10:02:15\",\"created_at\":\"2026-11-17 10:02:15\",\"id\":183}',NULL,'127.0.0.1','Symfony','2026-11-17 07:02:15','2026-11-17 07:02:15'),(236,'App\\Models\\EquipmentMaintenanceLog',184,NULL,'created',NULL,'{\"equipment_id\":null,\"equipment_type\":\"EQUIPMENT\",\"equipment_plate\":\"\",\"spare_part_name\":\"FUEL FILTER\",\"po_no\":\"\",\"unit\":\"PCS\",\"quantity\":3,\"unit_cost\":1209.63,\"total_cost_with_vat\":4173.22,\"supplier\":\"\",\"log_date\":\"2026-11-17 00:00:00\",\"project_id\":null,\"logged_by\":1,\"updated_at\":\"2026-11-17 10:02:15\",\"created_at\":\"2026-11-17 10:02:15\",\"id\":184}',NULL,'127.0.0.1','Symfony','2026-11-17 07:02:15','2026-11-17 07:02:15'),(237,'App\\Models\\EquipmentMaintenanceLog',185,NULL,'created',NULL,'{\"equipment_id\":null,\"equipment_type\":\"EQUIPMENT\",\"equipment_plate\":\"\",\"spare_part_name\":\"ELEMENT KIT  FUEL\",\"po_no\":\"\",\"unit\":\"PCS\",\"quantity\":3,\"unit_cost\":1009.79,\"total_cost_with_vat\":3483.78,\"supplier\":\"\",\"log_date\":\"2026-11-17 00:00:00\",\"project_id\":null,\"logged_by\":1,\"updated_at\":\"2026-11-17 10:02:15\",\"created_at\":\"2026-11-17 10:02:15\",\"id\":185}',NULL,'127.0.0.1','Symfony','2026-11-17 07:02:15','2026-11-17 07:02:15'),(238,'App\\Models\\EquipmentMaintenanceLog',186,NULL,'created',NULL,'{\"equipment_id\":null,\"equipment_type\":\"ISUZU TRUCK\",\"equipment_plate\":\"3-A50982\",\"spare_part_name\":\"OIL FILTER\",\"po_no\":\"POEQ\\/16\\/00084\",\"unit\":\"PCS\",\"quantity\":3,\"unit_cost\":2124.94,\"total_cost_with_vat\":14727.38,\"supplier\":\"KAKI PLC\",\"log_date\":\"2015-11-19 00:00:00\",\"project_id\":null,\"logged_by\":1,\"updated_at\":\"2026-11-17 10:02:15\",\"created_at\":\"2026-11-17 10:02:15\",\"id\":186}',NULL,'127.0.0.1','Symfony','2026-11-17 07:02:15','2026-11-17 07:02:15'),(239,'App\\Models\\EquipmentMaintenanceLog',187,NULL,'created',NULL,'{\"equipment_id\":null,\"equipment_type\":\"EQUIPMENT\",\"equipment_plate\":\"\",\"spare_part_name\":\"FUEL FILTER\",\"po_no\":\"\",\"unit\":\"PCS\",\"quantity\":3,\"unit_cost\":1209.63,\"total_cost_with_vat\":4173.22,\"supplier\":\"\",\"log_date\":\"2026-11-17 00:00:00\",\"project_id\":null,\"logged_by\":1,\"updated_at\":\"2026-11-17 10:02:15\",\"created_at\":\"2026-11-17 10:02:15\",\"id\":187}',NULL,'127.0.0.1','Symfony','2026-11-17 07:02:15','2026-11-17 07:02:15'),(240,'App\\Models\\EquipmentMaintenanceLog',188,NULL,'created',NULL,'{\"equipment_id\":null,\"equipment_type\":\"EQUIPMENT\",\"equipment_plate\":\"\",\"spare_part_name\":\"ELEMENT KIT  FUEL\",\"po_no\":\"\",\"unit\":\"PCS\",\"quantity\":3,\"unit_cost\":1009.79,\"total_cost_with_vat\":3483.78,\"supplier\":\"\",\"log_date\":\"2026-11-17 00:00:00\",\"project_id\":null,\"logged_by\":1,\"updated_at\":\"2026-11-17 10:02:15\",\"created_at\":\"2026-11-17 10:02:15\",\"id\":188}',NULL,'127.0.0.1','Symfony','2026-11-17 07:02:15','2026-11-17 07:02:15'),(241,'App\\Models\\EquipmentMaintenanceLog',189,NULL,'created',NULL,'{\"equipment_id\":null,\"equipment_type\":\"ISUZU TRUCK\",\"equipment_plate\":\"3-A53404\",\"spare_part_name\":\"OIL FILTER\",\"po_no\":\"POEQ\\/16\\/00085\",\"unit\":\"PCS\",\"quantity\":3,\"unit_cost\":2124.94,\"total_cost_with_vat\":14727.38,\"supplier\":\"KAKI PLC\",\"log_date\":\"2015-11-19 00:00:00\",\"project_id\":null,\"logged_by\":1,\"updated_at\":\"2026-11-17 10:02:15\",\"created_at\":\"2026-11-17 10:02:15\",\"id\":189}',NULL,'127.0.0.1','Symfony','2026-11-17 07:02:15','2026-11-17 07:02:15'),(242,'App\\Models\\EquipmentMaintenanceLog',190,NULL,'created',NULL,'{\"equipment_id\":null,\"equipment_type\":\"EQUIPMENT\",\"equipment_plate\":\"\",\"spare_part_name\":\"FUEL FILTER\",\"po_no\":\"\",\"unit\":\"PCS\",\"quantity\":3,\"unit_cost\":1209.63,\"total_cost_with_vat\":4173.22,\"supplier\":\"\",\"log_date\":\"2026-11-17 00:00:00\",\"project_id\":null,\"logged_by\":1,\"updated_at\":\"2026-11-17 10:02:15\",\"created_at\":\"2026-11-17 10:02:15\",\"id\":190}',NULL,'127.0.0.1','Symfony','2026-11-17 07:02:15','2026-11-17 07:02:15'),(243,'App\\Models\\EquipmentMaintenanceLog',191,NULL,'created',NULL,'{\"equipment_id\":null,\"equipment_type\":\"EQUIPMENT\",\"equipment_plate\":\"\",\"spare_part_name\":\"ELEMENT KIT  FUEL\",\"po_no\":\"\",\"unit\":\"PCS\",\"quantity\":3,\"unit_cost\":1009.79,\"total_cost_with_vat\":3483.78,\"supplier\":\"\",\"log_date\":\"2026-11-17 00:00:00\",\"project_id\":null,\"logged_by\":1,\"updated_at\":\"2026-11-17 10:02:15\",\"created_at\":\"2026-11-17 10:02:15\",\"id\":191}',NULL,'127.0.0.1','Symfony','2026-11-17 07:02:15','2026-11-17 07:02:15'),(244,'App\\Models\\EquipmentMaintenanceLog',192,NULL,'created',NULL,'{\"equipment_id\":null,\"equipment_type\":\"ISUZU TRUCK\",\"equipment_plate\":\"3-B04259\",\"spare_part_name\":\"OIL FILTER\",\"po_no\":\"POEQ\\/16\\/00086\",\"unit\":\"PCS\",\"quantity\":3,\"unit_cost\":2124.94,\"total_cost_with_vat\":14727.38,\"supplier\":\"KAKI PLC\",\"log_date\":\"2015-11-19 00:00:00\",\"project_id\":null,\"logged_by\":1,\"updated_at\":\"2026-11-17 10:02:15\",\"created_at\":\"2026-11-17 10:02:15\",\"id\":192}',NULL,'127.0.0.1','Symfony','2026-11-17 07:02:15','2026-11-17 07:02:15'),(245,'App\\Models\\EquipmentMaintenanceLog',193,NULL,'created',NULL,'{\"equipment_id\":null,\"equipment_type\":\"EQUIPMENT\",\"equipment_plate\":\"\",\"spare_part_name\":\"FUEL FILTER\",\"po_no\":\"\",\"unit\":\"PCS\",\"quantity\":3,\"unit_cost\":1209.63,\"total_cost_with_vat\":4173.22,\"supplier\":\"\",\"log_date\":\"2026-11-17 00:00:00\",\"project_id\":null,\"logged_by\":1,\"updated_at\":\"2026-11-17 10:02:15\",\"created_at\":\"2026-11-17 10:02:15\",\"id\":193}',NULL,'127.0.0.1','Symfony','2026-11-17 07:02:15','2026-11-17 07:02:15'),(246,'App\\Models\\EquipmentMaintenanceLog',194,NULL,'created',NULL,'{\"equipment_id\":null,\"equipment_type\":\"EQUIPMENT\",\"equipment_plate\":\"\",\"spare_part_name\":\"ELEMENT KIT  FUEL\",\"po_no\":\"\",\"unit\":\"PCS\",\"quantity\":3,\"unit_cost\":1009.79,\"total_cost_with_vat\":3483.78,\"supplier\":\"\",\"log_date\":\"2026-11-17 00:00:00\",\"project_id\":null,\"logged_by\":1,\"updated_at\":\"2026-11-17 10:02:15\",\"created_at\":\"2026-11-17 10:02:15\",\"id\":194}',NULL,'127.0.0.1','Symfony','2026-11-17 07:02:15','2026-11-17 07:02:15'),(247,'App\\Models\\EquipmentMaintenanceLog',195,NULL,'created',NULL,'{\"equipment_id\":null,\"equipment_type\":\"ISUZU TRUCK\",\"equipment_plate\":\"3-30156\",\"spare_part_name\":\"OIL FILTER\",\"po_no\":\"POEQ\\/16\\/00087\",\"unit\":\"PCS\",\"quantity\":3,\"unit_cost\":2124.94,\"total_cost_with_vat\":14727.38,\"supplier\":\"KAKI PLC\",\"log_date\":\"2015-11-19 00:00:00\",\"project_id\":null,\"logged_by\":1,\"updated_at\":\"2026-11-17 10:02:15\",\"created_at\":\"2026-11-17 10:02:15\",\"id\":195}',NULL,'127.0.0.1','Symfony','2026-11-17 07:02:15','2026-11-17 07:02:15'),(248,'App\\Models\\EquipmentMaintenanceLog',196,NULL,'created',NULL,'{\"equipment_id\":null,\"equipment_type\":\"EQUIPMENT\",\"equipment_plate\":\"\",\"spare_part_name\":\"FUEL FILTER\",\"po_no\":\"\",\"unit\":\"PCS\",\"quantity\":3,\"unit_cost\":1209.63,\"total_cost_with_vat\":4173.22,\"supplier\":\"\",\"log_date\":\"2026-11-17 00:00:00\",\"project_id\":null,\"logged_by\":1,\"updated_at\":\"2026-11-17 10:02:15\",\"created_at\":\"2026-11-17 10:02:15\",\"id\":196}',NULL,'127.0.0.1','Symfony','2026-11-17 07:02:15','2026-11-17 07:02:15'),(249,'App\\Models\\EquipmentMaintenanceLog',197,NULL,'created',NULL,'{\"equipment_id\":null,\"equipment_type\":\"EQUIPMENT\",\"equipment_plate\":\"\",\"spare_part_name\":\"ELEMENT KIT  FUEL\",\"po_no\":\"\",\"unit\":\"PCS\",\"quantity\":3,\"unit_cost\":1009.79,\"total_cost_with_vat\":3483.78,\"supplier\":\"\",\"log_date\":\"2026-11-17 00:00:00\",\"project_id\":null,\"logged_by\":1,\"updated_at\":\"2026-11-17 10:02:15\",\"created_at\":\"2026-11-17 10:02:15\",\"id\":197}',NULL,'127.0.0.1','Symfony','2026-11-17 07:02:15','2026-11-17 07:02:15'),(250,'App\\Models\\EquipmentMaintenanceLog',198,NULL,'created',NULL,'{\"equipment_id\":null,\"equipment_type\":\"ISUZU\",\"equipment_plate\":\"3-A40967\",\"spare_part_name\":\"WHEEL CYLINDER\",\"po_no\":\"POEQ\\/16\\/00088\",\"unit\":\"KIT\",\"quantity\":1,\"unit_cost\":1130.43,\"total_cost_with_vat\":1300,\"supplier\":\"WELIYA\",\"log_date\":\"2015-11-19 00:00:00\",\"project_id\":null,\"logged_by\":1,\"updated_at\":\"2026-11-17 10:02:15\",\"created_at\":\"2026-11-17 10:02:15\",\"id\":198}',NULL,'127.0.0.1','Symfony','2026-11-17 07:02:15','2026-11-17 07:02:15'),(251,'App\\Models\\EquipmentMaintenanceLog',199,NULL,'created',NULL,'{\"equipment_id\":null,\"equipment_type\":\"ALL EQUIPMENT\",\"equipment_plate\":\"\",\"spare_part_name\":\"GREASE ,CARMIX,LOADER,T.MIXER,750 MIXER\",\"po_no\":\"PBR-EQ\\/16\\/00073\",\"unit\":\"KG\",\"quantity\":20,\"unit_cost\":450,\"total_cost_with_vat\":9000,\"supplier\":\"D\\/BIRHAN UNIVERSITY\",\"log_date\":\"2015-11-20 00:00:00\",\"project_id\":null,\"logged_by\":1,\"updated_at\":\"2026-11-17 10:02:15\",\"created_at\":\"2026-11-17 10:02:15\",\"id\":199}',NULL,'127.0.0.1','Symfony','2026-11-17 07:02:15','2026-11-17 07:02:15'),(252,'App\\Models\\EquipmentMaintenanceLog',200,NULL,'created',NULL,'{\"equipment_id\":null,\"equipment_type\":\"WATER PUMP\",\"equipment_plate\":\"PURCHASE\",\"spare_part_name\":\"WATER PUMP CUP\",\"po_no\":\"PBR-EQ\\/16\\/00074\",\"unit\":\"pcs\",\"quantity\":4,\"unit_cost\":250,\"total_cost_with_vat\":1900,\"supplier\":\"D\\/BIRHAN UNIVERSITY\",\"log_date\":\"2015-11-20 00:00:00\",\"project_id\":null,\"logged_by\":1,\"updated_at\":\"2026-11-17 10:02:15\",\"created_at\":\"2026-11-17 10:02:15\",\"id\":200}',NULL,'127.0.0.1','Symfony','2026-11-17 07:02:15','2026-11-17 07:02:15'),(253,'App\\Models\\EquipmentMaintenanceLog',201,NULL,'created',NULL,'{\"equipment_id\":null,\"equipment_type\":\"BATCHING PLANT\",\"equipment_plate\":\"\",\"spare_part_name\":\"CLAMP DIA24\",\"po_no\":\"\",\"unit\":\"PCS\",\"quantity\":6,\"unit_cost\":150,\"total_cost_with_vat\":1035,\"supplier\":\"\",\"log_date\":\"2026-11-17 00:00:00\",\"project_id\":null,\"logged_by\":1,\"updated_at\":\"2026-11-17 10:02:15\",\"created_at\":\"2026-11-17 10:02:15\",\"id\":201}',NULL,'127.0.0.1','Symfony','2026-11-17 07:02:15','2026-11-17 07:02:15'),(254,'App\\Models\\EquipmentMaintenanceLog',202,NULL,'created',NULL,'{\"equipment_id\":4,\"equipment_type\":\"LOADER\",\"equipment_plate\":\"LD-2232\",\"spare_part_name\":\"DIFFERENTIAL OIL 140W\",\"po_no\":\"PBR-EQ\\/16\\/00075\",\"unit\":\"LIT\",\"quantity\":25,\"unit_cost\":220,\"total_cost_with_vat\":6800,\"supplier\":\"AUGUSTA\",\"log_date\":\"2015-11-20 00:00:00\",\"project_id\":null,\"logged_by\":1,\"updated_at\":\"2026-11-17 10:02:15\",\"created_at\":\"2026-11-17 10:02:15\",\"id\":202}',NULL,'127.0.0.1','Symfony','2026-11-17 07:02:15','2026-11-17 07:02:15'),(255,'App\\Models\\EquipmentMaintenanceLog',203,NULL,'created',NULL,'{\"equipment_id\":null,\"equipment_type\":\"EQUIPMENT\",\"equipment_plate\":\"\",\"spare_part_name\":\"BRAKE FILUD\",\"po_no\":\"\",\"unit\":\"LIT\",\"quantity\":1,\"unit_cost\":1300,\"total_cost_with_vat\":1495,\"supplier\":\"\",\"log_date\":\"2026-11-17 00:00:00\",\"project_id\":null,\"logged_by\":1,\"updated_at\":\"2026-11-17 10:02:15\",\"created_at\":\"2026-11-17 10:02:15\",\"id\":203}',NULL,'127.0.0.1','Symfony','2026-11-17 07:02:15','2026-11-17 07:02:15'),(256,'App\\Models\\EquipmentMaintenanceLog',204,NULL,'created',NULL,'{\"equipment_id\":null,\"equipment_type\":\"VIBRATOR\",\"equipment_plate\":\"MAIN.\",\"spare_part_name\":\"VIBRATOR HOSE\",\"po_no\":\"PBR-EQ\\/16\\/00076\",\"unit\":\"PCS\",\"quantity\":1,\"unit_cost\":800,\"total_cost_with_vat\":1600,\"supplier\":\"WOMEN\",\"log_date\":\"2015-11-20 00:00:00\",\"project_id\":null,\"logged_by\":1,\"updated_at\":\"2026-11-17 10:02:15\",\"created_at\":\"2026-11-17 10:02:15\",\"id\":204}',NULL,'127.0.0.1','Symfony','2026-11-17 07:02:15','2026-11-17 07:02:15'),(257,'App\\Models\\EquipmentMaintenanceLog',205,NULL,'created',NULL,'{\"equipment_id\":null,\"equipment_type\":\"WATER PUMP\",\"equipment_plate\":\"\",\"spare_part_name\":\"W.PUMP HOSE\",\"po_no\":\"\",\"unit\":\"PCS\",\"quantity\":1,\"unit_cost\":800,\"total_cost_with_vat\":920,\"supplier\":\"\",\"log_date\":\"2026-11-17 00:00:00\",\"project_id\":null,\"logged_by\":1,\"updated_at\":\"2026-11-17 10:02:15\",\"created_at\":\"2026-11-17 10:02:15\",\"id\":205}',NULL,'127.0.0.1','Symfony','2026-11-17 07:02:15','2026-11-17 07:02:15'),(258,'App\\Models\\EquipmentMaintenanceLog',206,NULL,'created',NULL,'{\"equipment_id\":11,\"equipment_type\":\"TOYOTA PICK UP\",\"equipment_plate\":\"3-71050\",\"spare_part_name\":\"NOZZLE SERVICE\",\"po_no\":\"EQ-MPR\\/16\\/00017\",\"unit\":\"PCS\",\"quantity\":1,\"unit_cost\":8500,\"total_cost_with_vat\":13560,\"supplier\":\"MULAT\",\"log_date\":\"2015-11-21 00:00:00\",\"project_id\":null,\"logged_by\":1,\"updated_at\":\"2026-11-17 10:02:15\",\"created_at\":\"2026-11-17 10:02:15\",\"id\":206}',NULL,'127.0.0.1','Symfony','2026-11-17 07:02:15','2026-11-17 07:02:15'),(259,'App\\Models\\EquipmentMaintenanceLog',207,NULL,'created',NULL,'{\"equipment_id\":null,\"equipment_type\":\"EQUIPMENT\",\"equipment_plate\":\"\",\"spare_part_name\":\"NOZZLE ASSEMBLY\",\"po_no\":\"\",\"unit\":\"PCS\",\"quantity\":1,\"unit_cost\":3500,\"total_cost_with_vat\":4025,\"supplier\":\"\",\"log_date\":\"2026-11-17 00:00:00\",\"project_id\":null,\"logged_by\":1,\"updated_at\":\"2026-11-17 10:02:15\",\"created_at\":\"2026-11-17 10:02:15\",\"id\":207}',NULL,'127.0.0.1','Symfony','2026-11-17 07:02:15','2026-11-17 07:02:15'),(260,'App\\Models\\EquipmentMaintenanceLog',208,NULL,'created',NULL,'{\"equipment_id\":3,\"equipment_type\":\"CAR MIX\",\"equipment_plate\":\"CMM-0095\",\"spare_part_name\":\"STARTOR MOTOR\",\"po_no\":\"EQ-MPR\\/16\\/00014\",\"unit\":\"PCS\",\"quantity\":1,\"unit_cost\":23000,\"total_cost_with_vat\":25990,\"supplier\":\"DASALEGN\",\"log_date\":\"2015-11-18 00:00:00\",\"project_id\":null,\"logged_by\":1,\"updated_at\":\"2026-11-17 10:02:15\",\"created_at\":\"2026-11-17 10:02:15\",\"id\":208}',NULL,'127.0.0.1','Symfony','2026-11-17 07:02:15','2026-11-17 07:02:15'),(261,'App\\Models\\EquipmentMaintenanceLog',209,NULL,'created',NULL,'{\"equipment_id\":null,\"equipment_type\":\"SUMMERSUBLE PUMP\",\"equipment_plate\":\"MAIN.\",\"spare_part_name\":\"SUMMERSUBLE PUMP\",\"po_no\":\"EQ-MPR\\/16\\/00018\",\"unit\":\"PCS\",\"quantity\":1,\"unit_cost\":3000,\"total_cost_with_vat\":3450,\"supplier\":\"GIRMA\",\"log_date\":\"2015-11-21 00:00:00\",\"project_id\":null,\"logged_by\":1,\"updated_at\":\"2026-11-17 10:02:15\",\"created_at\":\"2026-11-17 10:02:15\",\"id\":209}',NULL,'127.0.0.1','Symfony','2026-11-17 07:02:15','2026-11-17 07:02:15'),(262,'App\\Models\\EquipmentMaintenanceLog',210,NULL,'created',NULL,'{\"equipment_id\":2,\"equipment_type\":\"EXCAVATOR\",\"equipment_plate\":\"EX-0601\",\"spare_part_name\":\"HYDRAULIC OIL\",\"po_no\":\"PBR-EQ\\/16\\/00077\",\"unit\":\"LIT\",\"quantity\":50,\"unit_cost\":12500,\"total_cost_with_vat\":13750,\"supplier\":\"AMBO REFERRAL\",\"log_date\":\"2015-11-21 00:00:00\",\"project_id\":null,\"logged_by\":1,\"updated_at\":\"2026-11-17 10:02:15\",\"created_at\":\"2026-11-17 10:02:15\",\"id\":210}',NULL,'127.0.0.1','Symfony','2026-11-17 07:02:15','2026-11-17 07:02:15'),(263,'App\\Models\\EquipmentMaintenanceLog',211,NULL,'created',NULL,'{\"equipment_id\":null,\"equipment_type\":\"EQUIPMENT\",\"equipment_plate\":\"\",\"spare_part_name\":\"ENGINE OIL\",\"po_no\":\"\",\"unit\":\"LIT\",\"quantity\":5,\"unit_cost\":1250,\"total_cost_with_vat\":7187.5,\"supplier\":\"\",\"log_date\":\"2026-11-17 00:00:00\",\"project_id\":null,\"logged_by\":1,\"updated_at\":\"2026-11-17 10:02:15\",\"created_at\":\"2026-11-17 10:02:15\",\"id\":211}',NULL,'127.0.0.1','Symfony','2026-11-17 07:02:15','2026-11-17 07:02:15'),(264,'App\\Models\\EquipmentMaintenanceLog',212,NULL,'created',NULL,'{\"equipment_id\":11,\"equipment_type\":\"TOYOTA PICK UP\",\"equipment_plate\":\"3-71050\",\"spare_part_name\":\"PUMP AS FUEL\",\"po_no\":\"POEQ\\/16\\/00094\",\"unit\":\"PCS\",\"quantity\":1,\"unit_cost\":9000,\"total_cost_with_vat\":10350,\"supplier\":\"ZELALEM\",\"log_date\":\"2015-11-21 00:00:00\",\"project_id\":null,\"logged_by\":1,\"updated_at\":\"2026-11-17 10:02:15\",\"created_at\":\"2026-11-17 10:02:15\",\"id\":212}',NULL,'127.0.0.1','Symfony','2026-11-17 07:02:15','2026-11-17 07:02:15'),(265,'App\\Models\\EquipmentMaintenanceLog',213,NULL,'created',NULL,'{\"equipment_id\":null,\"equipment_type\":\"GENERATOR\",\"equipment_plate\":\"aksa 132kva\",\"spare_part_name\":\"oil filter -js2021\",\"po_no\":\"POEQ\\/16\\/00099\",\"unit\":\"PCS\",\"quantity\":2,\"unit_cost\":1400,\"total_cost_with_vat\":10120,\"supplier\":\"auto zone\",\"log_date\":\"2015-11-21 00:00:00\",\"project_id\":null,\"logged_by\":1,\"updated_at\":\"2026-11-17 10:02:15\",\"created_at\":\"2026-11-17 10:02:15\",\"id\":213}',NULL,'127.0.0.1','Symfony','2026-11-17 07:02:15','2026-11-17 07:02:15'),(266,'App\\Models\\EquipmentMaintenanceLog',214,NULL,'created',NULL,'{\"equipment_id\":null,\"equipment_type\":\"EQUIPMENT\",\"equipment_plate\":\"\",\"spare_part_name\":\"fuel filter -js1003\",\"po_no\":\"\",\"unit\":\"PCS\",\"quantity\":2,\"unit_cost\":1500,\"total_cost_with_vat\":3450,\"supplier\":\"\",\"log_date\":\"2026-11-17 00:00:00\",\"project_id\":null,\"logged_by\":1,\"updated_at\":\"2026-11-17 10:02:15\",\"created_at\":\"2026-11-17 10:02:15\",\"id\":214}',NULL,'127.0.0.1','Symfony','2026-11-17 07:02:15','2026-11-17 07:02:15'),(267,'App\\Models\\EquipmentMaintenanceLog',215,NULL,'created',NULL,'{\"equipment_id\":null,\"equipment_type\":\"EQUIPMENT\",\"equipment_plate\":\"\",\"spare_part_name\":\"fuel&water separator\",\"po_no\":\"\",\"unit\":\"PCS\",\"quantity\":2,\"unit_cost\":1500,\"total_cost_with_vat\":3450,\"supplier\":\"\",\"log_date\":\"2026-11-17 00:00:00\",\"project_id\":null,\"logged_by\":1,\"updated_at\":\"2026-11-17 10:02:15\",\"created_at\":\"2026-11-17 10:02:15\",\"id\":215}',NULL,'127.0.0.1','Symfony','2026-11-17 07:02:15','2026-11-17 07:02:15'),(268,'App\\Models\\EquipmentMaintenanceLog',216,NULL,'created',NULL,'{\"equipment_id\":11,\"equipment_type\":\"TOYOTA PICK UP\",\"equipment_plate\":\"3-71050\",\"spare_part_name\":\"pump as fuel\",\"po_no\":\"POEQ\\/16\\/00094\",\"unit\":\"PCS\",\"quantity\":1,\"unit_cost\":9000,\"total_cost_with_vat\":10350,\"supplier\":\"ZELALEM\",\"log_date\":\"2015-11-21 00:00:00\",\"project_id\":null,\"logged_by\":1,\"updated_at\":\"2026-11-17 10:02:15\",\"created_at\":\"2026-11-17 10:02:15\",\"id\":216}',NULL,'127.0.0.1','Symfony','2026-11-17 07:02:15','2026-11-17 07:02:15'),(269,'App\\Models\\EquipmentMaintenanceLog',217,NULL,'created',NULL,'{\"equipment_id\":null,\"equipment_type\":\"GENERATOR\",\"equipment_plate\":\"CUMMINS\",\"spare_part_name\":\"OIL FILTER-JS2021\",\"po_no\":\"POEQ\\/16\\/00101\",\"unit\":\"PCS\",\"quantity\":1,\"unit_cost\":1400,\"total_cost_with_vat\":1610,\"supplier\":\"AUTO ZONE\",\"log_date\":\"2015-11-21 00:00:00\",\"project_id\":null,\"logged_by\":1,\"updated_at\":\"2026-11-17 10:02:15\",\"created_at\":\"2026-11-17 10:02:15\",\"id\":217}',NULL,'127.0.0.1','Symfony','2026-11-17 07:02:15','2026-11-17 07:02:15'),(270,'App\\Models\\EquipmentMaintenanceLog',218,NULL,'created',NULL,'{\"equipment_id\":null,\"equipment_type\":\"EQUIPMENT\",\"equipment_plate\":\"\",\"spare_part_name\":\"FUEL FILTER-FS19652\",\"po_no\":\"POEQ\\/16\\/00102\",\"unit\":\"PCS\",\"quantity\":1,\"unit_cost\":3000,\"total_cost_with_vat\":3450,\"supplier\":\"GETACHEW\",\"log_date\":\"2015-11-21 00:00:00\",\"project_id\":null,\"logged_by\":1,\"updated_at\":\"2026-11-17 10:02:15\",\"created_at\":\"2026-11-17 10:02:15\",\"id\":218}',NULL,'127.0.0.1','Symfony','2026-11-17 07:02:15','2026-11-17 07:02:15'),(271,'App\\Models\\EquipmentMaintenanceLog',219,NULL,'created',NULL,'{\"equipment_id\":null,\"equipment_type\":\"MIXER 350\",\"equipment_plate\":\"PURCHASE\",\"spare_part_name\":\"PISTON RING\",\"po_no\":\"PBR-EQ\\/16\\/00078\",\"unit\":\"PCS\",\"quantity\":1,\"unit_cost\":3000,\"total_cost_with_vat\":4200,\"supplier\":\"ARBAMINCH WWT\",\"log_date\":\"2015-11-21 00:00:00\",\"project_id\":null,\"logged_by\":1,\"updated_at\":\"2026-11-17 10:02:15\",\"created_at\":\"2026-11-17 10:02:15\",\"id\":219}',NULL,'127.0.0.1','Symfony','2026-11-17 07:02:15','2026-11-17 07:02:15'),(272,'App\\Models\\EquipmentMaintenanceLog',220,NULL,'created',NULL,'{\"equipment_id\":null,\"equipment_type\":\"EQUIPMENT\",\"equipment_plate\":\"\",\"spare_part_name\":\"POSTISH\",\"po_no\":\"\",\"unit\":\"PCS\",\"quantity\":1,\"unit_cost\":1200,\"total_cost_with_vat\":1380,\"supplier\":\"\",\"log_date\":\"2026-11-17 00:00:00\",\"project_id\":null,\"logged_by\":1,\"updated_at\":\"2026-11-17 10:02:15\",\"created_at\":\"2026-11-17 10:02:15\",\"id\":220}',NULL,'127.0.0.1','Symfony','2026-11-17 07:02:15','2026-11-17 07:02:15'),(273,'App\\Models\\EquipmentMaintenanceLog',221,NULL,'created',NULL,'{\"equipment_id\":null,\"equipment_type\":\"MIXER 350\",\"equipment_plate\":\"MAIN.\",\"spare_part_name\":\"CRANK SHAFT TORNO\",\"po_no\":\"PBR-EQ\\/16\\/00079\",\"unit\":\"PCS\",\"quantity\":1,\"unit_cost\":600,\"total_cost_with_vat\":3900,\"supplier\":\"ARBAMINCH WWT\",\"log_date\":\"2015-11-21 00:00:00\",\"project_id\":null,\"logged_by\":1,\"updated_at\":\"2026-11-17 10:02:15\",\"created_at\":\"2026-11-17 10:02:15\",\"id\":221}',NULL,'127.0.0.1','Symfony','2026-11-17 07:02:15','2026-11-17 07:02:15'),(274,'App\\Models\\EquipmentMaintenanceLog',222,NULL,'created',NULL,'{\"equipment_id\":null,\"equipment_type\":\"MIXER 350\",\"equipment_plate\":\"MAIN.\",\"spare_part_name\":\"MAIN.LABOUR COST\",\"po_no\":\"\",\"unit\":\"PCS\",\"quantity\":1,\"unit_cost\":1500,\"total_cost_with_vat\":1725,\"supplier\":\"\",\"log_date\":\"2026-11-17 00:00:00\",\"project_id\":null,\"logged_by\":1,\"updated_at\":\"2026-11-17 10:02:15\",\"created_at\":\"2026-11-17 10:02:15\",\"id\":222}',NULL,'127.0.0.1','Symfony','2026-11-17 07:02:15','2026-11-17 07:02:15'),(275,'App\\Models\\EquipmentMaintenanceLog',223,NULL,'created',NULL,'{\"equipment_id\":null,\"equipment_type\":\"JUMPER COMPACTOR\",\"equipment_plate\":\"MAIN.\",\"spare_part_name\":\"MAIN.LABOUR COST\",\"po_no\":\"\",\"unit\":\"PCS\",\"quantity\":1,\"unit_cost\":1800,\"total_cost_with_vat\":2070,\"supplier\":\"\",\"log_date\":\"2026-11-17 00:00:00\",\"project_id\":null,\"logged_by\":1,\"updated_at\":\"2026-11-17 10:02:15\",\"created_at\":\"2026-11-17 10:02:15\",\"id\":223}',NULL,'127.0.0.1','Symfony','2026-11-17 07:02:15','2026-11-17 07:02:15'),(276,'App\\Models\\EquipmentMaintenanceLog',224,NULL,'created',NULL,'{\"equipment_id\":null,\"equipment_type\":\"VIBRATOR\",\"equipment_plate\":\"MAIN.\",\"spare_part_name\":\"HOSE MAIN.\",\"po_no\":\"PBR-EQ\\/16\\/00080\",\"unit\":\"PCS\",\"quantity\":4,\"unit_cost\":800,\"total_cost_with_vat\":4000,\"supplier\":\"WOMEN\",\"log_date\":\"2015-11-21 00:00:00\",\"project_id\":null,\"logged_by\":1,\"updated_at\":\"2026-11-17 10:02:15\",\"created_at\":\"2026-11-17 10:02:15\",\"id\":224}',NULL,'127.0.0.1','Symfony','2026-11-17 07:02:15','2026-11-17 07:02:15'),(277,'App\\Models\\EquipmentMaintenanceLog',225,NULL,'created',NULL,'{\"equipment_id\":null,\"equipment_type\":\"WATER PUMP\",\"equipment_plate\":\"MAIN.\",\"spare_part_name\":\"HOSE MAIN.\",\"po_no\":\"\",\"unit\":\"PCS\",\"quantity\":1,\"unit_cost\":800,\"total_cost_with_vat\":920,\"supplier\":\"\",\"log_date\":\"2026-11-17 00:00:00\",\"project_id\":null,\"logged_by\":1,\"updated_at\":\"2026-11-17 10:02:15\",\"created_at\":\"2026-11-17 10:02:15\",\"id\":225}',NULL,'127.0.0.1','Symfony','2026-11-17 07:02:15','2026-11-17 07:02:15'),(278,'App\\Models\\EquipmentMaintenanceLog',226,NULL,'created',NULL,'{\"equipment_id\":null,\"equipment_type\":\"ROLLO\",\"equipment_plate\":\"CM-0993\",\"spare_part_name\":\"GEARBOX OIL 90W\",\"po_no\":\"PBR-EQ\\/16\\/00081\",\"unit\":\"LIT\",\"quantity\":5,\"unit_cost\":220,\"total_cost_with_vat\":1100,\"supplier\":\"MEGA\",\"log_date\":\"2015-11-21 00:00:00\",\"project_id\":null,\"logged_by\":1,\"updated_at\":\"2026-11-17 10:02:15\",\"created_at\":\"2026-11-17 10:02:15\",\"id\":226}',NULL,'127.0.0.1','Symfony','2026-11-17 07:02:15','2026-11-17 07:02:15'),(279,'App\\Models\\EquipmentMaintenanceLog',227,NULL,'created',NULL,'{\"equipment_id\":6,\"equipment_type\":\"ROLLO\",\"equipment_plate\":\"CM-0562\",\"spare_part_name\":\"BRAKE FILUD\",\"po_no\":\"PBR-EQ\\/16\\/00082\",\"unit\":\"LIT\",\"quantity\":1,\"unit_cost\":1300,\"total_cost_with_vat\":1300,\"supplier\":\"AUGUSTA\",\"log_date\":\"2015-11-21 00:00:00\",\"project_id\":null,\"logged_by\":1,\"updated_at\":\"2026-11-17 10:02:15\",\"created_at\":\"2026-11-17 10:02:15\",\"id\":227}',NULL,'127.0.0.1','Symfony','2026-11-17 07:02:15','2026-11-17 07:02:15'),(280,'App\\Models\\EquipmentMaintenanceLog',228,NULL,'created',NULL,'{\"equipment_id\":null,\"equipment_type\":\"ALL EQUIPMENT\",\"equipment_plate\":\"PETTY\",\"spare_part_name\":\"MAIN PETTY CASH\",\"po_no\":\"PBR-EQ\\/16\\/00083\",\"unit\":\"PCS\",\"quantity\":1,\"unit_cost\":5000,\"total_cost_with_vat\":5000,\"supplier\":\"ARBAMINCH WWT\",\"log_date\":\"2015-11-21 00:00:00\",\"project_id\":null,\"logged_by\":1,\"updated_at\":\"2026-11-17 10:02:15\",\"created_at\":\"2026-11-17 10:02:15\",\"id\":228}',NULL,'127.0.0.1','Symfony','2026-11-17 07:02:15','2026-11-17 07:02:15'),(281,'App\\Models\\EquipmentMaintenanceLog',229,NULL,'created',NULL,'{\"equipment_id\":null,\"equipment_type\":\"TOYOTA PICK UP\",\"equipment_plate\":\"3-A57479\",\"spare_part_name\":\"AIR CLEANER\",\"po_no\":\"POEQ\\/16\\/00103\",\"unit\":\"PCS\",\"quantity\":1,\"unit_cost\":5304.35,\"total_cost_with_vat\":6100,\"supplier\":\"BLM\",\"log_date\":\"2015-11-22 00:00:00\",\"project_id\":null,\"logged_by\":1,\"updated_at\":\"2026-11-17 10:02:15\",\"created_at\":\"2026-11-17 10:02:15\",\"id\":229}',NULL,'127.0.0.1','Symfony','2026-11-17 07:02:15','2026-11-17 07:02:15'),(282,'App\\Models\\EquipmentMaintenanceLog',230,NULL,'created',NULL,'{\"equipment_id\":null,\"equipment_type\":\"SUZUKI SPRESSO\",\"equipment_plate\":\"3-B49747\",\"spare_part_name\":\"OIL FILTER\",\"po_no\":\"POEQ\\/16\\/00104\",\"unit\":\"PCS\",\"quantity\":2,\"unit_cost\":792.48,\"total_cost_with_vat\":1822.7,\"supplier\":\"MOENCO\",\"log_date\":\"2015-11-22 00:00:00\",\"project_id\":null,\"logged_by\":1,\"updated_at\":\"2026-11-17 10:02:15\",\"created_at\":\"2026-11-17 10:02:15\",\"id\":230}',NULL,'127.0.0.1','Symfony','2026-11-17 07:02:15','2026-11-17 07:02:15'),(283,'App\\Models\\EquipmentMaintenanceLog',231,NULL,'created',NULL,'{\"equipment_id\":null,\"equipment_type\":\"IVECO TRUCK\",\"equipment_plate\":\"3-85965\",\"spare_part_name\":\"CHANGE BUSHING\",\"po_no\":\"EQ-MPR\\/16\\/00015\",\"unit\":\"PCS\",\"quantity\":4,\"unit_cost\":400,\"total_cost_with_vat\":1840,\"supplier\":\"AMARE AUTO\",\"log_date\":\"2015-11-19 00:00:00\",\"project_id\":null,\"logged_by\":1,\"updated_at\":\"2026-11-17 10:02:15\",\"created_at\":\"2026-11-17 10:02:15\",\"id\":231}',NULL,'127.0.0.1','Symfony','2026-11-17 07:02:15','2026-11-17 07:02:15'),(284,'App\\Models\\EquipmentMaintenanceLog',232,NULL,'created',NULL,'{\"equipment_id\":null,\"equipment_type\":\"UD-TRUCK\",\"equipment_plate\":\"3-99425\",\"spare_part_name\":\"FUEL FILTER PRIMARY\",\"po_no\":\"POEQ\\/16\\/00108\",\"unit\":\"pcs\",\"quantity\":1,\"unit_cost\":1763.65,\"total_cost_with_vat\":4353.91,\"supplier\":\"NYALA MOTOR\",\"log_date\":\"2015-11-24 00:00:00\",\"project_id\":null,\"logged_by\":1,\"updated_at\":\"2026-11-17 10:02:15\",\"created_at\":\"2026-11-17 10:02:15\",\"id\":232}',NULL,'127.0.0.1','Symfony','2026-11-17 07:02:15','2026-11-17 07:02:15'),(285,'App\\Models\\EquipmentMaintenanceLog',233,NULL,'created',NULL,'{\"equipment_id\":null,\"equipment_type\":\"EQUIPMENT\",\"equipment_plate\":\"\",\"spare_part_name\":\"FUEL FILTER SEC.\",\"po_no\":\"\",\"unit\":\"PCS\",\"quantity\":1,\"unit_cost\":2022.36,\"total_cost_with_vat\":2325.71,\"supplier\":\"\",\"log_date\":\"2026-11-17 00:00:00\",\"project_id\":null,\"logged_by\":1,\"updated_at\":\"2026-11-17 10:02:15\",\"created_at\":\"2026-11-17 10:02:15\",\"id\":233}',NULL,'127.0.0.1','Symfony','2026-11-17 07:02:15','2026-11-17 07:02:15'),(286,'App\\Models\\EquipmentMaintenanceLog',234,NULL,'created',NULL,'{\"equipment_id\":null,\"equipment_type\":\"TOYOTA PICK UP\",\"equipment_plate\":\"\",\"spare_part_name\":\"REAR COMBINATION LIGHT\",\"po_no\":\"POEQ\\/16\\/00078\",\"unit\":\"PCS\",\"quantity\":2,\"unit_cost\":9000,\"total_cost_with_vat\":20340,\"supplier\":\"ZELALEM\",\"log_date\":\"2015-11-18 00:00:00\",\"project_id\":null,\"logged_by\":1,\"updated_at\":\"2026-11-17 10:02:15\",\"created_at\":\"2026-11-17 10:02:15\",\"id\":234}',NULL,'127.0.0.1','Symfony','2026-11-17 07:02:15','2026-11-17 07:02:15'),(287,'App\\Models\\EquipmentMaintenanceLog',235,NULL,'created',NULL,'{\"equipment_id\":null,\"equipment_type\":\"TOYOTA SURF\",\"equipment_plate\":\"3-75048\",\"spare_part_name\":\"RADIATOR ASSY\",\"po_no\":\"POEQ\\/16\\/00105\",\"unit\":\"PCS\",\"quantity\":1,\"unit_cost\":17000,\"total_cost_with_vat\":19210,\"supplier\":\"CHUNI\",\"log_date\":\"2015-11-24 00:00:00\",\"project_id\":null,\"logged_by\":1,\"updated_at\":\"2026-11-17 10:02:15\",\"created_at\":\"2026-11-17 10:02:15\",\"id\":235}',NULL,'127.0.0.1','Symfony','2026-11-17 07:02:15','2026-11-17 07:02:15'),(288,'App\\Models\\EquipmentMaintenanceLog',236,NULL,'created',NULL,'{\"equipment_id\":11,\"equipment_type\":\"TOYOTA PICK UP\",\"equipment_plate\":\"3-71050\",\"spare_part_name\":\"WIPER BLADE\",\"po_no\":\"POEQ\\/16\\/00106\",\"unit\":\"PCS\",\"quantity\":1,\"unit_cost\":1600,\"total_cost_with_vat\":2530,\"supplier\":\"ZELALEM\",\"log_date\":\"2015-11-24 00:00:00\",\"project_id\":null,\"logged_by\":1,\"updated_at\":\"2026-11-17 10:02:15\",\"created_at\":\"2026-11-17 10:02:15\",\"id\":236}',NULL,'127.0.0.1','Symfony','2026-11-17 07:02:15','2026-11-17 07:02:15'),(289,'App\\Models\\EquipmentMaintenanceLog',237,NULL,'created',NULL,'{\"equipment_id\":null,\"equipment_type\":\"EQUIPMENT\",\"equipment_plate\":\"\",\"spare_part_name\":\"BULB\",\"po_no\":\"\",\"unit\":\"PCS\",\"quantity\":6,\"unit_cost\":600,\"total_cost_with_vat\":4140,\"supplier\":\"\",\"log_date\":\"2026-11-17 00:00:00\",\"project_id\":null,\"logged_by\":1,\"updated_at\":\"2026-11-17 10:02:15\",\"created_at\":\"2026-11-17 10:02:15\",\"id\":237}',NULL,'127.0.0.1','Symfony','2026-11-17 07:02:15','2026-11-17 07:02:15'),(290,'App\\Models\\EquipmentMaintenanceLog',238,NULL,'created',NULL,'{\"equipment_id\":null,\"equipment_type\":\"DUMP TRUCK\",\"equipment_plate\":\"3-31820\",\"spare_part_name\":\"STARTOR MOTOR\",\"po_no\":\"POEQ\\/16\\/00107\",\"unit\":\"PCS\",\"quantity\":1,\"unit_cost\":13478.26,\"total_cost_with_vat\":15230.43,\"supplier\":\"KOKOB WORK\",\"log_date\":\"2015-11-24 00:00:00\",\"project_id\":null,\"logged_by\":1,\"updated_at\":\"2026-11-17 10:02:15\",\"created_at\":\"2026-11-17 10:02:15\",\"id\":238}',NULL,'127.0.0.1','Symfony','2026-11-17 07:02:15','2026-11-17 07:02:15'),(291,'App\\Models\\EquipmentMaintenanceLog',239,NULL,'created',NULL,'{\"equipment_id\":null,\"equipment_type\":\"LOWBED\",\"equipment_plate\":\"3-61727\",\"spare_part_name\":\"KEYWAY HOUSING MAINTENANCE\",\"po_no\":\"EQ-MPR\\/16\\/00020\",\"unit\":\"PCS\",\"quantity\":1,\"unit_cost\":2500,\"total_cost_with_vat\":2750,\"supplier\":\"AHIMEDIN\",\"log_date\":\"0215-11-22 00:00:00\",\"project_id\":null,\"logged_by\":1,\"updated_at\":\"2026-11-17 10:02:15\",\"created_at\":\"2026-11-17 10:02:15\",\"id\":239}',NULL,'127.0.0.1','Symfony','2026-11-17 07:02:15','2026-11-17 07:02:15'),(292,'App\\Models\\EquipmentMaintenanceLog',240,NULL,'created',NULL,'{\"equipment_id\":null,\"equipment_type\":\"MINIBUS\",\"equipment_plate\":\"3-94774\",\"spare_part_name\":\"REGULATOR ,CARBON BRUSH&DIOD CHANGE, LABOUR COST\",\"po_no\":\"EQ-MPR\\/16\\/00021\",\"unit\":\"PCS\",\"quantity\":1,\"unit_cost\":7900,\"total_cost_with_vat\":8927,\"supplier\":\"DASALEGN BAYE\",\"log_date\":\"2015-11-24 00:00:00\",\"project_id\":null,\"logged_by\":1,\"updated_at\":\"2026-11-17 10:02:15\",\"created_at\":\"2026-11-17 10:02:15\",\"id\":240}',NULL,'127.0.0.1','Symfony','2026-11-17 07:02:15','2026-11-17 07:02:15'),(293,'App\\Models\\EquipmentMaintenanceLog',241,NULL,'created',NULL,'{\"equipment_id\":null,\"equipment_type\":\"toyota serf\",\"equipment_plate\":\"\",\"spare_part_name\":\"radiator assy\",\"po_no\":\"\",\"unit\":\"PCS\",\"quantity\":1,\"unit_cost\":0,\"total_cost_with_vat\":0,\"supplier\":\"\",\"log_date\":\"2026-11-17 00:00:00\",\"project_id\":null,\"logged_by\":1,\"updated_at\":\"2026-11-17 10:02:15\",\"created_at\":\"2026-11-17 10:02:15\",\"id\":241}',NULL,'127.0.0.1','Symfony','2026-11-17 07:02:15','2026-11-17 07:02:15'),(294,'App\\Models\\PmSchedule',3,NULL,'created',NULL,'{\"schedule_code\":\"PMS-TEST-001\",\"title\":\"Test Preventive Maintenance Schedule\",\"document_code\":\"OF\\/EAMD\\/074\",\"status\":\"draft\",\"schedule_date\":\"2026-11-17 10:30:14\",\"created_by\":1,\"updated_at\":\"2026-11-17 10:30:14\",\"created_at\":\"2026-11-17 10:30:14\",\"id\":3}',NULL,'127.0.0.1','Symfony','2026-11-17 07:30:14','2026-11-17 07:30:14'),(295,'App\\Models\\PmSchedule',3,1,'updated','status','draft','submitted','127.0.0.1','Symfony','2026-11-17 07:30:14','2026-11-17 07:30:14'),(296,'App\\Models\\PmSchedule',3,1,'updated','prepared_by',NULL,'1','127.0.0.1','Symfony','2026-11-17 07:30:14','2026-11-17 07:30:14'),(297,'App\\Models\\PmSchedule',3,1,'updated','prepared_name',NULL,'System Administrator','127.0.0.1','Symfony','2026-11-17 07:30:14','2026-11-17 07:30:14'),(298,'App\\Models\\PmSchedule',3,1,'updated','prepared_at',NULL,'2026-11-17 10:30:14','127.0.0.1','Symfony','2026-11-17 07:30:14','2026-11-17 07:30:14'),(299,'App\\Models\\PmSchedule',3,1,'updated','rejection_reason',NULL,NULL,'127.0.0.1','Symfony','2026-11-17 07:30:14','2026-11-17 07:30:14'),(300,'App\\Models\\PmSchedule',3,1,'updated','status','submitted','checked','127.0.0.1','Symfony','2026-11-17 07:30:14','2026-11-17 07:30:14'),(301,'App\\Models\\PmSchedule',3,1,'updated','checked_by',NULL,'1','127.0.0.1','Symfony','2026-11-17 07:30:14','2026-11-17 07:30:14'),(302,'App\\Models\\PmSchedule',3,1,'updated','checked_name',NULL,'System Administrator','127.0.0.1','Symfony','2026-11-17 07:30:14','2026-11-17 07:30:14'),(303,'App\\Models\\PmSchedule',3,1,'updated','checked_at',NULL,'2026-11-17 10:30:14','127.0.0.1','Symfony','2026-11-17 07:30:14','2026-11-17 07:30:14'),(304,'App\\Models\\PmSchedule',3,1,'updated','status','checked','rejected','127.0.0.1','Symfony','2026-11-17 07:30:14','2026-11-17 07:30:14'),(305,'App\\Models\\PmSchedule',3,1,'updated','rejection_reason',NULL,'Odometer reading for loader LD-2232 does not match daily logs.','127.0.0.1','Symfony','2026-11-17 07:30:14','2026-11-17 07:30:14'),(306,'App\\Models\\PmSchedule',3,1,'updated','status','rejected','submitted','127.0.0.1','Symfony','2026-11-17 07:30:14','2026-11-17 07:30:14'),(307,'App\\Models\\PmSchedule',3,1,'updated','rejection_reason','Odometer reading for loader LD-2232 does not match daily logs.',NULL,'127.0.0.1','Symfony','2026-11-17 07:30:14','2026-11-17 07:30:14'),(308,'App\\Models\\PmSchedule',3,1,'updated','status','submitted','checked','127.0.0.1','Symfony','2026-11-17 07:30:14','2026-11-17 07:30:14'),(309,'App\\Models\\PmSchedule',3,1,'updated','status','checked','approved','127.0.0.1','Symfony','2026-11-17 07:30:14','2026-11-17 07:30:14'),(310,'App\\Models\\PmSchedule',3,1,'updated','approved_by',NULL,'1','127.0.0.1','Symfony','2026-11-17 07:30:14','2026-11-17 07:30:14'),(311,'App\\Models\\PmSchedule',3,1,'updated','approved_name',NULL,'System Administrator','127.0.0.1','Symfony','2026-11-17 07:30:14','2026-11-17 07:30:14'),(312,'App\\Models\\PmSchedule',3,1,'updated','approved_at',NULL,'2026-11-17 10:30:14','127.0.0.1','Symfony','2026-11-17 07:30:14','2026-11-17 07:30:14'),(313,'App\\Models\\PmSchedule',3,1,'deleted',NULL,'{\"id\":3,\"schedule_code\":\"PMS-TEST-001\",\"title\":\"Test Preventive Maintenance Schedule\",\"document_code\":\"OF\\/EAMD\\/074\",\"issue_no\":\"1\",\"page_no\":\"Page 1 of 1\",\"project_id\":null,\"project_location\":null,\"schedule_date\":\"2026-11-17T00:00:00.000000Z\",\"period_start\":null,\"period_end\":null,\"status\":\"approved\",\"prepared_by\":1,\"prepared_name\":\"System Administrator\",\"prepared_at\":\"2026-11-17T10:30:14.000000Z\",\"checked_by\":1,\"checked_name\":\"System Administrator\",\"checked_at\":\"2026-11-17T10:30:14.000000Z\",\"approved_by\":1,\"approved_name\":\"System Administrator\",\"approved_at\":\"2026-11-17T10:30:14.000000Z\",\"rejection_reason\":null,\"notes\":null,\"created_by\":1,\"created_at\":\"2026-11-17T10:30:14.000000Z\",\"updated_at\":\"2026-11-17T10:30:14.000000Z\",\"deleted_at\":null}',NULL,'127.0.0.1','Symfony','2026-11-17 07:30:14','2026-11-17 07:30:14'),(314,'App\\Models\\EquipmentBreakdownReport',1,1,'updated','status','checked','approved','127.0.0.1','Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/156.0.0.0 Safari/537.36','2026-11-17 08:45:28','2026-11-17 08:45:28'),(315,'App\\Models\\EquipmentBreakdownReport',1,1,'updated','approved_by',NULL,'1','127.0.0.1','Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/156.0.0.0 Safari/537.36','2026-11-17 08:45:28','2026-11-17 08:45:28'),(316,'App\\Models\\EquipmentBreakdownReport',1,1,'updated','approved_name',NULL,'System Administrator','127.0.0.1','Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/156.0.0.0 Safari/537.36','2026-11-17 08:45:28','2026-11-17 08:45:28'),(317,'App\\Models\\EquipmentBreakdownReport',1,1,'updated','approved_at',NULL,'2026-11-17 11:45:28','127.0.0.1','Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/156.0.0.0 Safari/537.36','2026-11-17 08:45:28','2026-11-17 08:45:28');
+/*!40000 ALTER TABLE `audit_trails` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `boq_items`
+--
+
+DROP TABLE IF EXISTS `boq_items`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `boq_items` (
+  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
+  `project_id` bigint unsigned NOT NULL,
+  `cost_category_id` bigint unsigned DEFAULT NULL,
+  `parent_id` bigint unsigned DEFAULT NULL,
+  `item_number` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `description` text COLLATE utf8mb4_unicode_ci NOT NULL,
+  `unit` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `quantity` decimal(15,4) NOT NULL DEFAULT '0.0000',
+  `unit_rate` decimal(15,2) NOT NULL DEFAULT '0.00',
+  `revenue_amount` decimal(15,2) NOT NULL DEFAULT '0.00',
+  `duration_days` int DEFAULT NULL,
+  `planned_start_date` date DEFAULT NULL,
+  `planned_end_date` date DEFAULT NULL,
+  `display_order` int NOT NULL DEFAULT '0',
+  `is_parent` tinyint(1) NOT NULL DEFAULT '0',
+  `status` enum('pending','in_progress','completed') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'pending',
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  `deleted_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `boq_items_project_id_foreign` (`project_id`),
+  KEY `boq_items_cost_category_id_foreign` (`cost_category_id`),
+  KEY `boq_items_parent_id_foreign` (`parent_id`),
+  CONSTRAINT `boq_items_cost_category_id_foreign` FOREIGN KEY (`cost_category_id`) REFERENCES `cost_categories` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `boq_items_parent_id_foreign` FOREIGN KEY (`parent_id`) REFERENCES `boq_items` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `boq_items_project_id_foreign` FOREIGN KEY (`project_id`) REFERENCES `projects` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB AUTO_INCREMENT=12 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `boq_items`
+--
+
+LOCK TABLES `boq_items` WRITE;
+/*!40000 ALTER TABLE `boq_items` DISABLE KEYS */;
+INSERT INTO `boq_items` VALUES (1,1,1,NULL,'1','Excavation & Earthwork','LS',120.0000,150000.00,18000000.00,12,NULL,NULL,1,1,'in_progress','2026-07-13 17:04:07','2026-07-15 19:18:02',NULL),(2,1,1,NULL,'2','Water Proofing Works','LS',1.0000,50000.00,50000.00,1000000,NULL,NULL,2,1,'pending','2026-07-13 17:04:07','2026-07-15 18:53:39',NULL),(3,1,1,1,'1.01','Site Clearance to remove top soil 30cm thick from NGL','m2',5234.0000,75.00,392550.00,5,'2023-01-15','2023-01-20',0,0,'completed','2026-07-13 17:04:07','2026-07-13 17:04:07',NULL),(4,1,1,2,'2.01','Supply and Apply 4mm thick APP-Modified water proofing membrane (under Foundation)','m2',5000.0000,1150.00,5750000.00,30,'2023-06-15','2023-07-15',0,0,'in_progress','2026-07-13 17:04:07','2026-07-13 17:04:07',NULL),(5,1,1,1,'1.02','Backfill under mat foundation compacted, 95% MDD per AASHTO T-180','m3',5351.0000,125.00,668875.00,2,'2023-02-05','2023-02-07',0,0,'completed','2026-07-13 17:04:07','2026-07-13 17:04:07',NULL),(6,2,4,NULL,'1','Foundation Works','LS',1.0000,0.00,0.00,NULL,NULL,NULL,1,1,'in_progress','2026-07-13 17:04:07','2026-07-15 19:18:11',NULL),(7,2,4,6,'1.01','Reinforced Concrete Foundation Grade Beam','m3',450.0000,8500.00,3825000.00,45,'2023-03-15','2023-04-30',0,0,'completed','2026-07-13 17:04:07','2026-07-13 17:04:07',NULL),(8,2,5,NULL,'2','Electrical Works','LS',1.0000,0.00,0.00,NULL,NULL,NULL,2,1,'pending','2026-07-13 17:04:07','2026-07-13 17:04:07',NULL),(9,2,5,8,'2.01','Electrical Conduit and Wiring Installation','m',2500.0000,450.00,1125000.00,60,'2023-07-01','2023-08-30',0,0,'in_progress','2026-07-13 17:04:07','2026-07-13 17:04:07',NULL),(10,1,2,NULL,'3','ggggggggggggggggggg','m2',2.0000,20.00,40.00,222,'2026-02-03','2027-05-03',0,0,'pending','2026-07-15 18:56:23','2026-07-15 18:56:23',NULL),(11,2,4,NULL,'3','Reinforced Concrete Foundation Footing','m2',120.0000,80500.00,9660000.00,12,'2026-07-13','2026-07-24',0,0,'pending','2026-07-15 19:10:49','2026-07-15 19:16:39',NULL);
+/*!40000 ALTER TABLE `boq_items` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `cache`
+--
+
+DROP TABLE IF EXISTS `cache`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `cache` (
+  `key` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `value` mediumtext COLLATE utf8mb4_unicode_ci NOT NULL,
+  `expiration` bigint NOT NULL,
+  PRIMARY KEY (`key`),
+  KEY `cache_expiration_index` (`expiration`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `cache`
+--
+
+LOCK TABLES `cache` WRITE;
+/*!40000 ALTER TABLE `cache` DISABLE KEYS */;
+/*!40000 ALTER TABLE `cache` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `cache_locks`
+--
+
+DROP TABLE IF EXISTS `cache_locks`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `cache_locks` (
+  `key` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `owner` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `expiration` bigint NOT NULL,
+  PRIMARY KEY (`key`),
+  KEY `cache_locks_expiration_index` (`expiration`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `cache_locks`
+--
+
+LOCK TABLES `cache_locks` WRITE;
+/*!40000 ALTER TABLE `cache_locks` DISABLE KEYS */;
+/*!40000 ALTER TABLE `cache_locks` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `company_settings`
+--
+
+DROP TABLE IF EXISTS `company_settings`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `company_settings` (
+  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
+  `key` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `value` text COLLATE utf8mb4_unicode_ci,
+  `type` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'text',
+  `group` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'general',
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `company_settings_key_unique` (`key`)
+) ENGINE=InnoDB AUTO_INCREMENT=11 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `company_settings`
+--
+
+LOCK TABLES `company_settings` WRITE;
+/*!40000 ALTER TABLE `company_settings` DISABLE KEYS */;
+INSERT INTO `company_settings` VALUES (1,'company_name','TNT Construction and Trading','text','company','2026-07-28 06:17:10','2026-07-28 06:17:10'),(2,'company_name_amharic','ቲኤንቲ ኮንስትራክሽንና ንግድ ሥራዎች','text','company','2026-07-28 06:17:10','2026-07-28 06:17:10'),(3,'company_tagline','General Contractor & Engineering Services','text','company','2026-07-28 06:17:10','2026-07-28 06:17:10'),(4,'company_logo','images/company-logo.png','image','company','2026-07-28 06:17:10','2026-11-17 05:25:54'),(5,'company_phone','+251-000-000000','text','company','2026-07-28 06:17:10','2026-07-28 06:17:10'),(6,'company_email','info@tnt-constructions.com','text','company','2026-07-28 06:17:10','2026-07-28 06:17:10'),(7,'company_address','Addis Ababa, Ethiopia','text','company','2026-07-28 06:17:10','2026-07-28 06:17:10'),(8,'company_tin','1200023232','text','company','2026-07-28 06:17:10','2026-07-28 09:28:07'),(9,'company_website','www.tnt-constructions.com','text','company','2026-07-28 06:17:10','2026-07-28 06:17:10'),(10,'document_prefix','OF/TNT/ECD','text','document','2026-07-28 06:17:10','2026-07-28 06:17:10');
+/*!40000 ALTER TABLE `company_settings` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `contractual_claim_checks`
+--
+
+DROP TABLE IF EXISTS `contractual_claim_checks`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `contractual_claim_checks` (
+  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
+  `contractual_report_id` bigint unsigned NOT NULL,
+  `category` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `category_title` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `item_code` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `item_title` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `monday` tinyint(1) NOT NULL DEFAULT '0',
+  `tuesday` tinyint(1) NOT NULL DEFAULT '0',
+  `wednesday` tinyint(1) NOT NULL DEFAULT '0',
+  `thursday` tinyint(1) NOT NULL DEFAULT '0',
+  `friday` tinyint(1) NOT NULL DEFAULT '0',
+  `saturday` tinyint(1) NOT NULL DEFAULT '0',
+  `sunday` tinyint(1) NOT NULL DEFAULT '0',
+  `sort_order` int NOT NULL DEFAULT '0',
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `contractual_claim_checks_contractual_report_id_foreign` (`contractual_report_id`),
+  CONSTRAINT `contractual_claim_checks_contractual_report_id_foreign` FOREIGN KEY (`contractual_report_id`) REFERENCES `contractual_reports` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB AUTO_INCREMENT=23 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `contractual_claim_checks`
+--
+
+LOCK TABLES `contractual_claim_checks` WRITE;
+/*!40000 ALTER TABLE `contractual_claim_checks` DISABLE KEYS */;
+INSERT INTO `contractual_claim_checks` VALUES (1,1,'design_issues','Design related issues','1.1','Miss drawing',1,0,0,1,0,0,0,1,'2026-11-17 05:45:21','2026-11-17 07:40:30'),(2,1,'design_issues','Design discrepancies','1.2','Design discrepancies',1,0,0,0,0,0,0,2,'2026-11-17 05:45:21','2026-11-17 05:49:42'),(3,1,'design_issues','Design related issues','1.3','Design modification at site level',1,0,0,0,0,0,0,3,'2026-11-17 05:45:21','2026-11-17 05:49:42'),(4,1,'work_orders','Work Orders','2.1','Works indicated on drawing and missed in BOQ or vice versa',1,0,0,0,0,0,0,4,'2026-11-17 05:45:21','2026-11-17 05:49:42'),(5,1,'work_orders','Work Orders','2.2','Additional work order given',1,0,0,0,0,0,0,5,'2026-11-17 05:45:21','2026-11-17 05:49:42'),(6,1,'work_orders','Work Orders','2.3','Change in work item (quality, or shape /dimension or quantity from BOQ)',1,0,0,0,0,0,0,6,'2026-11-17 05:45:21','2026-11-17 05:49:42'),(7,1,'suspension_of_works','Suspension of works','3.1','Bad Weather conditions and natural hazards',1,0,1,1,0,0,0,7,'2026-11-17 05:45:21','2026-11-17 07:40:30'),(8,1,'suspension_of_works','Suspension of works','3.2','Delay due to inspection / approval',1,0,0,0,0,0,0,8,'2026-11-17 05:45:21','2026-11-17 05:49:42'),(9,1,'suspension_of_works','Suspension of works','3.3','Force majeure issues',1,0,0,0,0,0,0,9,'2026-11-17 05:45:21','2026-11-17 05:49:42'),(10,1,'suspension_of_works','Suspension of works','3.4','Artificial conditions or Physical obstructions',1,0,0,0,0,0,0,10,'2026-11-17 05:45:21','2026-11-17 05:49:42'),(11,1,'suspension_of_works','Suspension of works','3.5','Other external factors',1,0,0,0,0,0,0,11,'2026-11-17 05:45:21','2026-11-17 05:49:42'),(12,2,'design_issues','Design related issues','1.1','Miss drawing',1,1,0,1,0,1,0,1,'2026-11-17 06:09:07','2026-11-17 06:09:07'),(13,2,'design_issues','Design related issues','1.2','Design discrepancies',0,1,0,1,0,1,1,2,'2026-11-17 06:09:07','2026-11-17 06:09:07'),(14,2,'design_issues','Design related issues','1.3','Design modification at site level',0,1,0,1,0,1,0,3,'2026-11-17 06:09:07','2026-11-17 06:09:07'),(15,2,'work_orders','Work Orders','2.1','Works indicated on drawing and missed in BOQ or vice versa',1,0,0,0,0,0,1,4,'2026-11-17 06:09:07','2026-11-17 06:09:07'),(16,2,'work_orders','Work Orders','2.2','Additional work order given',0,0,0,0,1,1,1,5,'2026-11-17 06:09:07','2026-11-17 06:09:07'),(17,2,'work_orders','Work Orders','2.3','Change in work item (quality, or shape /dimension or quantity from BOQ)',0,1,0,1,0,0,0,6,'2026-11-17 06:09:07','2026-11-17 06:09:07'),(18,2,'suspension_of_works','Suspension of works','3.1','Bad Weather conditions and natural hazards',1,0,1,1,0,1,1,7,'2026-11-17 06:09:07','2026-11-17 06:09:07'),(19,2,'suspension_of_works','Suspension of works','3.2','Delay due to inspection / approval',0,1,0,1,1,1,1,8,'2026-11-17 06:09:07','2026-11-17 06:09:07'),(20,2,'suspension_of_works','Suspension of works','3.3','Force majeure issues',1,0,0,0,1,0,0,9,'2026-11-17 06:09:07','2026-11-17 06:09:07'),(21,2,'suspension_of_works','Suspension of works','3.4','Artificial conditions or Physical obstructions',0,0,0,1,0,0,0,10,'2026-11-17 06:09:07','2026-11-17 06:09:07'),(22,2,'suspension_of_works','Suspension of works','3.5','Other external factors',0,0,0,0,0,0,0,11,'2026-11-17 06:09:07','2026-11-17 06:09:07');
+/*!40000 ALTER TABLE `contractual_claim_checks` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `contractual_claim_events`
+--
+
+DROP TABLE IF EXISTS `contractual_claim_events`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `contractual_claim_events` (
+  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
+  `contractual_report_id` bigint unsigned NOT NULL,
+  `event_date` date DEFAULT NULL,
+  `issue_number` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `cause_description` text COLLATE utf8mb4_unicode_ci,
+  `effect_on_progress` text COLLATE utf8mb4_unicode_ci,
+  `action_taken` text COLLATE utf8mb4_unicode_ci,
+  `remark` text COLLATE utf8mb4_unicode_ci,
+  `sort_order` int NOT NULL DEFAULT '0',
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `contractual_claim_events_contractual_report_id_foreign` (`contractual_report_id`),
+  CONSTRAINT `contractual_claim_events_contractual_report_id_foreign` FOREIGN KEY (`contractual_report_id`) REFERENCES `contractual_reports` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `contractual_claim_events`
+--
+
+LOCK TABLES `contractual_claim_events` WRITE;
+/*!40000 ALTER TABLE `contractual_claim_events` DISABLE KEYS */;
+INSERT INTO `contractual_claim_events` VALUES (3,2,'2026-11-16','1.2','bfc','dgv','gcgv',NULL,1,'2026-11-17 06:09:07','2026-11-17 06:09:07'),(4,1,'2026-11-17','3.1','Heavy torrential rainfall flooded excavation pit','Excavation work halted for 1.5 days','Mobilized water pumps and dewatering equipment','Potential time extension claim notification sent',1,'2026-11-17 07:40:30','2026-11-17 07:40:30');
+/*!40000 ALTER TABLE `contractual_claim_events` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `contractual_correspondence_checks`
+--
+
+DROP TABLE IF EXISTS `contractual_correspondence_checks`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `contractual_correspondence_checks` (
+  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
+  `contractual_report_id` bigint unsigned NOT NULL,
+  `direction` enum('incoming','outgoing') COLLATE utf8mb4_unicode_ci NOT NULL,
+  `direction_title` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `item_code` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `party_title` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `monday` tinyint(1) NOT NULL DEFAULT '0',
+  `tuesday` tinyint(1) NOT NULL DEFAULT '0',
+  `wednesday` tinyint(1) NOT NULL DEFAULT '0',
+  `thursday` tinyint(1) NOT NULL DEFAULT '0',
+  `friday` tinyint(1) NOT NULL DEFAULT '0',
+  `saturday` tinyint(1) NOT NULL DEFAULT '0',
+  `sunday` tinyint(1) NOT NULL DEFAULT '0',
+  `sort_order` int NOT NULL DEFAULT '0',
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `contractual_correspondence_checks_contractual_report_id_foreign` (`contractual_report_id`),
+  CONSTRAINT `contractual_correspondence_checks_contractual_report_id_foreign` FOREIGN KEY (`contractual_report_id`) REFERENCES `contractual_reports` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB AUTO_INCREMENT=13 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `contractual_correspondence_checks`
+--
+
+LOCK TABLES `contractual_correspondence_checks` WRITE;
+/*!40000 ALTER TABLE `contractual_correspondence_checks` DISABLE KEYS */;
+INSERT INTO `contractual_correspondence_checks` VALUES (1,1,'incoming','In coming Letters','1.0','From Client',0,0,0,0,0,0,0,1,'2026-11-17 05:45:21','2026-11-17 05:45:21'),(2,1,'incoming','In coming Letters','2.0','From Consultant',0,0,0,0,0,0,0,2,'2026-11-17 05:45:21','2026-11-17 05:45:21'),(3,1,'incoming','In coming Letters','3.0','Others',0,0,0,0,0,0,0,3,'2026-11-17 05:45:21','2026-11-17 05:45:21'),(4,1,'outgoing','Out going Letters','1.0','To Client',0,0,0,0,0,0,0,4,'2026-11-17 05:45:21','2026-11-17 05:45:21'),(5,1,'outgoing','Out going Letters','2.0','To Consultant',0,0,0,0,0,0,0,5,'2026-11-17 05:45:21','2026-11-17 05:45:21'),(6,1,'outgoing','Out going Letters','3.0','Others',0,0,0,0,0,0,0,6,'2026-11-17 05:45:21','2026-11-17 05:45:21'),(7,2,'incoming','In coming Letters','1.0','From Client',1,0,0,1,0,0,0,1,'2026-11-17 06:09:07','2026-11-17 06:09:07'),(8,2,'incoming','In coming Letters','2.0','From Consultant',0,1,1,0,0,0,0,2,'2026-11-17 06:09:07','2026-11-17 06:09:07'),(9,2,'incoming','In coming Letters','3.0','Others',1,1,1,0,0,0,0,3,'2026-11-17 06:09:07','2026-11-17 06:09:07'),(10,2,'outgoing','Out going Letters','1.0','To Client',0,0,0,0,0,0,0,4,'2026-11-17 06:09:07','2026-11-17 06:09:07'),(11,2,'outgoing','Out going Letters','2.0','To Consultant',0,0,0,0,0,0,0,5,'2026-11-17 06:09:07','2026-11-17 06:09:07'),(12,2,'outgoing','Out going Letters','3.0','Others',0,0,0,0,0,0,0,6,'2026-11-17 06:09:07','2026-11-17 06:09:07');
+/*!40000 ALTER TABLE `contractual_correspondence_checks` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `contractual_reports`
+--
+
+DROP TABLE IF EXISTS `contractual_reports`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `contractual_reports` (
+  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
+  `project_id` bigint unsigned NOT NULL,
+  `report_number` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `document_code` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'OF/TNT/CAD/01',
+  `issue_no` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '1',
+  `project_location` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `client_name` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `consultant_name` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `contractor_name` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'TNT CONSTRUCTION AND TRADING',
+  `week_start_date` date NOT NULL,
+  `week_end_date` date NOT NULL,
+  `status` enum('draft','submitted','checked','approved','rejected') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'draft',
+  `prepared_by` bigint unsigned DEFAULT NULL,
+  `prepared_name` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `prepared_at` timestamp NULL DEFAULT NULL,
+  `checked_by` bigint unsigned DEFAULT NULL,
+  `checked_name` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `checked_at` timestamp NULL DEFAULT NULL,
+  `approved_by` bigint unsigned DEFAULT NULL,
+  `approved_name` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `approved_at` timestamp NULL DEFAULT NULL,
+  `rejection_reason` text COLLATE utf8mb4_unicode_ci,
+  `page1_notes` text COLLATE utf8mb4_unicode_ci,
+  `page2_remark` text COLLATE utf8mb4_unicode_ci,
+  `page3_remark` text COLLATE utf8mb4_unicode_ci,
+  `created_by` bigint unsigned DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  `deleted_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `contractual_reports_report_number_unique` (`report_number`),
+  KEY `contractual_reports_project_id_foreign` (`project_id`),
+  KEY `contractual_reports_prepared_by_foreign` (`prepared_by`),
+  KEY `contractual_reports_checked_by_foreign` (`checked_by`),
+  KEY `contractual_reports_approved_by_foreign` (`approved_by`),
+  KEY `contractual_reports_created_by_foreign` (`created_by`),
+  CONSTRAINT `contractual_reports_approved_by_foreign` FOREIGN KEY (`approved_by`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `contractual_reports_checked_by_foreign` FOREIGN KEY (`checked_by`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `contractual_reports_created_by_foreign` FOREIGN KEY (`created_by`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `contractual_reports_prepared_by_foreign` FOREIGN KEY (`prepared_by`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `contractual_reports_project_id_foreign` FOREIGN KEY (`project_id`) REFERENCES `projects` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `contractual_reports`
+--
+
+LOCK TABLES `contractual_reports` WRITE;
+/*!40000 ALTER TABLE `contractual_reports` DISABLE KEYS */;
+INSERT INTO `contractual_reports` VALUES (1,1,'WCR-2026-0001','OF/TNT/CAD/01','1','Site','Addis Ababa City Administration',NULL,'TNT CONSTRUCTION AND TRADING','2026-11-16','2026-11-22','approved',1,'System Administrator','2026-11-17 05:49:28',2,'Abebe Kebede','2026-11-17 05:49:28',1,'System Administrator','2026-11-17 05:49:28',NULL,NULL,NULL,NULL,1,'2026-11-17 05:45:21','2026-11-17 05:49:42',NULL),(2,1,'WCR-2026-0002','OF/TNT/CAD/01','1','Site Location','Addis Ababa City Administration',NULL,'TNT Construction and Trading','2026-11-16','2026-11-22','approved',1,'System Administrator','2026-11-17 06:09:41',1,'System Administrator','2026-11-17 06:09:46',1,'System Administrator','2026-11-17 06:09:51',NULL,NULL,NULL,NULL,1,'2026-11-17 06:09:07','2026-11-17 06:09:51',NULL);
+/*!40000 ALTER TABLE `contractual_reports` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `cost_categories`
+--
+
+DROP TABLE IF EXISTS `cost_categories`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `cost_categories` (
+  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
+  `project_id` bigint unsigned NOT NULL,
+  `code` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `name` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `description` text COLLATE utf8mb4_unicode_ci,
+  `display_order` int NOT NULL DEFAULT '0',
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `cost_categories_project_id_foreign` (`project_id`),
+  CONSTRAINT `cost_categories_project_id_foreign` FOREIGN KEY (`project_id`) REFERENCES `projects` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `cost_categories`
+--
+
+LOCK TABLES `cost_categories` WRITE;
+/*!40000 ALTER TABLE `cost_categories` DISABLE KEYS */;
+INSERT INTO `cost_categories` VALUES (1,1,'A','SUB-STRUCTURE',NULL,1,'2026-07-13 17:04:07','2026-07-13 17:04:07'),(2,1,'B','SUPER-STRUCTURE',NULL,2,'2026-07-13 17:04:07','2026-07-13 17:04:07'),(3,1,'C','FINISHING WORKS',NULL,3,'2026-07-13 17:04:07','2026-07-13 17:04:07'),(4,2,'A','SUB-STRUCTURE',NULL,1,'2026-07-13 17:04:07','2026-07-13 17:04:07'),(5,2,'B','SUPER-STRUCTURE',NULL,2,'2026-07-13 17:04:07','2026-07-13 17:04:07');
+/*!40000 ALTER TABLE `cost_categories` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `document_numbers`
+--
+
+DROP TABLE IF EXISTS `document_numbers`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `document_numbers` (
+  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
+  `prefix` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `type` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `project_id` bigint unsigned NOT NULL,
+  `sequence_number` int NOT NULL DEFAULT '0',
+  `year` int NOT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `document_numbers_prefix_type_project_id_year_unique` (`prefix`,`type`,`project_id`,`year`),
+  KEY `document_numbers_project_id_foreign` (`project_id`),
+  CONSTRAINT `document_numbers_project_id_foreign` FOREIGN KEY (`project_id`) REFERENCES `projects` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `document_numbers`
+--
+
+LOCK TABLES `document_numbers` WRITE;
+/*!40000 ALTER TABLE `document_numbers` DISABLE KEYS */;
+/*!40000 ALTER TABLE `document_numbers` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `documents`
+--
+
+DROP TABLE IF EXISTS `documents`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `documents` (
+  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
+  `name` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `file_path` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `file_type` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `file_size` bigint DEFAULT NULL,
+  `documentable_type` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `documentable_id` bigint unsigned NOT NULL,
+  `uploaded_by` bigint unsigned DEFAULT NULL,
+  `description` text COLLATE utf8mb4_unicode_ci,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `documents_documentable_type_documentable_id_index` (`documentable_type`,`documentable_id`),
+  KEY `documents_uploaded_by_foreign` (`uploaded_by`),
+  CONSTRAINT `documents_uploaded_by_foreign` FOREIGN KEY (`uploaded_by`) REFERENCES `users` (`id`) ON DELETE SET NULL
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `documents`
+--
+
+LOCK TABLES `documents` WRITE;
+/*!40000 ALTER TABLE `documents` DISABLE KEYS */;
+INSERT INTO `documents` VALUES (1,'Manager','documents/2026/07/mM8dtODnva0gyvaYRqVrdx01a9rQ7xExaCICWApg.png','png',162059,'App\\Models\\Project',1,1,NULL,'2026-07-13 18:09:53','2026-07-13 18:09:53'),(2,'Koye Face','documents/2026/07/HbqkcNDct32iPBPwTMaXZxMvsW1cK2rPm2AyzPl1.png','png',1180607,'App\\Models\\Project',1,1,NULL,'2026-07-13 18:10:56','2026-07-13 18:10:56');
+/*!40000 ALTER TABLE `documents` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `equipment`
+--
+
+DROP TABLE IF EXISTS `equipment`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `equipment` (
+  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
+  `code` varchar(50) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `name` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `equipment_type` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `category` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `make` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `model` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `plate_serial_no` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `serial_no` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `project_id` bigint unsigned DEFAULT NULL,
+  `location_name` varchar(150) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `reading_unit` enum('hr','km') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'hr',
+  `current_reading` decimal(14,2) NOT NULL DEFAULT '0.00',
+  `current_reading_date` date DEFAULT NULL,
+  `last_service_reading` decimal(14,2) DEFAULT NULL,
+  `last_service_date` date DEFAULT NULL,
+  `last_service_type` varchar(50) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `next_service_reading` decimal(14,2) DEFAULT NULL,
+  `next_service_type` varchar(50) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `status` enum('active','due_service','under_maintenance','breakdown','idle') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'active',
+  `remarks` text COLLATE utf8mb4_unicode_ci,
+  `created_by` bigint unsigned DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  `deleted_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `equipment_code_unique` (`code`),
+  KEY `equipment_project_id_foreign` (`project_id`),
+  KEY `equipment_created_by_foreign` (`created_by`),
+  KEY `equipment_plate_serial_no_index` (`plate_serial_no`),
+  CONSTRAINT `equipment_created_by_foreign` FOREIGN KEY (`created_by`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `equipment_project_id_foreign` FOREIGN KEY (`project_id`) REFERENCES `projects` (`id`) ON DELETE SET NULL
+) ENGINE=InnoDB AUTO_INCREMENT=15 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `equipment`
+--
+
+LOCK TABLES `equipment` WRITE;
+/*!40000 ALTER TABLE `equipment` DISABLE KEYS */;
+INSERT INTO `equipment` VALUES (1,'EX-0889',NULL,'EXCAVATOR','EARTH MOVING MACHINE','KOMATSU','PC200-8','EX-0889','KMTPC200-98231',1,'Central Workshop','hr',8450.00,'2026-11-17',8327.00,'2026-08-15','B',8500.00,'C','breakdown',NULL,1,'2026-11-17 06:59:21','2026-11-17 07:02:13',NULL),(2,'EX-0601',NULL,'EXCAVATOR','EARTH MOVING MACHINE','CATERPILLAR','CAT 320D','EX-0601','CAT0320D-77218',1,'Ambo Referral Project','hr',9120.00,'2026-11-17',8958.00,'2026-09-01','A',9100.00,'B','breakdown',NULL,1,'2026-11-17 06:59:21','2026-11-17 06:59:21',NULL),(3,'CMM-0095',NULL,'CARMIX','EARTH MOVING MACHINE','CARMIX','3.5 TT','CMM-0095','CMX35-44109',1,'Ambo Referral Project','hr',4320.00,'2026-11-17',4000.00,'2026-07-20','A',4500.00,'B','breakdown',NULL,1,'2026-11-17 06:59:21','2026-11-17 07:02:13',NULL),(4,'LD-2232',NULL,'BACKHOE LOADER','EARTH MOVING MACHINE','JCB','3CX','LD-2232','JCB3CX-88412',1,'Arba Minch Project','hr',6100.00,'2026-11-17',5800.00,'2026-08-10','A',6250.00,'B','breakdown',NULL,1,'2026-11-17 06:59:21','2026-11-17 07:02:13',NULL),(5,'LD-1633',NULL,'WHEEL LOADER','EARTH MOVING MACHINE','LIUGONG','CLG 856','LD-1633','LG856-33910',1,'Mega Project','hr',7450.00,'2026-11-17',7200.00,'2026-07-15','B',7700.00,'A','breakdown',NULL,1,'2026-11-17 06:59:21','2026-11-17 07:02:13',NULL),(6,'CM-0562',NULL,'ROLLER COMPACTOR','EARTH MOVING MACHINE','DYNAPAC','CA250D','CM-0562','DYN250-1092',1,'South Campus Project','hr',5890.00,'2026-11-17',5650.00,'2026-06-25','A',5900.00,'B','breakdown',NULL,1,'2026-11-17 06:59:21','2026-11-17 07:02:13',NULL),(7,'TRK-3-50327',NULL,'DUMP TRUCK','DUMP TRUCK','SINOTRUK','HOWO 371','3-50327','SINO371-992381',1,'Central Workshop','km',124500.00,'2026-11-17',119500.00,'2026-08-01','B2',125000.00,'C2','due_service',NULL,1,'2026-11-17 06:59:21','2026-11-17 06:59:21',NULL),(8,'TRK-3-32675',NULL,'WATER TRUCK','DUMP TRUCK','ISUZU','FSR 10,000L','3-32675','ISZFSR-33410',1,'Bishoftu Site','km',98400.00,'2026-11-17',93000.00,'2026-07-12','A2',100000.00,'B2','breakdown',NULL,1,'2026-11-17 06:59:21','2026-11-17 07:02:13',NULL),(9,'TRK-3-85963',NULL,'DUMP TRUCK','DUMP TRUCK','IVECO','TRAKKER 380','3-85963','IVCTRK-99120',1,'Mega Project','km',165800.00,'2026-11-17',160000.00,'2026-08-18','A2',165000.00,'B2','breakdown',NULL,1,'2026-11-17 06:59:21','2026-11-17 06:59:21',NULL),(10,'VEH-3-A44801',NULL,'PICK UP','LIGHT VEHICLES','TOYOTA','HILUX D4D 4WD','3-A44801','TOYHLX-551029',1,'Central Depot','km',88400.00,'2026-11-17',83400.00,'2026-08-20','A2',90000.00,'B2','active',NULL,1,'2026-11-17 06:59:21','2026-11-17 06:59:21',NULL),(11,'VEH-3-71050',NULL,'PICK UP','LIGHT VEHICLES','TOYOTA','HILUX DOUBLE CABIN','3-71050','TOYHLX-901182',1,'Ambo Referral Project','km',112300.00,'2026-11-17',107000.00,'2026-07-28','A2',112000.00,'B2','active',NULL,1,'2026-11-17 06:59:21','2026-11-17 06:59:21',NULL),(12,'VEH-2-A47404',NULL,'PICK UP','LIGHT VEHICLES','MITSUBISHI','L200 SPORTERO','2-A47404','MITL200-44910',1,'Central Workshop','km',142000.00,'2026-11-17',135000.00,'2026-06-15','C2',140000.00,'A2','breakdown',NULL,1,'2026-11-17 06:59:21','2026-11-17 07:02:13',NULL),(13,'GEN-AKSA-132',NULL,'GENERATOR','AUXILIARY','AKSA','APD 132','132 KVA','AKS132-77291',1,'Central Depot','hr',3120.00,'2026-11-17',2950.00,'2026-08-05','A',3200.00,'B','active',NULL,1,'2026-11-17 06:59:21','2026-11-17 06:59:21',NULL),(14,'GEN-IVECO-60',NULL,'GENERATOR','AUXILIARY','IVECO','GE 60','60 KVA','IVC60-22104',1,'Central Workshop','hr',4560.00,'2026-11-17',4300.00,'2026-07-10','A',4550.00,'B','breakdown',NULL,1,'2026-11-17 06:59:21','2026-11-17 06:59:21',NULL);
+/*!40000 ALTER TABLE `equipment` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `equipment_breakdown_items`
+--
+
+DROP TABLE IF EXISTS `equipment_breakdown_items`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `equipment_breakdown_items` (
+  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
+  `breakdown_report_id` bigint unsigned NOT NULL,
+  `equipment_id` bigint unsigned DEFAULT NULL,
+  `category` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `equipment_type` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `quantity` int NOT NULL DEFAULT '1',
+  `plate_no_sn` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `down_date` date DEFAULT NULL,
+  `reason_of_down` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `action_taken` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `location` varchar(150) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `repair_status` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'down',
+  `finished_date` date DEFAULT NULL,
+  `remarks` text COLLATE utf8mb4_unicode_ci,
+  `sort_order` int NOT NULL DEFAULT '0',
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `equipment_breakdown_items_breakdown_report_id_foreign` (`breakdown_report_id`),
+  KEY `equipment_breakdown_items_equipment_id_foreign` (`equipment_id`),
+  CONSTRAINT `equipment_breakdown_items_breakdown_report_id_foreign` FOREIGN KEY (`breakdown_report_id`) REFERENCES `equipment_breakdown_reports` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `equipment_breakdown_items_equipment_id_foreign` FOREIGN KEY (`equipment_id`) REFERENCES `equipment` (`id`) ON DELETE SET NULL
+) ENGINE=InnoDB AUTO_INCREMENT=27 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `equipment_breakdown_items`
+--
+
+LOCK TABLES `equipment_breakdown_items` WRITE;
+/*!40000 ALTER TABLE `equipment_breakdown_items` DISABLE KEYS */;
+INSERT INTO `equipment_breakdown_items` VALUES (1,1,1,'EARTH MOVING MACHINE AND PLANT','EXCAVATOR',1,'EX-0889','2026-11-04','ENGINE OVERHAUL','DOWN','CENTRAL','down',NULL,NULL,0,'2026-11-17 06:59:21','2026-11-17 06:59:21'),(2,1,2,'EARTH MOVING MACHINE AND PLANT','EXCAVATOR',1,'EX-0601','2026-11-08','OVERHEATING','DOWN','AMBO REFERRAL','under_maintenance',NULL,NULL,1,'2026-11-17 06:59:21','2026-11-17 06:59:21'),(3,1,3,'EARTH MOVING MACHINE AND PLANT','CARMIX',1,'CMM-0095','2026-10-26','HYDRAULIC PUMP','DOWN','AMBO REFERRAL','proforma',NULL,NULL,2,'2026-11-17 06:59:21','2026-11-17 06:59:21'),(4,1,9,'DUMP TRUCK','DUMP TRUCK',1,'3-85963','2026-10-31','BATTERY & STARTER','DOWN','MEGA','purchase',NULL,NULL,3,'2026-11-17 06:59:21','2026-11-17 06:59:21'),(5,1,12,'LIGHT VEHICLES','MITSUBISHI',1,'2-A47404','2026-11-05','ENGINE OVERHAUL','UNDER MAINTENANCE','CENTRAL','under_maintenance',NULL,NULL,4,'2026-11-17 06:59:21','2026-11-17 06:59:21'),(6,1,14,'AUXILIARY','GENERATOR-IVECO',1,'60 KVA','2026-10-25','ENGINE OVERHAUL','DOWN','CENTRAL','down',NULL,NULL,5,'2026-11-17 06:59:21','2026-11-17 06:59:21'),(7,2,1,'EARTH MOVING MACHINE AND PLANT','EXCAVATOR',1,'EX-0889','2014-02-13','ENGINE OVERHAUL','DOWN','CENTRAL','down',NULL,NULL,0,'2026-11-17 07:02:13','2026-11-17 07:02:13'),(8,2,2,'EARTH MOVING MACHINE AND PLANT','EXCAVATOR',1,'EX-0601','2016-04-09','OVERHEATING','DOWN','AMBO RIFFERAL','down',NULL,NULL,1,'2026-11-17 07:02:13','2026-11-17 07:02:13'),(9,2,3,'EARTH MOVING MACHINE AND PLANT','CARMIX',1,'CMM-0095','2017-06-24','HYDRAULIC PUMP','DOWN','AMBO RIFFERAL','down',NULL,NULL,2,'2026-11-17 07:02:13','2026-11-17 07:02:13'),(10,2,4,'EARTH MOVING MACHINE AND PLANT','BACKHOE LOADER',1,'LD-2232','2017-09-20','HUB REDUCTION','DOWN','ARBAMINCH','proforma',NULL,NULL,3,'2026-11-17 07:02:13','2026-11-17 07:02:13'),(11,2,5,'EARTH MOVING MACHINE AND PLANT','LOADER',1,'ld-1633','2018-03-20','POWER LOSE','DOWN','MEGA','down',NULL,NULL,4,'2026-11-17 07:02:13','2026-11-17 07:02:13'),(12,2,NULL,'EARTH MOVING MACHINE AND PLANT','HITACHI EXCAVATOR',1,'EX-0246','2018-10-25','JACK HAMMER','DOWN','PIASSA','down',NULL,NULL,5,'2026-11-17 07:02:13','2026-11-17 07:02:13'),(13,2,6,'EARTH MOVING MACHINE AND PLANT','ROLLER',1,'CM-0562',NULL,'JACK HAMMER','DOWN','SOUTH CAMPUS','down',NULL,NULL,6,'2026-11-17 07:02:13','2026-11-17 07:02:13'),(14,2,8,'DUMP TRUCK','WATER TRUCK',1,'3-32675','2017-06-25','GEAR BOX','DOWN','BISHOFTU','down',NULL,NULL,7,'2026-11-17 07:02:13','2026-11-17 07:02:13'),(15,2,NULL,'DUMP TRUCK','UD-TRUCK',1,'3-99425','2017-07-22','DIFFERENTIAL','DOWN','mega','down',NULL,NULL,8,'2026-11-17 07:02:13','2026-11-17 07:02:13'),(16,2,9,'DUMP TRUCK','DUMP TRUCK',1,'3-85963','2017-07-22','BATTERY','DOWN','mega','down',NULL,NULL,9,'2026-11-17 07:02:13','2026-11-17 07:02:13'),(17,2,NULL,'DUMP TRUCK','DUMP TRUCK',1,'3-85965','2018-10-28','STARTO','DOWN','CENTRAL','down',NULL,NULL,10,'2026-11-17 07:02:13','2026-11-17 07:02:13'),(18,2,NULL,'DUMP TRUCK','DUMP TRUCK',1,'3-87170','2018-10-28','AUXILIARY GEARBOX','DOWN','SUGAR','down',NULL,NULL,11,'2026-11-17 07:02:13','2026-11-17 07:02:13'),(19,2,12,'LIGHT VEHICLES','MITSUBISHI',1,'2-A47404','2016-08-12','ENGINE OVERHAUL','under maintenance','CENTRAL','down',NULL,NULL,12,'2026-11-17 07:02:13','2026-11-17 07:02:13'),(20,2,NULL,'LIGHT VEHICLES','TOYOTA PLATZ',1,'3-A22996','2018-05-05','ENGINE OVERHAUL','under maintenance','CENTRAL','purchase',NULL,NULL,13,'2026-11-17 07:02:13','2026-11-17 07:02:13'),(21,2,NULL,'LIGHT VEHICLES','TOYOTA MINIBUS',1,'3-94774',NULL,'FUEL SYSTEM & CYLINDER HEAD','under maintenance','CENTRAL','purchase',NULL,NULL,14,'2026-11-17 07:02:13','2026-11-17 07:02:13'),(22,2,NULL,'AUXILIARY','GENERATOR-AKSA',1,'36KVA','2016-01-07','ENGINE OVERHAUL','DOWN','CENTRAL','down',NULL,NULL,15,'2026-11-17 07:02:13','2026-11-17 07:02:13'),(23,2,NULL,'AUXILIARY','GENERATOR-IVECO',1,'60KVA','2016-05-15','ENGINE OVERHAUL','DOWN','CENTRAL','down',NULL,NULL,16,'2026-11-17 07:02:13','2026-11-17 07:02:13'),(24,2,NULL,'AUXILIARY','GENERATOR-LISTER PITTER',1,'12.5KVA','2016-09-20','ENGINE OVERHAUL','DOWN','CENTRAL','down',NULL,NULL,17,'2026-11-17 07:02:13','2026-11-17 07:02:13'),(25,2,NULL,'AUXILIARY','GENERATOR-AKSA',1,'165KVA','2017-09-20','ENGINE PROBLEM','DOWN','SKILL','down',NULL,NULL,18,'2026-11-17 07:02:13','2026-11-17 07:02:13'),(26,2,NULL,'INSURANCE CASE','BYD EV',1,'',NULL,'ACCIDENT','','CENTRAL','under maintenance',NULL,NULL,19,'2026-11-17 07:02:13','2026-11-17 07:02:13');
+/*!40000 ALTER TABLE `equipment_breakdown_items` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `equipment_breakdown_reports`
+--
+
+DROP TABLE IF EXISTS `equipment_breakdown_reports`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `equipment_breakdown_reports` (
+  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
+  `report_code` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `title` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'Maintenance Report',
+  `document_code` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'OF/TNT/ EAMD/030',
+  `issue_no` varchar(20) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '1',
+  `page_no` varchar(30) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'Page 1 of 1',
+  `report_date` date NOT NULL,
+  `project_id` bigint unsigned DEFAULT NULL,
+  `location_name` varchar(150) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `status` enum('draft','submitted','checked','approved','rejected') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'draft',
+  `prepared_by` bigint unsigned DEFAULT NULL,
+  `prepared_name` varchar(150) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `prepared_at` timestamp NULL DEFAULT NULL,
+  `checked_by` bigint unsigned DEFAULT NULL,
+  `checked_name` varchar(150) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `checked_at` timestamp NULL DEFAULT NULL,
+  `approved_by` bigint unsigned DEFAULT NULL,
+  `approved_name` varchar(150) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `approved_at` timestamp NULL DEFAULT NULL,
+  `rejection_reason` text COLLATE utf8mb4_unicode_ci,
+  `notes` text COLLATE utf8mb4_unicode_ci,
+  `created_by` bigint unsigned DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  `deleted_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `equipment_breakdown_reports_report_code_unique` (`report_code`),
+  KEY `equipment_breakdown_reports_project_id_foreign` (`project_id`),
+  KEY `equipment_breakdown_reports_prepared_by_foreign` (`prepared_by`),
+  KEY `equipment_breakdown_reports_checked_by_foreign` (`checked_by`),
+  KEY `equipment_breakdown_reports_approved_by_foreign` (`approved_by`),
+  KEY `equipment_breakdown_reports_created_by_foreign` (`created_by`),
+  CONSTRAINT `equipment_breakdown_reports_approved_by_foreign` FOREIGN KEY (`approved_by`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `equipment_breakdown_reports_checked_by_foreign` FOREIGN KEY (`checked_by`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `equipment_breakdown_reports_created_by_foreign` FOREIGN KEY (`created_by`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `equipment_breakdown_reports_prepared_by_foreign` FOREIGN KEY (`prepared_by`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `equipment_breakdown_reports_project_id_foreign` FOREIGN KEY (`project_id`) REFERENCES `projects` (`id`) ON DELETE SET NULL
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `equipment_breakdown_reports`
+--
+
+LOCK TABLES `equipment_breakdown_reports` WRITE;
+/*!40000 ALTER TABLE `equipment_breakdown_reports` DISABLE KEYS */;
+INSERT INTO `equipment_breakdown_reports` VALUES (1,'MR-2026-W46','Maintenance Report','OF/TNT/ EAMD/030','1','Page 1 of 1','2026-11-17',1,'Central Workshop & Project Sites','approved',1,'Getish Y.','2026-11-16 06:59:21',1,'Tewodros','2026-11-17 06:59:21',1,'System Administrator','2026-11-17 08:45:28',NULL,NULL,1,'2026-11-17 06:59:21','2026-11-17 08:45:28',NULL),(2,'MR-20261117-100213','Maintenance Report','OF/TNT/ EAMD/030','1','Page 1 of 1','2018-08-29',NULL,NULL,'draft',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,1,'2026-11-17 07:02:13','2026-11-17 07:02:13',NULL);
+/*!40000 ALTER TABLE `equipment_breakdown_reports` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `equipment_maintenance_logs`
+--
+
+DROP TABLE IF EXISTS `equipment_maintenance_logs`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `equipment_maintenance_logs` (
+  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
+  `equipment_id` bigint unsigned DEFAULT NULL,
+  `equipment_type` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `equipment_plate` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `spare_part_name` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `po_no` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `unit` varchar(30) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'PCS',
+  `quantity` decimal(12,2) NOT NULL DEFAULT '1.00',
+  `unit_cost` decimal(14,2) NOT NULL DEFAULT '0.00',
+  `total_cost_with_vat` decimal(14,2) NOT NULL DEFAULT '0.00',
+  `supplier` varchar(150) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `log_date` date NOT NULL,
+  `project_id` bigint unsigned DEFAULT NULL,
+  `location_name` varchar(150) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `logged_by` bigint unsigned DEFAULT NULL,
+  `remarks` text COLLATE utf8mb4_unicode_ci,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  `deleted_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `equipment_maintenance_logs_equipment_id_foreign` (`equipment_id`),
+  KEY `equipment_maintenance_logs_project_id_foreign` (`project_id`),
+  KEY `equipment_maintenance_logs_logged_by_foreign` (`logged_by`),
+  CONSTRAINT `equipment_maintenance_logs_equipment_id_foreign` FOREIGN KEY (`equipment_id`) REFERENCES `equipment` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `equipment_maintenance_logs_logged_by_foreign` FOREIGN KEY (`logged_by`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `equipment_maintenance_logs_project_id_foreign` FOREIGN KEY (`project_id`) REFERENCES `projects` (`id`) ON DELETE SET NULL
+) ENGINE=InnoDB AUTO_INCREMENT=242 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `equipment_maintenance_logs`
+--
+
+LOCK TABLES `equipment_maintenance_logs` WRITE;
+/*!40000 ALTER TABLE `equipment_maintenance_logs` DISABLE KEYS */;
+INSERT INTO `equipment_maintenance_logs` VALUES (1,7,'SINO TRUCK','3-50327','Return spring and brake lining replacement','EQ-MPR000035','PCS',2.00,1956.52,4500.00,'Abiye Eshetu Spare Parts','2026-11-05',1,NULL,1,NULL,'2026-11-17 06:59:21','2026-11-17 06:59:21',NULL),(2,10,'TOYOTA PICKUP','3-A44801','Axle shaft extract and replace, differential housing welding','EQ-MPR000036','SET',1.00,8843.48,10170.00,'Kasma Engineering','2026-11-04',1,NULL,1,NULL,'2026-11-17 06:59:21','2026-11-17 06:59:21',NULL),(3,2,'EXCAVATOR','EX-0601','Hydraulic oil top-up (ISO VG 68)','PBR-EQ000116','LIT',20.00,250.00,5750.00,'TotalEnergies Ethiopia','2026-11-09',1,NULL,1,NULL,'2026-11-17 06:59:21','2026-11-17 06:59:21',NULL),(4,13,'GENERATOR','132 KVA','Oil filter JS2021 & fuel filter FS19652 replacement','POEQ/16/00099','PCS',2.00,1400.00,3220.00,'Auto Zone Addis','2026-11-09',1,NULL,1,NULL,'2026-11-17 06:59:21','2026-11-17 06:59:21',NULL),(5,7,'sino truck','3-50327','maintenance','EQ-MPR000035','pcs',1.00,1956.52,2250.00,'abiye eshetu','2015-01-11',NULL,NULL,1,NULL,'2026-11-17 07:02:13','2026-11-17 07:02:13',NULL),(6,10,'toyota pickup','3-A44801','AXLE SHAFT EXTRACT AND REPLACE','eq-mpr000036','pcs',2.00,500.00,10170.00,'KASMA ENGI','2015-01-11',NULL,NULL,1,NULL,'2026-11-17 07:02:13','2026-11-17 07:02:13',NULL),(7,NULL,'EQUIPMENT','','DIFERENTIAL HOUSING WELDING','','PCS',1.00,3000.00,3450.00,'','2026-11-17',NULL,NULL,1,NULL,'2026-11-17 07:02:13','2026-11-17 07:02:13',NULL),(8,NULL,'EQUIPMENT','','DIFFERENTIAL STRAIGHTING','','PCS',1.00,5000.00,5750.00,'','2026-11-17',NULL,NULL,1,NULL,'2026-11-17 07:02:13','2026-11-17 07:02:13',NULL),(9,NULL,'ISUZU','3-A53404','BRAKEPADLINING &RIVETE','EQ-MPR000034','PCS',4.00,750.00,3450.00,'PAULO','2015-01-11',NULL,NULL,1,NULL,'2026-11-17 07:02:13','2026-11-17 07:02:13',NULL),(10,7,'sino truck','3-50327','RETURN SPRING WORK ADV.','NI-EQU000356','PCS',1.00,500.00,500.00,'WORK ADVA','2015-01-11',NULL,NULL,1,NULL,'2026-11-17 07:02:13','2026-11-17 07:02:13',NULL),(11,2,'EXCAVATOR','EX-0601','HYDRAULIC OIL,TOPUP','PBR-EQ000116','LIT',10.00,250.00,2500.00,'AMBO','2015-01-11',NULL,NULL,1,NULL,'2026-11-17 07:02:13','2026-11-17 07:02:13',NULL),(12,11,'toyota  PICUP','3-71050','DIFERENTIAL HOUSING WELDING','EQ-MPR/16/00003','PCS',1.00,3000.00,9040.00,'KASMA ENGI','2015-03-11',NULL,NULL,1,NULL,'2026-11-17 07:02:13','2026-11-17 07:02:13',NULL),(13,NULL,'EQUIPMENT','','DIFFERENTIAL STRAIGNTING','','PCS',1.00,5000.00,5750.00,'','2026-11-17',NULL,NULL,1,NULL,'2026-11-17 07:02:13','2026-11-17 07:02:13',NULL),(14,NULL,'CONCRET','MAIN.','VIBRATOR HOSE MAIN.','PBR-EQ/16/00001','PCS',4.00,800.00,3200.00,'WOMEN','2015-03-11',NULL,NULL,1,NULL,'2026-11-17 07:02:13','2026-11-17 07:02:13',NULL),(15,NULL,'WORK ADVANCE','PETTY','MAINTENANCE PETTY CASH','PBR-EQ/16/00002','PCS',1.00,5000.00,5000.00,'AUGUSTA','2015-03-11',NULL,NULL,1,NULL,'2026-11-17 07:02:13','2026-11-17 07:02:13',NULL),(16,NULL,'NISSAN  PICK UP','3-A43688','CARBON BRUSH','PBR-EQ/16/00003','PCS',1.00,1100.00,1600.00,'DEBRE MARKOS','2015-03-11',NULL,NULL,1,NULL,'2026-11-17 07:02:13','2026-11-17 07:02:13',NULL),(17,NULL,'EQUIPMENT','','MAIN LABOUR  COST','','PCS',1.00,500.00,575.00,'','2026-11-17',NULL,NULL,1,NULL,'2026-11-17 07:02:13','2026-11-17 07:02:13',NULL),(18,11,'PICK UP','3-71050','AXLE SHAFT EXTRACT AND REPLACE','EQ-MPR/16/00002','PCS',2.00,500.00,1495.00,'KASMA ENGI','2015-03-11',NULL,NULL,1,NULL,'2026-11-17 07:02:13','2026-11-17 07:02:13',NULL),(19,NULL,'EQUIPMENT','','BEARING AND DISC REFACE','','PCS',1.00,300.00,345.00,'','2026-11-17',NULL,NULL,1,NULL,'2026-11-17 07:02:13','2026-11-17 07:02:13',NULL),(20,6,'ROLLO COMPACTOR','CM-0562','CLUCH BOOSTER','POEQ/16/00006','PCS',1.00,8260.87,16016.52,'JS CONST.','2015-03-11',NULL,NULL,1,NULL,'2026-11-17 07:02:13','2026-11-17 07:02:13',NULL),(21,NULL,'EQUIPMENT','','CALIPER PISTON SEAL','','PCS',8.00,739.13,6800.00,'','2026-11-17',NULL,NULL,1,NULL,'2026-11-17 07:02:13','2026-11-17 07:02:13',NULL),(22,9,'IVECO TRUCK','3-85963','AIR DRYER','POEQ/16/00007','PCS',1.00,5000.00,9775.00,'MITIKU','2015-03-11',NULL,NULL,1,NULL,'2026-11-17 07:02:13','2026-11-17 07:02:13',NULL),(23,NULL,'EQUIPMENT','','FOUR WAY VALVE','','PCS',1.00,3500.00,4025.00,'','2026-11-17',NULL,NULL,1,NULL,'2026-11-17 07:02:13','2026-11-17 07:02:13',NULL),(24,NULL,'MITSUBISH','2-78921','PISTON STD','POEQ/16/00008','PCS',4.00,19000.00,114130.00,'ABEBECH','2015-03-11',NULL,NULL,1,NULL,'2026-11-17 07:02:13','2026-11-17 07:02:13',NULL),(25,NULL,'EQUIPMENT','','PISTON  RING STD','','SET',1.00,25000.00,28750.00,'','2026-11-17',NULL,NULL,1,NULL,'2026-11-17 07:02:13','2026-11-17 07:02:13',NULL),(26,NULL,'UD-TRUCK','3-99425','WHEEL BOLT','POEQ/16/00010','PCS',5.00,4500.00,25425.00,'DERE UD VSP','2015-03-11',NULL,NULL,1,NULL,'2026-11-17 07:02:13','2026-11-17 07:02:13',NULL),(27,NULL,'PICK UP','3-47866','BATTERY12V-70AH','POEQ/16/00009','PCS',1.00,11304.35,12773.92,'MAEREG','2015-03-11',NULL,NULL,1,NULL,'2026-11-17 07:02:13','2026-11-17 07:02:13',NULL),(28,7,'sino truck','3-50327','bolt wheel','POEQ/16/00005','PCS',30.00,278.26,9600.00,'DANIEL ABEBE','2015-03-11',NULL,NULL,1,NULL,'2026-11-17 07:02:13','2026-11-17 07:02:13',NULL),(29,NULL,'UD-TRUCK','3-99464','LEAF SPRING FRONT NO 1','POEQ/16/00011','PCS',1.00,4800.00,18306.00,'DAWIT BONGER','2015-04-11',NULL,NULL,1,NULL,'2026-11-17 07:02:13','2026-11-17 07:02:13',NULL),(30,NULL,'EQUIPMENT','','LEAF SPRING FRONT NO 3','','PCS',1.00,3000.00,3450.00,'','2026-11-17',NULL,NULL,1,NULL,'2026-11-17 07:02:13','2026-11-17 07:02:13',NULL),(31,NULL,'EQUIPMENT','','LEAF SPRING FRONT NO 5','','PCS',1.00,2500.00,2875.00,'','2026-11-17',NULL,NULL,1,NULL,'2026-11-17 07:02:13','2026-11-17 07:02:13',NULL),(32,NULL,'EQUIPMENT','','LEAF SPRING ASSY FRONT','','ASSY',1.00,2200.00,2530.00,'','2026-11-17',NULL,NULL,1,NULL,'2026-11-17 07:02:13','2026-11-17 07:02:13',NULL),(33,NULL,'EQUIPMENT','','LEAF SPRING ASSY FRONT','','PCS',1.00,1900.00,2185.00,'','2026-11-17',NULL,NULL,1,NULL,'2026-11-17 07:02:13','2026-11-17 07:02:13',NULL),(34,NULL,'EQUIPMENT','','LEAF SPRING  ASSY FRONT','','PCS',1.00,1500.00,1725.00,'','2026-11-17',NULL,NULL,1,NULL,'2026-11-17 07:02:13','2026-11-17 07:02:13',NULL),(35,NULL,'EQUIPMENT','','CENTER BOLT','','PCS',1.00,300.00,345.00,'','2026-11-17',NULL,NULL,1,NULL,'2026-11-17 07:02:13','2026-11-17 07:02:13',NULL),(36,NULL,'GENERATOR','CUMMINS','FILTER OIL','POEQ/16/00021','PCS',3.00,1300.00,7245.00,'AUTO ZONE/mega/','2015-04-11',NULL,NULL,1,NULL,'2026-11-17 07:02:13','2026-11-17 07:02:13',NULL),(37,NULL,'EQUIPMENT','','FUEL FILTER','','PCS',3.00,800.00,2760.00,'','2026-11-17',NULL,NULL,1,NULL,'2026-11-17 07:02:13','2026-11-17 07:02:13',NULL),(38,NULL,'BYD','3-92735','CHAIN ASSY','POEQ/16/00020','PCS',1.00,24500.00,27685.00,'SAMSON','2015-04-11',NULL,NULL,1,NULL,'2026-11-17 07:02:13','2026-11-17 07:02:13',NULL),(39,NULL,'ISUZU','3-A40967','ENGINE OIL 15W40 ,TOP UP','POEQ/16/00013','LIT',4.00,500.00,2000.00,'TOTAL','2015-04-11',NULL,NULL,1,NULL,'2026-11-17 07:02:13','2026-11-17 07:02:13',NULL),(40,NULL,'pump','MAIN.','SUMMERSUBLE PUMP','PBR-EQ/16/00013','PCS',1.00,1900.00,1900.00,'D/BIRHAN UNIVERSITY','2015-04-11',NULL,NULL,1,NULL,'2026-11-17 07:02:13','2026-11-17 07:02:13',NULL),(41,NULL,'SINO TRUCK','3-55358','BRAKE OIL','PBR-EQ/16/00009','LIT',0.50,400.00,200.00,'ARBAMINCH WWT','2015-04-11',NULL,NULL,1,NULL,'2026-11-17 07:02:13','2026-11-17 07:02:13',NULL),(42,NULL,'EQUIPMENT','','MAINTENANCE','PBR-EQ/16/00010','PCS',1.00,3000.00,3000.00,'','2026-11-17',NULL,NULL,1,NULL,'2026-11-17 07:02:13','2026-11-17 07:02:13',NULL),(43,NULL,'MITSUBISH','3-51054','WIPER MAIN.','PBR-EQ/16/00011','PCS',1.00,710.00,710.00,'BAHIRDAR WWT','2015-04-11',NULL,NULL,1,NULL,'2026-11-17 07:02:13','2026-11-17 07:02:13',NULL),(44,NULL,'VIBRATOR','MAIN.','HOSE MAIN.','PBR-EQ/16/00012','PCS',3.00,660.00,6050.00,'MEGA','2015-04-11',NULL,NULL,1,NULL,'2026-11-17 07:02:14','2026-11-17 07:02:14',NULL),(45,NULL,'SINO TRUCK','3-55358','STABLIZER BUSHING RR PUR.','PBR-EQ/16/00008','PCS',2.00,805.00,8970.00,'ARBAMINCH WWT','2015-04-11',NULL,NULL,1,NULL,'2026-11-17 07:02:14','2026-11-17 07:02:14',NULL),(46,NULL,'EQUIPMENT','','STABLIZER BUSHING FR PUR.','','PCS',2.00,805.00,1851.50,'','2026-11-17',NULL,NULL,1,NULL,'2026-11-17 07:02:14','2026-11-17 07:02:14',NULL),(47,NULL,'EQUIPMENT','','BUSHING PURCHASE','','PCS',1.00,4600.00,5290.00,'','2026-11-17',NULL,NULL,1,NULL,'2026-11-17 07:02:14','2026-11-17 07:02:14',NULL),(48,NULL,'EQUIPMENT','','TORQUE ROD BOLT DIA32','','PCS',1.00,575.00,661.25,'','2026-11-17',NULL,NULL,1,NULL,'2026-11-17 07:02:14','2026-11-17 07:02:14',NULL),(49,NULL,'EQUIPMENT','','ENGINE CUP PURCHASE','','PCS',1.00,575.00,661.25,'','2026-11-17',NULL,NULL,1,NULL,'2026-11-17 07:02:14','2026-11-17 07:02:14',NULL),(50,NULL,'UD-TRUCK','3-99424','BATTERY12V-150AH','POEQ/16/00012','PCS',2.00,22489.09,50825.34,'MY WISH','2015-04-11',NULL,NULL,1,NULL,'2026-11-17 07:02:14','2026-11-17 07:02:14',NULL),(51,NULL,'UD-TRUCK','3-99425','wheel MAINTENANCE','PBR-EQ/16/00005','PCS',1.00,1100.00,1100.00,'BONGA WWT','2015-04-11',NULL,NULL,1,NULL,'2026-11-17 07:02:14','2026-11-17 07:02:14',NULL),(52,NULL,'TOYOTA PICK UP','3-A57479','BRAKE PAD KIT','POEQ/16/00023','PCS',1.00,9000.00,11187.00,'ZELALEM','2015-05-11',NULL,NULL,1,NULL,'2026-11-17 07:02:14','2026-11-17 07:02:14',NULL),(53,NULL,'EQUIPMENT','','FILTER OIL','','PCS',1.00,900.00,1035.00,'','2026-11-17',NULL,NULL,1,NULL,'2026-11-17 07:02:14','2026-11-17 07:02:14',NULL),(54,NULL,'LOADER','LD-2231','BEARING','POEQ/16/00024','PCS',2.00,3000.00,6900.00,'BELACHEW','2015-05-11',NULL,NULL,1,NULL,'2026-11-17 07:02:14','2026-11-17 07:02:14',NULL),(55,NULL,'SINO TRUCK','3-44978','ENGINE OIL 15W40','PBR-EQ/16/00015','LIT',30.00,220.00,13200.00,'AUGUSTA','2015-05-11',NULL,NULL,1,NULL,'2026-11-17 07:02:14','2026-11-17 07:02:14',NULL),(56,NULL,'IVECO TRUCK','3-82479','ENGINE OIL 15W40','','PCS',30.00,220.00,7590.00,'','2026-11-17',NULL,NULL,1,NULL,'2026-11-17 07:02:14','2026-11-17 07:02:14',NULL),(57,NULL,'SINO TRUCK','3-91935','ENGINE OIL 15W40','PBR-EQ/16/00016','LIT',30.00,220.00,6600.00,'MEGA','2015-05-11',NULL,NULL,1,NULL,'2026-11-17 07:02:14','2026-11-17 07:02:14',NULL),(58,5,'LOADER','LD-1633','ENGINE OIL 15W40','PBR-EQ/16/00014','LIT',20.00,220.00,4400.00,'D/BIRHAN UNIVERSITY','0215-11-05',NULL,NULL,1,NULL,'2026-11-17 07:02:14','2026-11-17 07:02:14',NULL),(59,NULL,'BATCHING PLANT','MAIN.','AIR HOSE  MAIN.','PBR-EQ/16/00018','PCS',1.00,510.00,867.00,'MEGA','2015-05-11',NULL,NULL,1,NULL,'2026-11-17 07:02:14','2026-11-17 07:02:14',NULL),(60,NULL,'EQUIPMENT','','CONNECTOR  MAIN.','','PCS',1.00,357.00,410.55,'','2026-11-17',NULL,NULL,1,NULL,'2026-11-17 07:02:14','2026-11-17 07:02:14',NULL),(61,NULL,'WATER PUMP','MAIN.','WATER PUMP MAIN.','PBR-EQ/16/00019','PCS',1.00,700.00,700.00,'BONGA WWT','2015-05-11',NULL,NULL,1,NULL,'2026-11-17 07:02:14','2026-11-17 07:02:14',NULL),(62,NULL,'SINO TRUCK','3-44951','FLEXIABLE PIPE PURC.','PBR-EQ/16/00020','PCS',1.00,5500.00,8400.00,'WOMEN','2015-05-11',NULL,NULL,1,NULL,'2026-11-17 07:02:14','2026-11-17 07:02:14',NULL),(63,NULL,'EQUIPMENT','','GASKET PURCHASE','','PCS',1.00,1300.00,1495.00,'','2026-11-17',NULL,NULL,1,NULL,'2026-11-17 07:02:14','2026-11-17 07:02:14',NULL),(64,NULL,'EQUIPMENT','','OIL FILTER PURCHASE','','PCS',2.00,800.00,1840.00,'','2026-11-17',NULL,NULL,1,NULL,'2026-11-17 07:02:14','2026-11-17 07:02:14',NULL),(65,NULL,'SINO TRUCK','3-44951','EXAUST GASKET','PBR-EQ/16/00021','PCS',1.00,600.00,4290.00,'WOMEN','2015-06-11',NULL,NULL,1,NULL,'2026-11-17 07:02:14','2026-11-17 07:02:14',NULL),(66,NULL,'EQUIPMENT','','OIL TUNKER','','PCS',1.00,1500.00,1725.00,'','2026-11-17',NULL,NULL,1,NULL,'2026-11-17 07:02:14','2026-11-17 07:02:14',NULL),(67,NULL,'EQUIPMENT','','PERFORM KM','','PCS',1.00,690.00,793.50,'','2026-11-17',NULL,NULL,1,NULL,'2026-11-17 07:02:14','2026-11-17 07:02:14',NULL),(68,NULL,'EQUIPMENT','','LABOUR COST','','PCS',1.00,1500.00,1725.00,'','2026-11-17',NULL,NULL,1,NULL,'2026-11-17 07:02:14','2026-11-17 07:02:14',NULL),(69,NULL,'SINO TRUCK','3-44951','ENGINE OIL','PBR-EQ/16/00022','LIT',30.00,220.00,6600.00,'WOMEN','2015-06-11',NULL,NULL,1,NULL,'2026-11-17 07:02:14','2026-11-17 07:02:14',NULL),(70,NULL,'SINO TRUCK','3-55356','SPONDA WELDING','PBR-EQ/16/00023','PCS',1.00,3450.00,3450.00,'WOMEN','2015-06-11',NULL,NULL,1,NULL,'2026-11-17 07:02:14','2026-11-17 07:02:14',NULL),(71,NULL,'WATER PUMP','PURCHASE','IMPELLER PURCHASE','PBR-EQ/16/00024','PCS',1.00,5500.00,5500.00,'DEBRE MARKOS','2015-06-11',NULL,NULL,1,NULL,'2026-11-17 07:02:14','2026-11-17 07:02:14',NULL),(72,NULL,'CONCRET  PUMP','PURCHASE','FUEL FILTER','POEQ/16/00027','PCS',2.00,2000.00,6210.00,'AUTO ZONE','2015-06-11',NULL,NULL,1,NULL,'2026-11-17 07:02:14','2026-11-17 07:02:14',NULL),(73,NULL,'EQUIPMENT','','OIL FILTER','','PCS',1.00,1400.00,1610.00,'','2026-11-17',NULL,NULL,1,NULL,'2026-11-17 07:02:14','2026-11-17 07:02:14',NULL),(74,NULL,'PICK UP','3-A21717','UPPER ARM BUSHING','POEQ/16/00028','PCS',2.00,2200.00,5060.00,'MOHAMMED','2015-06-11',NULL,NULL,1,NULL,'2026-11-17 07:02:14','2026-11-17 07:02:14',NULL),(75,NULL,'TRUCK MIXER','3-A19838','ENGINE OIL 15W40','PBR-EQ/16/00030','LIT',30.00,350.00,21000.00,'WOMEN','2015-07-11',NULL,NULL,1,NULL,'2026-11-17 07:02:14','2026-11-17 07:02:14',NULL),(76,NULL,'EQUIPMENT','3-A19839','ENGINE OIL 15W 40','','PCS',30.00,350.00,12075.00,'','2026-11-17',NULL,NULL,1,NULL,'2026-11-17 07:02:14','2026-11-17 07:02:14',NULL),(77,NULL,'UD-TRUCK','3-99464','CENTER BOLT','PBR-EQ/16/00031','PCS',1.00,330.00,330.00,'MEGA','2015-07-11',NULL,NULL,1,NULL,'2026-11-17 07:02:14','2026-11-17 07:02:14',NULL),(78,NULL,'Toyota platz','3-A22996','bearing seat welding main.','EQ-MPR/16/00006','PCS',1.00,300.00,300.00,'CENTRAL','2015-07-11',NULL,NULL,1,NULL,'2026-11-17 07:02:14','2026-11-17 07:02:14',NULL),(79,NULL,'BATCHING PLANYT','PURCHASE','GREASE HOSE','PBR-EQ/16/00032','PCS',1.00,690.00,690.00,'MEGA','2015-07-11',NULL,NULL,1,NULL,'2026-11-17 07:02:14','2026-11-17 07:02:14',NULL),(80,NULL,'SINO TRUCK','3-55358','CLUCH MASTER CYL.HOSE','PBR-EQ/16/00033','PCS',1.00,1725.00,1725.00,'ARBAMINCH WWT','2015-07-11',NULL,NULL,1,NULL,'2026-11-17 07:02:14','2026-11-17 07:02:14',NULL),(81,NULL,'SINO TRUCK','3-55358','BRAKE FLUID','PBR-EQ/16/00034','LIT',1.00,400.00,400.00,'','2026-11-17',NULL,NULL,1,NULL,'2026-11-17 07:02:14','2026-11-17 07:02:14',NULL),(82,NULL,'GRADER','GR-0905','HYDRAULIC OIL,TOPUP','PBR-EQ/16/00026','LIT',5.00,220.00,3050.00,'AUGUSTA','2015-06-11',NULL,NULL,1,NULL,'2026-11-17 07:02:14','2026-11-17 07:02:14',NULL),(83,6,'ROLLO','CM-0562','BRAKE FLUID','','PCS',1.50,1300.00,2242.50,'','2026-11-17',NULL,NULL,1,NULL,'2026-11-17 07:02:14','2026-11-17 07:02:14',NULL),(84,NULL,'SINO TRUCK','3-55358','BATTERY CHARGING AND ACID REFILL','PBR-EQ/16/00027','PCS',1.00,600.00,600.00,'ARBAMINCH WWT','2015-06-11',NULL,NULL,1,NULL,'2026-11-17 07:02:14','2026-11-17 07:02:14',NULL),(85,NULL,'toyota platz','3-A22996','CHACK ELECTRIC SYSTEM &HOSE','eq-mpr/16/00005','PCS',1.00,630.00,630.00,'WORK ADVA','2015-08-11',NULL,NULL,1,NULL,'2026-11-17 07:02:14','2026-11-17 07:02:14',NULL),(86,5,'LOADER','LD-1633','LOADER MAIN.&GENERATOR','PBR-EQ/16/00035','PCS',1.00,950.00,950.00,'D/BIRHAN UNIVERSITY','2015-08-11',NULL,NULL,1,NULL,'2026-11-17 07:02:14','2026-11-17 07:02:14',NULL),(87,11,'PICK UP','3-71050','BRAKE SHOE','POEQ/16/00034','PCS',1.00,8000.00,9200.00,'ZELALEM','2015-08-11',NULL,NULL,1,NULL,'2026-11-17 07:02:14','2026-11-17 07:02:14',NULL),(88,NULL,'MITSUBISH','3-A50302','HUB BEARING','POEQ/16/00032','PCS',1.00,14000.00,15820.00,'HUSSEN','2015-08-11',NULL,NULL,1,NULL,'2026-11-17 07:02:14','2026-11-17 07:02:14',NULL),(89,NULL,'PICK UP','3-47866','HAND PRIME PUMP','POEQ/16/00033','PCS',1.00,9000.00,10350.00,'ZELALEM','2015-08-11',NULL,NULL,1,NULL,'2026-11-17 07:02:14','2026-11-17 07:02:14',NULL),(90,2,'EXCAVATOR','EX-0601','TORNO','EQ-MPR/16/00007','PCS',2.00,4000.00,71190.00,'ANTENEH /AMBO/','2015-10-11',NULL,NULL,1,NULL,'2026-11-17 07:02:14','2026-11-17 07:02:14',NULL),(91,NULL,'EQUIPMENT','','DIA 90 PIN','','PCS',1.00,5000.00,5750.00,'','2026-11-17',NULL,NULL,1,NULL,'2026-11-17 07:02:14','2026-11-17 07:02:14',NULL),(92,NULL,'EQUIPMENT','','DIA 90 BRONZ BUSHING','','PCS',2.00,5000.00,11500.00,'','2026-11-17',NULL,NULL,1,NULL,'2026-11-17 07:02:14','2026-11-17 07:02:14',NULL),(93,NULL,'EQUIPMENT','','DÉCOR SEAL','','PCS',4.00,5000.00,23000.00,'','2026-11-17',NULL,NULL,1,NULL,'2026-11-17 07:02:14','2026-11-17 07:02:14',NULL),(94,NULL,'EQUIPMENT','','WELDING,TORNO&ASSYM.','','PCS',1.00,20000.00,23000.00,'','2026-11-17',NULL,NULL,1,NULL,'2026-11-17 07:02:14','2026-11-17 07:02:14',NULL),(95,NULL,'GENERATOR','','ENGINE OIL 15W40','PBR-EQ/16/00037','LIT',25.00,340.00,22340.00,'MEGA','2015-10-11',NULL,NULL,1,NULL,'2026-11-17 07:02:14','2026-11-17 07:02:14',NULL),(96,NULL,'ROLLO','CM-0993','ENGINE OIL 15W40','','PCS',20.00,220.00,5060.00,'','2026-11-17',NULL,NULL,1,NULL,'2026-11-17 07:02:14','2026-11-17 07:02:14',NULL),(97,NULL,'PICK UP','3-36613','ENGINE OIL 20W50','','PCS',4.00,600.00,2760.00,'','2026-11-17',NULL,NULL,1,NULL,'2026-11-17 07:02:14','2026-11-17 07:02:14',NULL),(98,NULL,'MITSUBISH','3-50302','ENGINE OIL15W40','','PCS',2.00,220.00,506.00,'','2026-11-17',NULL,NULL,1,NULL,'2026-11-17 07:02:14','2026-11-17 07:02:14',NULL),(99,NULL,'LOADER','LD-0910','ENGINE OIL 15W40','','PCS',30.00,220.00,7590.00,'','2026-11-17',NULL,NULL,1,NULL,'2026-11-17 07:02:14','2026-11-17 07:02:14',NULL),(100,NULL,'MAIN.','PETTY','MAIN PETTY CASH','PBR-EQ/16/00038','PCS',1.00,10000.00,10000.00,'WOMEN','2015-10-11',NULL,NULL,1,NULL,'2026-11-17 07:02:14','2026-11-17 07:02:14',NULL),(101,NULL,'SINO TRUCK','3-05663','HEAD LAMP RHS','POEQ/16/00035','PCS',1.00,5652.17,6500.00,'LEALEM','2015-10-11',NULL,NULL,1,NULL,'2026-11-17 07:02:14','2026-11-17 07:02:14',NULL),(102,NULL,'LOADER','LD-2231','BEARING','POEQ/16/00036','PCS',2.00,6000.00,13560.00,'BELACHEW','2015-10-11',NULL,NULL,1,NULL,'2026-11-17 07:02:14','2026-11-17 07:02:14',NULL),(103,11,'PICK UP','3-71050','/ATF/','POEQ/16/00037','LIT',2.00,400.00,800.00,'TOTAL','2015-10-11',NULL,NULL,1,NULL,'2026-11-17 07:02:14','2026-11-17 07:02:14',NULL),(104,NULL,'GRADER','GR-0905','HYDRAULIC OIL 10W','PBR-EQ/16/00040','LIT',10.00,220.00,2200.00,'AUGUSTA','2015-11-11',NULL,NULL,1,NULL,'2026-11-17 07:02:14','2026-11-17 07:02:14',NULL),(105,NULL,'PICK UP','3-21717','UPPER ARM BUSHING','POEQ/16/00038','PCS',2.00,2200.00,15481.00,'MOHAMMED','2015-11-11',NULL,NULL,1,NULL,'2026-11-17 07:02:14','2026-11-17 07:02:14',NULL),(106,NULL,'EQUIPMENT','','SHOCK ABSORBER FR','','PCS',1.00,4800.00,5520.00,'','2026-11-17',NULL,NULL,1,NULL,'2026-11-17 07:02:14','2026-11-17 07:02:14',NULL),(107,NULL,'EQUIPMENT','','SHOCK ABSORBER RR','','PCS',1.00,4500.00,5175.00,'','2026-11-17',NULL,NULL,1,NULL,'2026-11-17 07:02:14','2026-11-17 07:02:14',NULL),(108,NULL,'MITSUBISH','3-59332','CALLIPER KIT','POEQ/16/00039','KIT',1.00,4500.00,5175.00,'HUSSEN','2015-11-11',NULL,NULL,1,NULL,'2026-11-17 07:02:14','2026-11-17 07:02:14',NULL),(109,NULL,'loader','LD-1644','GEARBOX OIL 90W','PBR-EQ/16/00044','LIT',10.00,265.00,2650.00,'DEBRE MARKOS','2015-12-11',NULL,NULL,1,NULL,'2026-11-17 07:02:14','2026-11-17 07:02:14',NULL),(110,NULL,'PICK UP','3-A21717','FILTER OIL','POEQ/16/00043','PCS',1.00,1600.00,4715.00,'QUALITY','2015-12-11',NULL,NULL,1,NULL,'2026-11-17 07:02:14','2026-11-17 07:02:14',NULL),(111,NULL,'EQUIPMENT','','FILTER FUEL','','PCS',1.00,2500.00,2875.00,'','2026-11-17',NULL,NULL,1,NULL,'2026-11-17 07:02:14','2026-11-17 07:02:14',NULL),(112,9,'IVECO TRUCK','3-85963','AIR DRYER KIT','POEQ/16/00045','PCS',1.00,2500.00,2875.00,'ZEKARIYAS','2015-12-11',NULL,NULL,1,NULL,'2026-11-17 07:02:14','2026-11-17 07:02:14',NULL),(113,NULL,'EQUIPMENT','','AIR DRYER FILTER','POEQ/16/00046','PCS',1.00,2869.56,6100.00,'SDV BUSINESS','2026-11-17',NULL,NULL,1,NULL,'2026-11-17 07:02:14','2026-11-17 07:02:14',NULL),(114,NULL,'EQUIPMENT','','FOUR WAY VALVE KIT','','PCS',1.00,2434.78,2800.00,'','2026-11-17',NULL,NULL,1,NULL,'2026-11-17 07:02:14','2026-11-17 07:02:14',NULL),(115,NULL,'GRADER','GR-0905','OIL FILTER','POEQ/16/00047','PCS',1.00,5200.00,9660.00,'GETACHEW','2015-12-11',NULL,NULL,1,NULL,'2026-11-17 07:02:14','2026-11-17 07:02:14',NULL),(116,NULL,'EQUIPMENT','','FUEL FILTOR SEC.','','PCS',1.00,3200.00,3680.00,'','2026-11-17',NULL,NULL,1,NULL,'2026-11-17 07:02:14','2026-11-17 07:02:14',NULL),(117,NULL,'SINO TRUCK','3-91935','SERVO','POEQ/16/00049','PCS',1.00,6521.74,7500.00,'DANIEL ABEBE','2015-11-13',NULL,NULL,1,NULL,'2026-11-17 07:02:14','2026-11-17 07:02:14',NULL),(118,NULL,'ISUZU','3-30156','BEARING','POEQ/16/00048','PCS',1.00,1000.00,1150.00,'BELACHEW','2015-11-13',NULL,NULL,1,NULL,'2026-11-17 07:02:14','2026-11-17 07:02:14',NULL),(119,NULL,'NISSAN  PICK UP','3-43688','FILTER OIL','POEQ/16/00051','PCS',2.00,1930.63,4440.00,'NYALA','2015-11-13',NULL,NULL,1,NULL,'2026-11-17 07:02:14','2026-11-17 07:02:14',NULL),(120,NULL,'EQUIPMENT','','FUEL FILTER','POEQ/16/00052','PCS',2.00,5780.00,13062.80,'BEEMNET','2026-11-17',NULL,NULL,1,NULL,'2026-11-17 07:02:14','2026-11-17 07:02:14',NULL),(121,NULL,'WORK ADVANCE','PETTY','WORK ADVANCE MAIN.','EQ-MPR/16/00009','PCS',1.00,10000.00,10000.00,'GETESH','2015-11-14',NULL,NULL,1,NULL,'2026-11-17 07:02:14','2026-11-17 07:02:14',NULL),(122,12,'MITSUBISH','2-A47404','REAR CHANSIS L&R ,CARRY BOY BODY ,EXAUST GASKET HUNGER RAINFORCMENT WELDING&LABOUR COST','EQ-MPR/16/00010','PCS',1.00,18260.00,20634.78,'BASHAW','2015-11-14',NULL,NULL,1,NULL,'2026-11-17 07:02:14','2026-11-17 07:02:14',NULL),(123,NULL,'MITSUBISH','2-A78921','','EQ-MPR/16/00011','PCS',4.00,3000.00,13921.60,'ANBO PLC','2015-11-14',NULL,NULL,1,NULL,'2026-11-17 07:02:14','2026-11-17 07:02:14',NULL),(124,NULL,'TRUCK MIXER','3-82479','ROLLER RECONDITION &MANUFACTUR NEW SHAFT','EQ-MPR/16/00012','PCS',1.00,30000.00,33900.00,'DAS','2015-11-14',NULL,NULL,1,NULL,'2026-11-17 07:02:14','2026-11-17 07:02:14',NULL),(125,NULL,'PICK UP','3-44801','DIFFERENTIAL OIL 140W','PBR-EQ/16/00047','LIT',4.00,500.00,2000.00,'AMBO REFERRAL','2015-11-14',NULL,NULL,1,NULL,'2026-11-17 07:02:14','2026-11-17 07:02:14',NULL),(126,NULL,'EQUIPMENT','','U-BOLT PURCHASE','PBR-EQ/16/00048','PCS',2.00,400.00,800.00,'','2026-11-17',NULL,NULL,1,NULL,'2026-11-17 07:02:14','2026-11-17 07:02:14',NULL),(127,NULL,'TRUCK MIXER','3-82479','BEARING','POEQ/16/00054','PCS',2.00,8000.00,18080.00,'BELACHEW','2015-11-13',NULL,NULL,1,NULL,'2026-11-17 07:02:14','2026-11-17 07:02:14',NULL),(128,NULL,'NISSAN UD -TRUCK','3-99424','LEAF SPRING FRONT NO1','POEQ/16/00053','PCS',1.00,4300.00,9947.50,'DAWIT BONGER','2026-11-17',NULL,NULL,1,NULL,'2026-11-17 07:02:14','2026-11-17 07:02:14',NULL),(129,NULL,'EQUIPMENT','','LEAF SPRING FRONT NO2','','PCS',1.00,4100.00,4715.00,'','2015-11-14',NULL,NULL,1,NULL,'2026-11-17 07:02:14','2026-11-17 07:02:14',NULL),(130,NULL,'EQUIPMENT','','CLAMP','','PCS',1.00,250.00,287.50,'','2026-11-17',NULL,NULL,1,NULL,'2026-11-17 07:02:14','2026-11-17 07:02:14',NULL),(131,NULL,'CRUSHER','MEGA','OVER HAUL GASKET','POEQ/16/00055','SET',1.00,6800.00,7820.00,'NASIR JEMAL','2015-11-14',NULL,NULL,1,NULL,'2026-11-17 07:02:14','2026-11-17 07:02:14',NULL),(132,NULL,'LOADER','LD-2231','BRAKECHAMBER HOSE','POEQ/16/00056','PCS',1.50,130.43,225.00,'FETHIYA','2015-11-14',NULL,NULL,1,NULL,'2026-11-17 07:02:14','2026-11-17 07:02:14',NULL),(133,NULL,'SINO TRUCK','3-85965','KING PIN KIT','POEQ/16/00058','KIT',2.00,4000.00,9200.00,'LEALEM','2026-11-17',NULL,NULL,1,NULL,'2026-11-17 07:02:14','2026-11-17 07:02:14',NULL),(134,NULL,'EQUIPMENT','','STEERING BALL JOINT','POEQ/16/00059','PCS',2.00,1500.00,3450.00,'MITIKU','2015-11-14',NULL,NULL,1,NULL,'2026-11-17 07:02:14','2026-11-17 07:02:14',NULL),(135,2,'EXCAVATOR','EX-0601','GREASE NIPPLE MAIN.','PBR-EQ/16/00050','PCS',1.00,300.00,580.00,'AMBO REFERRAL','2015-11-15',NULL,NULL,1,NULL,'2026-11-17 07:02:14','2026-11-17 07:02:14',NULL),(136,10,'PICK UP','3-A44801','AXLE HOUSING MAIN.','','PCS',1.00,200.00,230.00,'','2026-11-17',NULL,NULL,1,NULL,'2026-11-17 07:02:14','2026-11-17 07:02:14',NULL),(137,NULL,'MITSUBISH','3-A51944','LEAF SPRING BUSHING','POEQ/16/00089','PCS',4.00,368.26,3388.00,'ETHIO-NIPPON','2015-11-15',NULL,NULL,1,NULL,'2026-11-17 07:02:14','2026-11-17 07:02:14',NULL),(138,NULL,'EQUIPMENT','','LEAF SPRING BUSHING','','PCS',4.00,368.26,1694.00,'','2026-11-17',NULL,NULL,1,NULL,'2026-11-17 07:02:14','2026-11-17 07:02:14',NULL),(139,4,'LOADER','LD-2232','RADIATOR CAP','POEQ/16/00061','PCS',1.00,1043.48,1200.00,'JS CONST.','2015-11-15',NULL,NULL,1,NULL,'2026-11-17 07:02:14','2026-11-17 07:02:14',NULL),(140,NULL,'MITSUBISH','3-59322','CALIPER PISTON SEAL','POEQ/16/00064','PCS',1.00,3253.80,3741.81,'ETHIO-NIPPON','2015-11-15',NULL,NULL,1,NULL,'2026-11-17 07:02:14','2026-11-17 07:02:14',NULL),(141,NULL,'MITSUBISH','3-86392','FILTER FUEL','POEQ/16/00065','PCS',1.00,6837.50,7863.13,'ETHIO-NIPPON','2015-11-15',NULL,NULL,1,NULL,'2026-11-17 07:02:14','2026-11-17 07:02:14',NULL),(142,NULL,'MINIBUS','3-94774','BRAKE SHOE KIT','POEQ/16/00066','SET',1.00,6436.93,11442.74,'MOENCO','2015-11-15',NULL,NULL,1,NULL,'2026-11-17 07:02:14','2026-11-17 07:02:14',NULL),(143,NULL,'EQUIPMENT','','BERAKE PAD FERMO','','KIT',1.00,3513.28,4040.27,'','2026-11-17',NULL,NULL,1,NULL,'2026-11-17 07:02:14','2026-11-17 07:02:14',NULL),(144,NULL,'EQUIPMENT','','CALLIPER KIT','POEQ/16/00019','KIT',2.00,4800.00,16272.00,'QUALITY','2026-11-17',NULL,NULL,1,NULL,'2026-11-17 07:02:14','2026-11-17 07:02:14',NULL),(145,NULL,'EQUIPMENT','','WHEEL CYLINDR (RR)','','PCS',1.00,4800.00,5520.00,'','2026-11-17',NULL,NULL,1,NULL,'2026-11-17 07:02:14','2026-11-17 07:02:14',NULL),(146,NULL,'EQUIPMENT','','FR BRAKE PAD','POEQ/16/00042','KIT',1.00,5000.00,10350.00,'ZELALEM','2026-11-17',NULL,NULL,1,NULL,'2026-11-17 07:02:14','2026-11-17 07:02:14',NULL),(147,NULL,'EQUIPMENT','','STEERING BALL JOINT','','PCS',2.00,2000.00,4600.00,'','2026-11-17',NULL,NULL,1,NULL,'2026-11-17 07:02:14','2026-11-17 07:02:14',NULL),(148,NULL,'WHEEL BARREN','','WHEEL BARREN MAIN. LABOUR COST','PBR-EQ/16/00052','PCS',1.00,2000.00,2000.00,'ZAMBIYA','2015-11-17',NULL,NULL,1,NULL,'2026-11-17 07:02:14','2026-11-17 07:02:14',NULL),(149,NULL,'MAIN.','PETTY','MAINTENANCE PETTY CASH','PBR-EQ/16/00054','PCS',1.00,5000.00,5000.00,'MEGA','2015-11-17',NULL,NULL,1,NULL,'2026-11-17 07:02:14','2026-11-17 07:02:14',NULL),(150,NULL,'ALL EQUIPMENT','PURCHASE','GREASE  PURCHASE','PBR-EQ/16/00055','KG',12.00,400.00,4800.00,'ARBAMINCH WWT','2015-11-17',NULL,NULL,1,NULL,'2026-11-17 07:02:14','2026-11-17 07:02:14',NULL),(151,NULL,'MIXER 350','350','MAIN.LABOUR COST','PBR-EQ/16/00056','PCS',1.00,750.00,750.00,'ARBAMINCH WWT','2015-11-17',NULL,NULL,1,NULL,'2026-11-17 07:02:14','2026-11-17 07:02:14',NULL),(152,NULL,'ALL EQUIPMENT','','ENGINE OIL 15W40','PBR-EQ/16/00057','LIT',200.00,340.00,68000.00,'DEBRE MARKOS','2015-11-17',NULL,NULL,1,NULL,'2026-11-17 07:02:14','2026-11-17 07:02:14',NULL),(153,NULL,'GENERATOR','','ENGINE OIL 15W40','PBR-EQ/16/00058','LIT',20.00,220.00,4400.00,'AASTU','2015-11-17',NULL,NULL,1,NULL,'2026-11-17 07:02:14','2026-11-17 07:02:14',NULL),(154,NULL,'GOING LIFT','ALTERNATER','PAINTING VARNISH','PBR-EQ/16/00059','PCS',1.00,2500.00,2500.00,'AMBO REFERRAL','2015-11-17',NULL,NULL,1,NULL,'2026-11-17 07:02:14','2026-11-17 07:02:14',NULL),(155,NULL,'UD-TRUCK','3-99424','U-BOLT WORKSHOP COST','PBR-EQ/16/00060','PCS',1.00,440.00,440.00,'MEGA','2015-11-17',NULL,NULL,1,NULL,'2026-11-17 07:02:14','2026-11-17 07:02:14',NULL),(156,NULL,'EQUIPMENT','','BOLT PURCHASE','PBR-EQ/16/00061','PCS',1.00,100.00,100.00,'MEGA','2015-11-17',NULL,NULL,1,NULL,'2026-11-17 07:02:14','2026-11-17 07:02:14',NULL),(157,NULL,'SINO TRUCK','3-44951','AULTERNATOR BELT','PBR-EQ/16/00062','PCS',1.00,1380.00,1380.00,'WOMEN','2015-11-17',NULL,NULL,1,NULL,'2026-11-17 07:02:14','2026-11-17 07:02:14',NULL),(158,NULL,'MITSUBISH','3-86392','STABILIZER LINK','POEQ/16/00070','PCS',1.00,5500.00,6325.00,'HUSSEN','2015-11-17',NULL,NULL,1,NULL,'2026-11-17 07:02:14','2026-11-17 07:02:14',NULL),(159,NULL,'CRUSHER','','BATTERY 12V-70AH  ,C17A2C29X3341,2932B2D3341','POEQ/16/00068','PCS',1.00,10500.00,11865.00,'MELAK','2015-11-17',NULL,NULL,1,NULL,'2026-11-17 07:02:14','2026-11-17 07:02:14',NULL),(160,NULL,'CRUSHER','','BATTERY 12V-70AH','POEQ/16/00069','PCS',1.00,10500.00,11865.00,'MELAK','2015-11-17',NULL,NULL,1,NULL,'2026-11-17 07:02:14','2026-11-17 07:02:14',NULL),(161,NULL,'LOADER','LD-1644','OIL FILTER','POEQ/16/00071','PCS',1.00,1173.91,3380.00,'AUTOTECH','2015-11-17',NULL,NULL,1,NULL,'2026-11-17 07:02:14','2026-11-17 07:02:14',NULL),(162,NULL,'EQUIPMENT','','FUEL FILTER','','PCS',1.00,826.09,950.00,'','2026-11-17',NULL,NULL,1,NULL,'2026-11-17 07:02:14','2026-11-17 07:02:14',NULL),(163,NULL,'EQUIPMENT','','FUEL FILTER','','PCS',1.00,939.13,1080.00,'','2026-11-17',NULL,NULL,1,NULL,'2026-11-17 07:02:14','2026-11-17 07:02:14',NULL),(164,5,'LOADER','LD-1633','OIL FILTER','POEQ/16/00072','PCS',1.00,1173.91,3380.00,'AUTOTECH','2015-11-17',NULL,NULL,1,NULL,'2026-11-17 07:02:14','2026-11-17 07:02:14',NULL),(165,NULL,'EQUIPMENT','','FUEL FILTER','','PCS',1.00,826.09,950.00,'','2026-11-17',NULL,NULL,1,NULL,'2026-11-17 07:02:15','2026-11-17 07:02:15',NULL),(166,NULL,'EQUIPMENT','','FUEL FILTER','','PCS',1.00,939.13,1080.00,'','2026-11-17',NULL,NULL,1,NULL,'2026-11-17 07:02:15','2026-11-17 07:02:15',NULL),(167,NULL,'LOADER','LD-1460','OIL FILTER','POEQ/16/00073','PCS',1.00,1173.91,3380.00,'AUTOTECH','2015-11-17',NULL,NULL,1,NULL,'2026-11-17 07:02:15','2026-11-17 07:02:15',NULL),(168,NULL,'EQUIPMENT','','FUEL FILTER','','PCS',1.00,826.09,950.00,'','2026-11-17',NULL,NULL,1,NULL,'2026-11-17 07:02:15','2026-11-17 07:02:15',NULL),(169,NULL,'EQUIPMENT','','FUEL FILTER','','PCS',1.00,939.13,1080.00,'','2026-11-17',NULL,NULL,1,NULL,'2026-11-17 07:02:15','2026-11-17 07:02:15',NULL),(170,NULL,'LOADER','LD-0910','OIL FILTER','POEQ/16/00076','PCS',1.00,1173.91,3380.00,'AUTOTECH','2015-11-17',NULL,NULL,1,NULL,'2026-11-17 07:02:15','2026-11-17 07:02:15',NULL),(171,NULL,'EQUIPMENT','','FUEL FILTER','','PCS',1.00,826.09,950.00,'','2026-11-17',NULL,NULL,1,NULL,'2026-11-17 07:02:15','2026-11-17 07:02:15',NULL),(172,NULL,'EQUIPMENT','','FUEL FILTER','','PCS',1.00,939.13,1080.00,'','2026-11-17',NULL,NULL,1,NULL,'2026-11-17 07:02:15','2026-11-17 07:02:15',NULL),(173,NULL,'ROLLO','CM-0993','STEERING OIL','PBR-EQ/16/00063','LIT',2.00,400.00,800.00,'MEGA','2015-11-18',NULL,NULL,1,NULL,'2026-11-17 07:02:15','2026-11-17 07:02:15',NULL),(174,NULL,'ALL EQUIPMENT','','GREASE for loader,truck mixer,batc.plant,750 mixer','PBR-EQ/16/00064','KG',30.00,310.00,9300.00,'WOMEN','2015-11-18',NULL,NULL,1,NULL,'2026-11-17 07:02:15','2026-11-17 07:02:15',NULL),(175,6,'ROLLO','CM-0562','GEARBOX OIL 90W','PBR-EQ/16/00065','LIT',5.00,240.00,1200.00,'AUGUSTA','2015-11-18',NULL,NULL,1,NULL,'2026-11-17 07:02:15','2026-11-17 07:02:15',NULL),(176,NULL,'LOWBED TRUCK','3-61727','HOSE MAIN.','PBR-EQ/16/00066','PCS',1.00,2800.00,2800.00,'MEGA','2015-11-18',NULL,NULL,1,NULL,'2026-11-17 07:02:15','2026-11-17 07:02:15',NULL),(177,NULL,'LOWBED','3-61727','BRAKE FILUD','PBR-EQ/16/00067','LIT',1.00,500.00,500.00,'MEGA','2015-11-18',NULL,NULL,1,NULL,'2026-11-17 07:02:15','2026-11-17 07:02:15',NULL),(178,NULL,'sino truck','3-91934','main.','EQ-MPR/16/00016','PCS',4.00,1717.39,7762.60,'MELKAMU','2015-11-19',NULL,NULL,1,NULL,'2026-11-17 07:02:15','2026-11-17 07:02:15',NULL),(179,NULL,'MIXER 350','350','MAIN.LABOUR COST','PBR-EQ/16/00068','PCS',1.00,800.00,800.00,'ARBAMINCH  WWT','2015-11-19',NULL,NULL,1,NULL,'2026-11-17 07:02:15','2026-11-17 07:02:15',NULL),(180,4,'LOADER','LD-2232','BRAKE FLUID','PBR-EQ/16/00070','LIT',1.50,1300.00,1950.00,'AUGUSTA','2015-11-19',NULL,NULL,1,NULL,'2026-11-17 07:02:15','2026-11-17 07:02:15',NULL),(181,NULL,'ALL EQUIPMENT','TOP UP','ENGINEOIL20W50 VIBRATOR,WATERPUMP,FUELPUMP','PBR-EQ/16/00071','LIT',20.00,220.00,4400.00,'MEGA','2015-11-19',NULL,NULL,1,NULL,'2026-11-17 07:02:15','2026-11-17 07:02:15',NULL),(182,NULL,'SINO TRUCK','3-91934','CLUCH DISC','POEQ/16/00081','PCS',1.00,8000.00,9200.00,'DANIEL ABEBE','2015-11-19',NULL,NULL,1,NULL,'2026-11-17 07:02:15','2026-11-17 07:02:15',NULL),(183,NULL,'ISUZU TRUCK','3-A40967','OIL FILTER','POEQ/16/00083','PCS',3.00,2124.94,14727.38,'KAKI PLC','2015-11-19',NULL,NULL,1,NULL,'2026-11-17 07:02:15','2026-11-17 07:02:15',NULL),(184,NULL,'EQUIPMENT','','FUEL FILTER','','PCS',3.00,1209.63,4173.22,'','2026-11-17',NULL,NULL,1,NULL,'2026-11-17 07:02:15','2026-11-17 07:02:15',NULL),(185,NULL,'EQUIPMENT','','ELEMENT KIT  FUEL','','PCS',3.00,1009.79,3483.78,'','2026-11-17',NULL,NULL,1,NULL,'2026-11-17 07:02:15','2026-11-17 07:02:15',NULL),(186,NULL,'ISUZU TRUCK','3-A50982','OIL FILTER','POEQ/16/00084','PCS',3.00,2124.94,14727.38,'KAKI PLC','2015-11-19',NULL,NULL,1,NULL,'2026-11-17 07:02:15','2026-11-17 07:02:15',NULL),(187,NULL,'EQUIPMENT','','FUEL FILTER','','PCS',3.00,1209.63,4173.22,'','2026-11-17',NULL,NULL,1,NULL,'2026-11-17 07:02:15','2026-11-17 07:02:15',NULL),(188,NULL,'EQUIPMENT','','ELEMENT KIT  FUEL','','PCS',3.00,1009.79,3483.78,'','2026-11-17',NULL,NULL,1,NULL,'2026-11-17 07:02:15','2026-11-17 07:02:15',NULL),(189,NULL,'ISUZU TRUCK','3-A53404','OIL FILTER','POEQ/16/00085','PCS',3.00,2124.94,14727.38,'KAKI PLC','2015-11-19',NULL,NULL,1,NULL,'2026-11-17 07:02:15','2026-11-17 07:02:15',NULL),(190,NULL,'EQUIPMENT','','FUEL FILTER','','PCS',3.00,1209.63,4173.22,'','2026-11-17',NULL,NULL,1,NULL,'2026-11-17 07:02:15','2026-11-17 07:02:15',NULL),(191,NULL,'EQUIPMENT','','ELEMENT KIT  FUEL','','PCS',3.00,1009.79,3483.78,'','2026-11-17',NULL,NULL,1,NULL,'2026-11-17 07:02:15','2026-11-17 07:02:15',NULL),(192,NULL,'ISUZU TRUCK','3-B04259','OIL FILTER','POEQ/16/00086','PCS',3.00,2124.94,14727.38,'KAKI PLC','2015-11-19',NULL,NULL,1,NULL,'2026-11-17 07:02:15','2026-11-17 07:02:15',NULL),(193,NULL,'EQUIPMENT','','FUEL FILTER','','PCS',3.00,1209.63,4173.22,'','2026-11-17',NULL,NULL,1,NULL,'2026-11-17 07:02:15','2026-11-17 07:02:15',NULL),(194,NULL,'EQUIPMENT','','ELEMENT KIT  FUEL','','PCS',3.00,1009.79,3483.78,'','2026-11-17',NULL,NULL,1,NULL,'2026-11-17 07:02:15','2026-11-17 07:02:15',NULL),(195,NULL,'ISUZU TRUCK','3-30156','OIL FILTER','POEQ/16/00087','PCS',3.00,2124.94,14727.38,'KAKI PLC','2015-11-19',NULL,NULL,1,NULL,'2026-11-17 07:02:15','2026-11-17 07:02:15',NULL),(196,NULL,'EQUIPMENT','','FUEL FILTER','','PCS',3.00,1209.63,4173.22,'','2026-11-17',NULL,NULL,1,NULL,'2026-11-17 07:02:15','2026-11-17 07:02:15',NULL),(197,NULL,'EQUIPMENT','','ELEMENT KIT  FUEL','','PCS',3.00,1009.79,3483.78,'','2026-11-17',NULL,NULL,1,NULL,'2026-11-17 07:02:15','2026-11-17 07:02:15',NULL),(198,NULL,'ISUZU','3-A40967','WHEEL CYLINDER','POEQ/16/00088','KIT',1.00,1130.43,1300.00,'WELIYA','2015-11-19',NULL,NULL,1,NULL,'2026-11-17 07:02:15','2026-11-17 07:02:15',NULL),(199,NULL,'ALL EQUIPMENT','','GREASE ,CARMIX,LOADER,T.MIXER,750 MIXER','PBR-EQ/16/00073','KG',20.00,450.00,9000.00,'D/BIRHAN UNIVERSITY','2015-11-20',NULL,NULL,1,NULL,'2026-11-17 07:02:15','2026-11-17 07:02:15',NULL),(200,NULL,'WATER PUMP','PURCHASE','WATER PUMP CUP','PBR-EQ/16/00074','pcs',4.00,250.00,1900.00,'D/BIRHAN UNIVERSITY','2015-11-20',NULL,NULL,1,NULL,'2026-11-17 07:02:15','2026-11-17 07:02:15',NULL),(201,NULL,'BATCHING PLANT','','CLAMP DIA24','','PCS',6.00,150.00,1035.00,'','2026-11-17',NULL,NULL,1,NULL,'2026-11-17 07:02:15','2026-11-17 07:02:15',NULL),(202,4,'LOADER','LD-2232','DIFFERENTIAL OIL 140W','PBR-EQ/16/00075','LIT',25.00,220.00,6800.00,'AUGUSTA','2015-11-20',NULL,NULL,1,NULL,'2026-11-17 07:02:15','2026-11-17 07:02:15',NULL),(203,NULL,'EQUIPMENT','','BRAKE FILUD','','LIT',1.00,1300.00,1495.00,'','2026-11-17',NULL,NULL,1,NULL,'2026-11-17 07:02:15','2026-11-17 07:02:15',NULL),(204,NULL,'VIBRATOR','MAIN.','VIBRATOR HOSE','PBR-EQ/16/00076','PCS',1.00,800.00,1600.00,'WOMEN','2015-11-20',NULL,NULL,1,NULL,'2026-11-17 07:02:15','2026-11-17 07:02:15',NULL),(205,NULL,'WATER PUMP','','W.PUMP HOSE','','PCS',1.00,800.00,920.00,'','2026-11-17',NULL,NULL,1,NULL,'2026-11-17 07:02:15','2026-11-17 07:02:15',NULL),(206,11,'TOYOTA PICK UP','3-71050','NOZZLE SERVICE','EQ-MPR/16/00017','PCS',1.00,8500.00,13560.00,'MULAT','2015-11-21',NULL,NULL,1,NULL,'2026-11-17 07:02:15','2026-11-17 07:02:15',NULL),(207,NULL,'EQUIPMENT','','NOZZLE ASSEMBLY','','PCS',1.00,3500.00,4025.00,'','2026-11-17',NULL,NULL,1,NULL,'2026-11-17 07:02:15','2026-11-17 07:02:15',NULL),(208,3,'CAR MIX','CMM-0095','STARTOR MOTOR','EQ-MPR/16/00014','PCS',1.00,23000.00,25990.00,'DASALEGN','2015-11-18',NULL,NULL,1,NULL,'2026-11-17 07:02:15','2026-11-17 07:02:15',NULL),(209,NULL,'SUMMERSUBLE PUMP','MAIN.','SUMMERSUBLE PUMP','EQ-MPR/16/00018','PCS',1.00,3000.00,3450.00,'GIRMA','2015-11-21',NULL,NULL,1,NULL,'2026-11-17 07:02:15','2026-11-17 07:02:15',NULL),(210,2,'EXCAVATOR','EX-0601','HYDRAULIC OIL','PBR-EQ/16/00077','LIT',50.00,12500.00,13750.00,'AMBO REFERRAL','2015-11-21',NULL,NULL,1,NULL,'2026-11-17 07:02:15','2026-11-17 07:02:15',NULL),(211,NULL,'EQUIPMENT','','ENGINE OIL','','LIT',5.00,1250.00,7187.50,'','2026-11-17',NULL,NULL,1,NULL,'2026-11-17 07:02:15','2026-11-17 07:02:15',NULL),(212,11,'TOYOTA PICK UP','3-71050','PUMP AS FUEL','POEQ/16/00094','PCS',1.00,9000.00,10350.00,'ZELALEM','2015-11-21',NULL,NULL,1,NULL,'2026-11-17 07:02:15','2026-11-17 07:02:15',NULL),(213,NULL,'GENERATOR','aksa 132kva','oil filter -js2021','POEQ/16/00099','PCS',2.00,1400.00,10120.00,'auto zone','2015-11-21',NULL,NULL,1,NULL,'2026-11-17 07:02:15','2026-11-17 07:02:15',NULL),(214,NULL,'EQUIPMENT','','fuel filter -js1003','','PCS',2.00,1500.00,3450.00,'','2026-11-17',NULL,NULL,1,NULL,'2026-11-17 07:02:15','2026-11-17 07:02:15',NULL),(215,NULL,'EQUIPMENT','','fuel&water separator','','PCS',2.00,1500.00,3450.00,'','2026-11-17',NULL,NULL,1,NULL,'2026-11-17 07:02:15','2026-11-17 07:02:15',NULL),(216,11,'TOYOTA PICK UP','3-71050','pump as fuel','POEQ/16/00094','PCS',1.00,9000.00,10350.00,'ZELALEM','2015-11-21',NULL,NULL,1,NULL,'2026-11-17 07:02:15','2026-11-17 07:02:15',NULL),(217,NULL,'GENERATOR','CUMMINS','OIL FILTER-JS2021','POEQ/16/00101','PCS',1.00,1400.00,1610.00,'AUTO ZONE','2015-11-21',NULL,NULL,1,NULL,'2026-11-17 07:02:15','2026-11-17 07:02:15',NULL),(218,NULL,'EQUIPMENT','','FUEL FILTER-FS19652','POEQ/16/00102','PCS',1.00,3000.00,3450.00,'GETACHEW','2015-11-21',NULL,NULL,1,NULL,'2026-11-17 07:02:15','2026-11-17 07:02:15',NULL),(219,NULL,'MIXER 350','PURCHASE','PISTON RING','PBR-EQ/16/00078','PCS',1.00,3000.00,4200.00,'ARBAMINCH WWT','2015-11-21',NULL,NULL,1,NULL,'2026-11-17 07:02:15','2026-11-17 07:02:15',NULL),(220,NULL,'EQUIPMENT','','POSTISH','','PCS',1.00,1200.00,1380.00,'','2026-11-17',NULL,NULL,1,NULL,'2026-11-17 07:02:15','2026-11-17 07:02:15',NULL),(221,NULL,'MIXER 350','MAIN.','CRANK SHAFT TORNO','PBR-EQ/16/00079','PCS',1.00,600.00,3900.00,'ARBAMINCH WWT','2015-11-21',NULL,NULL,1,NULL,'2026-11-17 07:02:15','2026-11-17 07:02:15',NULL),(222,NULL,'MIXER 350','MAIN.','MAIN.LABOUR COST','','PCS',1.00,1500.00,1725.00,'','2026-11-17',NULL,NULL,1,NULL,'2026-11-17 07:02:15','2026-11-17 07:02:15',NULL),(223,NULL,'JUMPER COMPACTOR','MAIN.','MAIN.LABOUR COST','','PCS',1.00,1800.00,2070.00,'','2026-11-17',NULL,NULL,1,NULL,'2026-11-17 07:02:15','2026-11-17 07:02:15',NULL),(224,NULL,'VIBRATOR','MAIN.','HOSE MAIN.','PBR-EQ/16/00080','PCS',4.00,800.00,4000.00,'WOMEN','2015-11-21',NULL,NULL,1,NULL,'2026-11-17 07:02:15','2026-11-17 07:02:15',NULL),(225,NULL,'WATER PUMP','MAIN.','HOSE MAIN.','','PCS',1.00,800.00,920.00,'','2026-11-17',NULL,NULL,1,NULL,'2026-11-17 07:02:15','2026-11-17 07:02:15',NULL),(226,NULL,'ROLLO','CM-0993','GEARBOX OIL 90W','PBR-EQ/16/00081','LIT',5.00,220.00,1100.00,'MEGA','2015-11-21',NULL,NULL,1,NULL,'2026-11-17 07:02:15','2026-11-17 07:02:15',NULL),(227,6,'ROLLO','CM-0562','BRAKE FILUD','PBR-EQ/16/00082','LIT',1.00,1300.00,1300.00,'AUGUSTA','2015-11-21',NULL,NULL,1,NULL,'2026-11-17 07:02:15','2026-11-17 07:02:15',NULL),(228,NULL,'ALL EQUIPMENT','PETTY','MAIN PETTY CASH','PBR-EQ/16/00083','PCS',1.00,5000.00,5000.00,'ARBAMINCH WWT','2015-11-21',NULL,NULL,1,NULL,'2026-11-17 07:02:15','2026-11-17 07:02:15',NULL),(229,NULL,'TOYOTA PICK UP','3-A57479','AIR CLEANER','POEQ/16/00103','PCS',1.00,5304.35,6100.00,'BLM','2015-11-22',NULL,NULL,1,NULL,'2026-11-17 07:02:15','2026-11-17 07:02:15',NULL),(230,NULL,'SUZUKI SPRESSO','3-B49747','OIL FILTER','POEQ/16/00104','PCS',2.00,792.48,1822.70,'MOENCO','2015-11-22',NULL,NULL,1,NULL,'2026-11-17 07:02:15','2026-11-17 07:02:15',NULL),(231,NULL,'IVECO TRUCK','3-85965','CHANGE BUSHING','EQ-MPR/16/00015','PCS',4.00,400.00,1840.00,'AMARE AUTO','2015-11-19',NULL,NULL,1,NULL,'2026-11-17 07:02:15','2026-11-17 07:02:15',NULL),(232,NULL,'UD-TRUCK','3-99425','FUEL FILTER PRIMARY','POEQ/16/00108','pcs',1.00,1763.65,4353.91,'NYALA MOTOR','2015-11-24',NULL,NULL,1,NULL,'2026-11-17 07:02:15','2026-11-17 07:02:15',NULL),(233,NULL,'EQUIPMENT','','FUEL FILTER SEC.','','PCS',1.00,2022.36,2325.71,'','2026-11-17',NULL,NULL,1,NULL,'2026-11-17 07:02:15','2026-11-17 07:02:15',NULL),(234,NULL,'TOYOTA PICK UP','','REAR COMBINATION LIGHT','POEQ/16/00078','PCS',2.00,9000.00,20340.00,'ZELALEM','2015-11-18',NULL,NULL,1,NULL,'2026-11-17 07:02:15','2026-11-17 07:02:15',NULL),(235,NULL,'TOYOTA SURF','3-75048','RADIATOR ASSY','POEQ/16/00105','PCS',1.00,17000.00,19210.00,'CHUNI','2015-11-24',NULL,NULL,1,NULL,'2026-11-17 07:02:15','2026-11-17 07:02:15',NULL),(236,11,'TOYOTA PICK UP','3-71050','WIPER BLADE','POEQ/16/00106','PCS',1.00,1600.00,2530.00,'ZELALEM','2015-11-24',NULL,NULL,1,NULL,'2026-11-17 07:02:15','2026-11-17 07:02:15',NULL),(237,NULL,'EQUIPMENT','','BULB','','PCS',6.00,600.00,4140.00,'','2026-11-17',NULL,NULL,1,NULL,'2026-11-17 07:02:15','2026-11-17 07:02:15',NULL),(238,NULL,'DUMP TRUCK','3-31820','STARTOR MOTOR','POEQ/16/00107','PCS',1.00,13478.26,15230.43,'KOKOB WORK','2015-11-24',NULL,NULL,1,NULL,'2026-11-17 07:02:15','2026-11-17 07:02:15',NULL),(239,NULL,'LOWBED','3-61727','KEYWAY HOUSING MAINTENANCE','EQ-MPR/16/00020','PCS',1.00,2500.00,2750.00,'AHIMEDIN','0215-11-22',NULL,NULL,1,NULL,'2026-11-17 07:02:15','2026-11-17 07:02:15',NULL),(240,NULL,'MINIBUS','3-94774','REGULATOR ,CARBON BRUSH&DIOD CHANGE, LABOUR COST','EQ-MPR/16/00021','PCS',1.00,7900.00,8927.00,'DASALEGN BAYE','2015-11-24',NULL,NULL,1,NULL,'2026-11-17 07:02:15','2026-11-17 07:02:15',NULL),(241,NULL,'toyota serf','','radiator assy','','PCS',1.00,0.00,0.00,'','2026-11-17',NULL,NULL,1,NULL,'2026-11-17 07:02:15','2026-11-17 07:02:15',NULL);
+/*!40000 ALTER TABLE `equipment_maintenance_logs` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `equipment_resources`
+--
+
+DROP TABLE IF EXISTS `equipment_resources`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `equipment_resources` (
+  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
+  `boq_item_id` bigint unsigned NOT NULL,
+  `description` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `duration_days` decimal(10,2) DEFAULT NULL,
+  `number_of_units` int NOT NULL DEFAULT '1',
+  `total_hours` decimal(10,2) NOT NULL DEFAULT '0.00',
+  `rate_per_hour` decimal(15,2) NOT NULL DEFAULT '0.00',
+  `amount` decimal(15,2) NOT NULL DEFAULT '0.00',
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `equipment_resources_boq_item_id_foreign` (`boq_item_id`),
+  CONSTRAINT `equipment_resources_boq_item_id_foreign` FOREIGN KEY (`boq_item_id`) REFERENCES `boq_items` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB AUTO_INCREMENT=14 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `equipment_resources`
+--
+
+LOCK TABLES `equipment_resources` WRITE;
+/*!40000 ALTER TABLE `equipment_resources` DISABLE KEYS */;
+INSERT INTO `equipment_resources` VALUES (1,3,'Excavator (1.15m3 capacity)',5.00,1,40.00,1500.00,60000.00,'2026-07-13 17:04:07','2026-07-13 17:04:07'),(2,4,'Torch Set',30.00,10,2400.00,50.00,120000.00,'2026-07-13 17:04:07','2026-07-13 17:04:07'),(3,5,'Loader',2.00,1,16.00,2500.00,40000.00,'2026-07-13 17:04:07','2026-07-13 17:04:07'),(4,7,'Concrete Pump',10.00,1,80.00,3000.00,240000.00,'2026-07-13 17:04:07','2026-07-13 17:04:07'),(5,10,'hhh',1.00,1,8.00,5.00,40.00,'2026-07-15 18:56:23','2026-07-15 18:56:23'),(10,11,'Excavator',4.00,1,32.00,3500.00,112000.00,'2026-07-15 19:16:39','2026-07-15 19:16:39'),(11,11,'Concrete Mixer',8.00,2,128.00,900.00,115200.00,'2026-07-15 19:16:39','2026-07-15 19:16:39'),(12,11,'Plate Compactor',3.00,1,24.00,650.00,15600.00,'2026-07-15 19:16:39','2026-07-15 19:16:39'),(13,11,'Water Pump',5.00,1,40.00,500.00,20000.00,'2026-07-15 19:16:39','2026-07-15 19:16:39');
+/*!40000 ALTER TABLE `equipment_resources` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `failed_jobs`
+--
+
+DROP TABLE IF EXISTS `failed_jobs`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `failed_jobs` (
+  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
+  `uuid` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `connection` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `queue` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `payload` longtext COLLATE utf8mb4_unicode_ci NOT NULL,
+  `exception` longtext COLLATE utf8mb4_unicode_ci NOT NULL,
+  `failed_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `failed_jobs_uuid_unique` (`uuid`),
+  KEY `failed_jobs_connection_queue_failed_at_index` (`connection`,`queue`,`failed_at`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `failed_jobs`
+--
+
+LOCK TABLES `failed_jobs` WRITE;
+/*!40000 ALTER TABLE `failed_jobs` DISABLE KEYS */;
+/*!40000 ALTER TABLE `failed_jobs` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `ipc_items`
+--
+
+DROP TABLE IF EXISTS `ipc_items`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `ipc_items` (
+  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
+  `ipc_id` bigint unsigned NOT NULL,
+  `boq_item_id` bigint unsigned NOT NULL,
+  `contract_quantity` decimal(15,4) NOT NULL DEFAULT '0.0000',
+  `contract_amount` decimal(15,2) NOT NULL DEFAULT '0.00',
+  `previous_quantity` decimal(15,4) NOT NULL DEFAULT '0.0000',
+  `previous_amount` decimal(15,2) NOT NULL DEFAULT '0.00',
+  `current_quantity` decimal(15,4) NOT NULL DEFAULT '0.0000',
+  `current_amount` decimal(15,2) NOT NULL DEFAULT '0.00',
+  `to_date_quantity` decimal(15,4) NOT NULL DEFAULT '0.0000',
+  `to_date_amount` decimal(15,2) NOT NULL DEFAULT '0.00',
+  `percentage_complete` decimal(5,2) NOT NULL DEFAULT '0.00',
+  `remark` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `ipc_items_ipc_id_foreign` (`ipc_id`),
+  KEY `ipc_items_boq_item_id_foreign` (`boq_item_id`),
+  CONSTRAINT `ipc_items_boq_item_id_foreign` FOREIGN KEY (`boq_item_id`) REFERENCES `boq_items` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `ipc_items_ipc_id_foreign` FOREIGN KEY (`ipc_id`) REFERENCES `ipcs` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `ipc_items`
+--
+
+LOCK TABLES `ipc_items` WRITE;
+/*!40000 ALTER TABLE `ipc_items` DISABLE KEYS */;
+INSERT INTO `ipc_items` VALUES (1,1,4,5000.0000,5750000.00,0.0000,0.00,2000.0000,2300000.00,2000.0000,2300000.00,40.00,'40% Paid','2026-07-13 17:04:07','2026-07-13 17:04:07'),(2,2,4,5000.0000,5750000.00,2000.0000,2300000.00,1500.0000,1725000.00,3500.0000,4025000.00,70.00,'70% Paid','2026-07-13 17:04:07','2026-07-13 17:04:07'),(3,3,9,2500.0000,1125000.00,0.0000,0.00,1250.0000,562500.00,1250.0000,562500.00,50.00,'First payment','2026-07-13 17:04:07','2026-07-13 17:04:07'),(4,4,3,5234.0000,392550.00,0.0000,0.00,0.0000,0.00,0.0000,0.00,0.00,NULL,'2026-07-13 18:46:47','2026-07-13 18:46:47'),(5,4,5,5351.0000,668875.00,0.0000,0.00,0.0000,0.00,0.0000,0.00,0.00,NULL,'2026-07-13 18:46:47','2026-07-13 18:46:47'),(6,4,4,5000.0000,5750000.00,0.0000,0.00,0.0000,0.00,0.0000,0.00,0.00,NULL,'2026-07-13 18:46:47','2026-07-13 18:46:47'),(7,6,7,450.0000,3825000.00,0.0000,0.00,0.0000,0.00,0.0000,0.00,0.00,NULL,'2026-07-15 17:57:59','2026-07-15 17:57:59'),(8,6,9,2500.0000,1125000.00,0.0000,0.00,0.0000,0.00,0.0000,0.00,0.00,NULL,'2026-07-15 17:57:59','2026-07-15 17:57:59');
+/*!40000 ALTER TABLE `ipc_items` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `ipcs`
+--
+
+DROP TABLE IF EXISTS `ipcs`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `ipcs` (
+  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
+  `project_id` bigint unsigned NOT NULL,
+  `subcontractor_id` bigint unsigned NOT NULL,
+  `ipc_number` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `issue_number` int NOT NULL DEFAULT '1',
+  `ipc_date` date NOT NULL,
+  `period_start_date` date NOT NULL,
+  `period_end_date` date NOT NULL,
+  `total_previous_amount` decimal(15,2) NOT NULL DEFAULT '0.00',
+  `total_current_amount` decimal(15,2) NOT NULL DEFAULT '0.00',
+  `total_to_date_amount` decimal(15,2) NOT NULL DEFAULT '0.00',
+  `retention_percentage` decimal(5,2) NOT NULL DEFAULT '5.00',
+  `retention_amount` decimal(15,2) NOT NULL DEFAULT '0.00',
+  `net_payment_amount` decimal(15,2) NOT NULL DEFAULT '0.00',
+  `remarks` text COLLATE utf8mb4_unicode_ci,
+  `status` varchar(20) COLLATE utf8mb4_unicode_ci DEFAULT 'draft',
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  `deleted_at` timestamp NULL DEFAULT NULL,
+  `prepared_by` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `prepared_at` timestamp NULL DEFAULT NULL,
+  `checked_by` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `checked_at` timestamp NULL DEFAULT NULL,
+  `submitted_by` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `submitted_at` timestamp NULL DEFAULT NULL,
+  `approved_by` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `approved_at` timestamp NULL DEFAULT NULL,
+  `paid_by` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `paid_at` timestamp NULL DEFAULT NULL,
+  `rejected_by` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `rejected_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `ipcs_project_id_foreign` (`project_id`),
+  KEY `ipcs_subcontractor_id_foreign` (`subcontractor_id`),
+  CONSTRAINT `ipcs_project_id_foreign` FOREIGN KEY (`project_id`) REFERENCES `projects` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `ipcs_subcontractor_id_foreign` FOREIGN KEY (`subcontractor_id`) REFERENCES `subcontractors` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `ipcs`
+--
+
+LOCK TABLES `ipcs` WRITE;
+/*!40000 ALTER TABLE `ipcs` DISABLE KEYS */;
+INSERT INTO `ipcs` VALUES (1,1,1,'IPC-01',1,'2023-07-31','2023-07-01','2023-07-31',0.00,2300000.00,2300000.00,5.00,115000.00,2185000.00,'40% Completed','paid','2026-07-13 17:04:07','2026-07-15 17:44:52',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL),(2,1,1,'IPC-02',2,'2023-09-30','2023-09-01','2023-09-30',2300000.00,1725000.00,4025000.00,5.00,201250.00,3823750.00,'70% Completed','paid','2026-07-13 17:04:07','2026-07-15 17:48:19',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL),(3,2,3,'IPC-01',1,'2023-08-31','2023-08-01','2023-08-31',0.00,562500.00,562500.00,5.00,28125.00,534375.00,'50% Completed','paid','2026-07-13 17:04:07','2026-07-13 18:29:34',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL),(4,1,1,'IPC-004',1,'2026-07-13','2025-01-14','2028-05-15',0.00,0.00,0.00,5.00,0.00,0.00,NULL,'paid','2026-07-13 18:46:47','2026-07-13 18:52:31',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL),(6,2,3,'IPC-005',1,'2026-07-15','2026-07-01','2026-07-31',0.00,0.00,0.00,5.00,0.00,0.00,NULL,'paid','2026-07-15 17:57:59','2026-11-17 05:30:43',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,'System Administrator','2026-11-17 05:30:43',NULL,NULL);
+/*!40000 ALTER TABLE `ipcs` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `job_batches`
+--
+
+DROP TABLE IF EXISTS `job_batches`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `job_batches` (
+  `id` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `name` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `total_jobs` int NOT NULL,
+  `pending_jobs` int NOT NULL,
+  `failed_jobs` int NOT NULL,
+  `failed_job_ids` longtext COLLATE utf8mb4_unicode_ci NOT NULL,
+  `options` mediumtext COLLATE utf8mb4_unicode_ci,
+  `cancelled_at` int DEFAULT NULL,
+  `created_at` int NOT NULL,
+  `finished_at` int DEFAULT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `job_batches`
+--
+
+LOCK TABLES `job_batches` WRITE;
+/*!40000 ALTER TABLE `job_batches` DISABLE KEYS */;
+/*!40000 ALTER TABLE `job_batches` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `jobs`
+--
+
+DROP TABLE IF EXISTS `jobs`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `jobs` (
+  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
+  `queue` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `payload` longtext COLLATE utf8mb4_unicode_ci NOT NULL,
+  `attempts` smallint unsigned NOT NULL,
+  `reserved_at` int unsigned DEFAULT NULL,
+  `available_at` int unsigned NOT NULL,
+  `created_at` int unsigned NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `jobs_queue_index` (`queue`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `jobs`
+--
+
+LOCK TABLES `jobs` WRITE;
+/*!40000 ALTER TABLE `jobs` DISABLE KEYS */;
+/*!40000 ALTER TABLE `jobs` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `labor_resources`
+--
+
+DROP TABLE IF EXISTS `labor_resources`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `labor_resources` (
+  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
+  `boq_item_id` bigint unsigned NOT NULL,
+  `trade_name` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `number_of_workers` decimal(10,2) NOT NULL DEFAULT '0.00',
+  `total_hours` decimal(10,2) NOT NULL DEFAULT '0.00',
+  `wage_per_day` decimal(10,2) NOT NULL DEFAULT '0.00',
+  `amount` decimal(15,2) NOT NULL DEFAULT '0.00',
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `labor_resources_boq_item_id_foreign` (`boq_item_id`),
+  CONSTRAINT `labor_resources_boq_item_id_foreign` FOREIGN KEY (`boq_item_id`) REFERENCES `boq_items` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB AUTO_INCREMENT=21 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `labor_resources`
+--
+
+LOCK TABLES `labor_resources` WRITE;
+/*!40000 ALTER TABLE `labor_resources` DISABLE KEYS */;
+INSERT INTO `labor_resources` VALUES (1,3,'Equipment Operator',1.00,40.00,800.00,4000.00,'2026-07-13 17:04:07','2026-07-13 17:04:07'),(2,3,'Grease Boy',1.00,40.00,400.00,2000.00,'2026-07-13 17:04:07','2026-07-13 17:04:07'),(3,4,'Water Proofing Applicator',10.00,2400.00,800.00,240000.00,'2026-07-13 17:04:07','2026-07-13 17:04:07'),(4,4,'Assistant',5.00,1200.00,500.00,75000.00,'2026-07-13 17:04:07','2026-07-13 17:04:07'),(5,5,'Assistant Foreman',1.00,16.00,600.00,1200.00,'2026-07-13 17:04:07','2026-07-13 17:04:07'),(6,7,'Carpenter',8.00,2880.00,700.00,252000.00,'2026-07-13 17:04:07','2026-07-13 17:04:07'),(7,7,'Steel Fixer',6.00,2160.00,750.00,202500.00,'2026-07-13 17:04:07','2026-07-13 17:04:07'),(8,9,'Electrician',4.00,1920.00,900.00,216000.00,'2026-07-13 17:04:07','2026-07-13 17:04:07'),(9,10,'rzsggggg',1.00,8.00,1000.00,1000.00,'2026-07-15 18:56:23','2026-07-15 18:56:23'),(14,11,'Cement OPCMason',6.00,576.00,900.00,388800.00,'2026-07-15 19:16:39','2026-07-15 19:16:39'),(15,11,'Carpenter',4.00,384.00,950.00,182400.00,'2026-07-15 19:16:39','2026-07-15 19:16:39'),(16,11,'Steel Fixer',5.00,480.00,1000.00,300000.00,'2026-07-15 19:16:39','2026-07-15 19:16:39'),(17,11,'General Laborer',8.00,768.00,700.00,537600.00,'2026-07-15 19:16:39','2026-07-15 19:16:39'),(20,1,'Cement OPCMason',1.00,8.00,500.00,500.00,'2026-07-15 19:18:02','2026-07-15 19:18:02');
+/*!40000 ALTER TABLE `labor_resources` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `material_deliveries`
+--
+
+DROP TABLE IF EXISTS `material_deliveries`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `material_deliveries` (
+  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
+  `project_id` bigint unsigned NOT NULL,
+  `subcontractor_id` bigint unsigned DEFAULT NULL,
+  `boq_item_id` bigint unsigned DEFAULT NULL,
+  `item_description` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `unit` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `quantity` decimal(15,4) NOT NULL,
+  `unit_multiplier` decimal(10,4) NOT NULL DEFAULT '1.0000',
+  `converted_quantity` decimal(15,4) DEFAULT NULL,
+  `gate_pass_number` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `delivery_date` date NOT NULL,
+  `source_location` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `remarks` text COLLATE utf8mb4_unicode_ci,
+  `status` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'recorded',
+  `created_by` bigint unsigned DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  `confirmed_by` bigint unsigned DEFAULT NULL,
+  `confirmed_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `material_deliveries_project_id_foreign` (`project_id`),
+  KEY `material_deliveries_subcontractor_id_foreign` (`subcontractor_id`),
+  KEY `material_deliveries_boq_item_id_foreign` (`boq_item_id`),
+  KEY `material_deliveries_created_by_foreign` (`created_by`),
+  KEY `material_deliveries_confirmed_by_foreign` (`confirmed_by`),
+  CONSTRAINT `material_deliveries_boq_item_id_foreign` FOREIGN KEY (`boq_item_id`) REFERENCES `boq_items` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `material_deliveries_confirmed_by_foreign` FOREIGN KEY (`confirmed_by`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `material_deliveries_created_by_foreign` FOREIGN KEY (`created_by`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `material_deliveries_project_id_foreign` FOREIGN KEY (`project_id`) REFERENCES `projects` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `material_deliveries_subcontractor_id_foreign` FOREIGN KEY (`subcontractor_id`) REFERENCES `subcontractors` (`id`) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `material_deliveries`
+--
+
+LOCK TABLES `material_deliveries` WRITE;
+/*!40000 ALTER TABLE `material_deliveries` DISABLE KEYS */;
+/*!40000 ALTER TABLE `material_deliveries` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `material_resources`
+--
+
+DROP TABLE IF EXISTS `material_resources`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `material_resources` (
+  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
+  `boq_item_id` bigint unsigned NOT NULL,
+  `description` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `unit` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `quantity` decimal(15,4) NOT NULL DEFAULT '0.0000',
+  `unit_rate` decimal(15,2) NOT NULL DEFAULT '0.00',
+  `amount` decimal(15,2) NOT NULL DEFAULT '0.00',
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `material_resources_boq_item_id_foreign` (`boq_item_id`),
+  CONSTRAINT `material_resources_boq_item_id_foreign` FOREIGN KEY (`boq_item_id`) REFERENCES `boq_items` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB AUTO_INCREMENT=20 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `material_resources`
+--
+
+LOCK TABLES `material_resources` WRITE;
+/*!40000 ALTER TABLE `material_resources` DISABLE KEYS */;
+INSERT INTO `material_resources` VALUES (1,4,'APP Modified Water Proofing Membrane (4mm)','roll',250.0000,15000.00,3750000.00,'2026-07-13 17:04:07','2026-07-13 17:04:07'),(2,4,'Primer','liter',1000.0000,350.00,350000.00,'2026-07-13 17:04:07','2026-07-13 17:04:07'),(3,4,'Gas for torch','cylinder',50.0000,2500.00,125000.00,'2026-07-13 17:04:07','2026-07-13 17:04:07'),(4,5,'Select Material','m3',5725.5700,460.00,2633762.20,'2026-07-13 17:04:07','2026-07-13 17:04:07'),(5,7,'Ready Mix Concrete C-25','m3',450.0000,5500.00,2475000.00,'2026-07-13 17:04:07','2026-07-13 17:04:07'),(6,7,'Reinforcement Steel','kg',45000.0000,85.00,3825000.00,'2026-07-13 17:04:07','2026-07-13 17:04:07'),(7,9,'PVC Conduit 20mm','m',2500.0000,45.00,112500.00,'2026-07-13 17:04:07','2026-07-13 17:04:07'),(8,9,'Electrical Wire 2.5mm²','m',5000.0000,35.00,175000.00,'2026-07-13 17:04:07','2026-07-13 17:04:07'),(9,10,'gggg','',1.0000,5.00,5.00,'2026-07-15 18:56:23','2026-07-15 18:56:23'),(15,11,'Cement OPC','bag',800.0000,1150.00,920000.00,'2026-07-15 19:16:39','2026-07-15 19:16:39'),(16,11,'Sand','m2',60.0000,1900.00,114000.00,'2026-07-15 19:16:39','2026-07-15 19:16:39'),(17,11,'Crushed Aggregate','m2',90.0000,2300.00,207000.00,'2026-07-15 19:16:39','2026-07-15 19:16:39'),(18,11,'Reinforcement Steel 16mm','kg',950.0000,108.00,102600.00,'2026-07-15 19:16:39','2026-07-15 19:16:39'),(19,11,'Binding Wire','kg',150.0000,170.00,25500.00,'2026-07-15 19:16:39','2026-07-15 19:16:39');
+/*!40000 ALTER TABLE `material_resources` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `migrations`
+--
+
+DROP TABLE IF EXISTS `migrations`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `migrations` (
+  `id` int unsigned NOT NULL AUTO_INCREMENT,
+  `migration` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `batch` int NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=41 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `migrations`
+--
+
+LOCK TABLES `migrations` WRITE;
+/*!40000 ALTER TABLE `migrations` DISABLE KEYS */;
+INSERT INTO `migrations` VALUES (1,'0001_01_01_000000_create_users_table',1),(2,'0001_01_01_000001_create_cache_table',1),(3,'0001_01_01_000002_create_jobs_table',1),(4,'2024_01_01_000011_add_fields_to_users_table',1),(5,'2024_01_01_000012_create_activity_logs_table',1),(6,'2024_01_01_000013_create_settings_table',1),(7,'2024_01_01_000030_create_roles_table',1),(8,'2024_01_01_000031_add_profile_fields_to_users',1),(9,'2026_07_13_182620_create_projects_table',1),(10,'2026_07_13_182715_create_subcontractors_table',1),(11,'2026_07_13_182734_create_cost_categories_table',1),(12,'2026_07_13_182751_create_boq_items_table',1),(13,'2026_07_13_182813_create_labor_resources_table',1),(14,'2026_07_13_182827_create_material_resources_table',1),(15,'2026_07_13_182852_create_equipment_resources_table',1),(16,'2026_07_13_182907_create_ipcs_table',1),(17,'2026_07_13_182923_create_ipc_items_table',1),(18,'2026_07_13_182941_create_project_subcontractor_table',1),(19,'2024_01_01_000040_create_tax_settings_table',2),(20,'2024_01_01_000050_create_actual_costs_table',3),(21,'2024_01_01_000060_create_documents_table',4),(22,'2024_01_01_000070_create_notifications_table',5),(23,'2024_01_01_000080_add_approval_fields_to_ipcs',6),(24,'2024_01_01_000090_update_ipc_status_enum',7),(25,'2024_01_01_000100_add_rejected_fields_to_ipcs',8),(26,'2024_01_01_000110_create_workflow_permissions_table',9),(27,'2024_01_01_000120_create_project_user_table',10),(28,'2024_01_01_000200_add_workflow_columns_to_ipcs',11),(29,'2024_01_01_000300_create_material_deliveries_table',11),(30,'2024_01_01_000301_create_quantity_takeoffs_table',11),(31,'2024_01_01_000302_create_document_numbers_table',11),(32,'2024_01_01_000303_create_audit_trails_table',11),(33,'2024_01_01_000400_create_company_settings_table',11),(34,'2024_01_01_000500_add_workflow_fields',11),(35,'2024_01_01_000600_create_takeoff_sheets_table',11),(36,'2026_07_21_113154_add_description_to_takeoff_measurements_table',11),(37,'2026_07_28_000690_add_location_and_consultant_to_projects_table',12),(38,'2026_07_28_000700_create_contractual_reports_tables',12),(39,'2026_07_28_000800_create_equipment_and_maintenance_tables',13),(40,'2026_07_28_000900_add_custom_permissions_to_users_table',14);
+/*!40000 ALTER TABLE `migrations` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `notifications`
+--
+
+DROP TABLE IF EXISTS `notifications`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `notifications` (
+  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
+  `user_id` bigint unsigned NOT NULL,
+  `type` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `title` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `message` text COLLATE utf8mb4_unicode_ci NOT NULL,
+  `icon` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'bell',
+  `color` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'primary',
+  `link` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `is_read` tinyint(1) NOT NULL DEFAULT '0',
+  `read_at` timestamp NULL DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `notifications_user_id_foreign` (`user_id`),
+  CONSTRAINT `notifications_user_id_foreign` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB AUTO_INCREMENT=19 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `notifications`
+--
+
+LOCK TABLES `notifications` WRITE;
+/*!40000 ALTER TABLE `notifications` DISABLE KEYS */;
+INSERT INTO `notifications` VALUES (1,1,'ipc_submitted','IPC-001 Submitted for Approval','Water proofing IPC has been submitted and requires your approval.','file-invoice','warning','/ipcs/1',1,'2026-07-29 07:46:12','2026-07-13 18:07:01','2026-07-29 07:46:12'),(2,1,'budget_exceeded','Budget Alert: Site Clearance','Actual cost has exceeded budget for Site Clearance item.','exclamation-triangle','danger','/boq-items/1',1,'2026-07-13 18:13:16','2026-07-13 18:07:01','2026-07-13 18:13:16'),(3,1,'deadline','Project Deadline Approaching','Megenagna Bus Terminal project due in 15 days.','clock','info','/projects/1',1,'2026-07-13 18:13:22','2026-07-13 18:07:01','2026-07-13 18:13:22'),(4,1,'ipc_submitted','IPC-001 Submitted for Approval','Water proofing IPC has been submitted and requires your approval.','file-invoice','warning','/ipcs/1',1,'2026-07-15 17:32:58','2026-07-13 18:14:53','2026-07-15 17:32:58'),(5,1,'budget_exceeded','Budget Alert: Site Clearance','Actual cost has exceeded budget for Site Clearance item.','exclamation-triangle','danger','/boq-items/1',1,'2026-07-13 18:15:04','2026-07-13 18:14:53','2026-07-13 18:15:04'),(6,1,'deadline','Project Deadline Approaching','Megenagna Bus Terminal project due in 15 days.','clock','info','/projects/1',1,'2026-07-13 19:18:55','2026-07-13 18:14:53','2026-07-13 19:18:55'),(7,2,'ipc_submitted','IPC Submitted','IPC IPC-004 submitted by System Administrator','file-invoice','warning','http://127.0.0.1:8001/ipcs/4',1,'2026-07-15 19:20:14','2026-07-13 18:52:19','2026-07-15 19:20:14'),(8,1,'ipc_approved','IPC Approved','IPC IPC-004 approved by System Administrator','check-circle','success','http://127.0.0.1:8001/ipcs/4',1,'2026-07-29 07:45:56','2026-07-13 18:52:26','2026-07-29 07:45:56'),(9,2,'ipc_approved','IPC Approved','IPC IPC-004 approved by System Administrator','check-circle','success','http://127.0.0.1:8001/ipcs/4',1,'2026-07-15 19:20:14','2026-07-13 18:52:26','2026-07-15 19:20:14'),(10,3,'ipc_approved','IPC Approved','IPC IPC-004 approved by System Administrator','check-circle','success','http://127.0.0.1:8001/ipcs/4',1,'2026-07-13 19:19:56','2026-07-13 18:52:26','2026-07-13 19:19:56'),(11,4,'ipc_approved','IPC Approved','IPC IPC-004 approved by System Administrator','check-circle','success','http://127.0.0.1:8001/ipcs/4',0,NULL,'2026-07-13 18:52:26','2026-07-13 18:52:26'),(12,5,'ipc_approved','IPC Approved','IPC IPC-004 approved by System Administrator','check-circle','success','http://127.0.0.1:8001/ipcs/4',0,NULL,'2026-07-13 18:52:26','2026-07-13 18:52:26'),(13,2,'ipc_submitted','Certificate Submitted','IPC IPC-005 submitted for approval','file-invoice','warning','http://127.0.0.1:8000/ipcs/6',1,'2026-07-15 19:20:14','2026-07-15 18:04:04','2026-07-15 19:20:14'),(14,1,'ipc_approved','Certificate Approved','IPC IPC-005 has been approved','check-circle','success','http://127.0.0.1:8000/ipcs/6',1,'2026-07-29 07:45:47','2026-07-15 18:30:29','2026-07-29 07:45:47'),(15,2,'ipc_approved','Certificate Approved','IPC IPC-005 has been approved','check-circle','success','http://127.0.0.1:8000/ipcs/6',1,'2026-07-15 19:20:19','2026-07-15 18:30:29','2026-07-15 19:20:19'),(16,3,'ipc_approved','Certificate Approved','IPC IPC-005 has been approved','check-circle','success','http://127.0.0.1:8000/ipcs/6',0,NULL,'2026-07-15 18:30:29','2026-07-15 18:30:29'),(17,4,'ipc_approved','Certificate Approved','IPC IPC-005 has been approved','check-circle','success','http://127.0.0.1:8000/ipcs/6',0,NULL,'2026-07-15 18:30:29','2026-07-15 18:30:29'),(18,5,'ipc_approved','Certificate Approved','IPC IPC-005 has been approved','check-circle','success','http://127.0.0.1:8000/ipcs/6',0,NULL,'2026-07-15 18:30:29','2026-07-15 18:30:29');
+/*!40000 ALTER TABLE `notifications` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `password_reset_tokens`
+--
+
+DROP TABLE IF EXISTS `password_reset_tokens`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `password_reset_tokens` (
+  `email` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `token` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`email`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `password_reset_tokens`
+--
+
+LOCK TABLES `password_reset_tokens` WRITE;
+/*!40000 ALTER TABLE `password_reset_tokens` DISABLE KEYS */;
+/*!40000 ALTER TABLE `password_reset_tokens` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `pm_schedule_items`
+--
+
+DROP TABLE IF EXISTS `pm_schedule_items`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `pm_schedule_items` (
+  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
+  `pm_schedule_id` bigint unsigned NOT NULL,
+  `equipment_id` bigint unsigned DEFAULT NULL,
+  `category` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `equipment_type` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `make` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `model` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `plate_serial_no` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `serial_no` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `location` varchar(150) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `last_service_reading` decimal(14,2) DEFAULT NULL,
+  `last_service_date` date DEFAULT NULL,
+  `last_service_type` varchar(50) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `next_service_reading` decimal(14,2) DEFAULT NULL,
+  `next_service_type` varchar(50) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `current_reading` decimal(14,2) DEFAULT NULL,
+  `current_reading_date` date DEFAULT NULL,
+  `remain_reading` decimal(14,2) DEFAULT NULL,
+  `service_status` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'Normal',
+  `remark` text COLLATE utf8mb4_unicode_ci,
+  `sort_order` int NOT NULL DEFAULT '0',
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `pm_schedule_items_pm_schedule_id_foreign` (`pm_schedule_id`),
+  KEY `pm_schedule_items_equipment_id_foreign` (`equipment_id`),
+  CONSTRAINT `pm_schedule_items_equipment_id_foreign` FOREIGN KEY (`equipment_id`) REFERENCES `equipment` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `pm_schedule_items_pm_schedule_id_foreign` FOREIGN KEY (`pm_schedule_id`) REFERENCES `pm_schedules` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB AUTO_INCREMENT=15 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `pm_schedule_items`
+--
+
+LOCK TABLES `pm_schedule_items` WRITE;
+/*!40000 ALTER TABLE `pm_schedule_items` DISABLE KEYS */;
+INSERT INTO `pm_schedule_items` VALUES (1,1,1,'EARTH MOVING MACHINE','EXCAVATOR','KOMATSU','PC200-8','EX-0889','KMTPC200-98231','Central Workshop',8327.00,'2026-08-15','B',8500.00,'C',8450.00,'2026-11-17',50.00,'Due','Service due in 50 hr/km',0,'2026-11-17 06:59:21','2026-11-17 06:59:21'),(2,1,2,'EARTH MOVING MACHINE','EXCAVATOR','CATERPILLAR','CAT 320D','EX-0601','CAT0320D-77218','Ambo Referral Project',8958.00,'2026-09-01','A',9100.00,'B',9120.00,'2026-11-17',-20.00,'Overdue','Service critically overdue, schedule filter & oil change immediately',1,'2026-11-17 06:59:21','2026-11-17 06:59:21'),(3,1,3,'EARTH MOVING MACHINE','CARMIX','CARMIX','3.5 TT','CMM-0095','CMX35-44109','Ambo Referral Project',4000.00,'2026-07-20','A',4500.00,'B',4320.00,'2026-11-17',180.00,'Normal','Operational',2,'2026-11-17 06:59:21','2026-11-17 06:59:21'),(4,1,4,'EARTH MOVING MACHINE','BACKHOE LOADER','JCB','3CX','LD-2232','JCB3CX-88412','Arba Minch Project',5800.00,'2026-08-10','A',6250.00,'B',6100.00,'2026-11-17',150.00,'Normal','Operational',3,'2026-11-17 06:59:21','2026-11-17 06:59:21'),(5,1,5,'EARTH MOVING MACHINE','WHEEL LOADER','LIUGONG','CLG 856','LD-1633','LG856-33910','Mega Project',7200.00,'2026-07-15','B',7700.00,'A',7450.00,'2026-11-17',250.00,'Normal','Operational',4,'2026-11-17 06:59:21','2026-11-17 06:59:21'),(6,1,6,'EARTH MOVING MACHINE','ROLLER COMPACTOR','DYNAPAC','CA250D','CM-0562','DYN250-1092','South Campus Project',5650.00,'2026-06-25','A',5900.00,'B',5890.00,'2026-11-17',10.00,'Due','Service due in 50 hr/km',5,'2026-11-17 06:59:21','2026-11-17 06:59:21'),(7,1,7,'DUMP TRUCK','DUMP TRUCK','SINOTRUK','HOWO 371','3-50327','SINO371-992381','Central Workshop',119500.00,'2026-08-01','B2',125000.00,'C2',124500.00,'2026-11-17',500.00,'Normal','Operational',6,'2026-11-17 06:59:21','2026-11-17 06:59:21'),(8,1,8,'DUMP TRUCK','WATER TRUCK','ISUZU','FSR 10,000L','3-32675','ISZFSR-33410','Bishoftu Site',93000.00,'2026-07-12','A2',100000.00,'B2',98400.00,'2026-11-17',1600.00,'Normal','Operational',7,'2026-11-17 06:59:21','2026-11-17 06:59:21'),(9,1,9,'DUMP TRUCK','DUMP TRUCK','IVECO','TRAKKER 380','3-85963','IVCTRK-99120','Mega Project',160000.00,'2026-08-18','A2',165000.00,'B2',165800.00,'2026-11-17',-800.00,'Overdue','Service critically overdue, schedule filter & oil change immediately',8,'2026-11-17 06:59:21','2026-11-17 06:59:21'),(10,1,10,'LIGHT VEHICLES','PICK UP','TOYOTA','HILUX D4D 4WD','3-A44801','TOYHLX-551029','Central Depot',83400.00,'2026-08-20','A2',90000.00,'B2',88400.00,'2026-11-17',1600.00,'Normal','Operational',9,'2026-11-17 06:59:21','2026-11-17 06:59:21'),(11,1,11,'LIGHT VEHICLES','PICK UP','TOYOTA','HILUX DOUBLE CABIN','3-71050','TOYHLX-901182','Ambo Referral Project',107000.00,'2026-07-28','A2',112000.00,'B2',112300.00,'2026-11-17',-300.00,'Overdue','Service critically overdue, schedule filter & oil change immediately',10,'2026-11-17 06:59:21','2026-11-17 06:59:21'),(12,1,12,'LIGHT VEHICLES','PICK UP','MITSUBISHI','L200 SPORTERO','2-A47404','MITL200-44910','Central Workshop',135000.00,'2026-06-15','C2',140000.00,'A2',142000.00,'2026-11-17',-2000.00,'Overdue','Service critically overdue, schedule filter & oil change immediately',11,'2026-11-17 06:59:21','2026-11-17 06:59:21'),(13,1,13,'AUXILIARY','GENERATOR','AKSA','APD 132','132 KVA','AKS132-77291','Central Depot',2950.00,'2026-08-05','A',3200.00,'B',3120.00,'2026-11-17',80.00,'Normal','Operational',12,'2026-11-17 06:59:21','2026-11-17 06:59:21'),(14,1,14,'AUXILIARY','GENERATOR','IVECO','GE 60','60 KVA','IVC60-22104','Central Workshop',4300.00,'2026-07-10','A',4550.00,'B',4560.00,'2026-11-17',-10.00,'Overdue','Service critically overdue, schedule filter & oil change immediately',13,'2026-11-17 06:59:21','2026-11-17 06:59:21');
+/*!40000 ALTER TABLE `pm_schedule_items` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `pm_schedules`
+--
+
+DROP TABLE IF EXISTS `pm_schedules`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `pm_schedules` (
+  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
+  `schedule_code` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `title` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'Preventive Maintenance Schedule',
+  `document_code` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'OF/EAMD/074',
+  `issue_no` varchar(20) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '1',
+  `page_no` varchar(30) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'Page 1 of 1',
+  `project_id` bigint unsigned DEFAULT NULL,
+  `project_location` varchar(150) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `schedule_date` date DEFAULT NULL,
+  `period_start` date DEFAULT NULL,
+  `period_end` date DEFAULT NULL,
+  `status` enum('draft','submitted','checked','approved','rejected') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'draft',
+  `prepared_by` bigint unsigned DEFAULT NULL,
+  `prepared_name` varchar(150) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `prepared_at` timestamp NULL DEFAULT NULL,
+  `checked_by` bigint unsigned DEFAULT NULL,
+  `checked_name` varchar(150) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `checked_at` timestamp NULL DEFAULT NULL,
+  `approved_by` bigint unsigned DEFAULT NULL,
+  `approved_name` varchar(150) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `approved_at` timestamp NULL DEFAULT NULL,
+  `rejection_reason` text COLLATE utf8mb4_unicode_ci,
+  `notes` text COLLATE utf8mb4_unicode_ci,
+  `created_by` bigint unsigned DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  `deleted_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `pm_schedules_schedule_code_unique` (`schedule_code`),
+  KEY `pm_schedules_project_id_foreign` (`project_id`),
+  KEY `pm_schedules_prepared_by_foreign` (`prepared_by`),
+  KEY `pm_schedules_checked_by_foreign` (`checked_by`),
+  KEY `pm_schedules_approved_by_foreign` (`approved_by`),
+  KEY `pm_schedules_created_by_foreign` (`created_by`),
+  CONSTRAINT `pm_schedules_approved_by_foreign` FOREIGN KEY (`approved_by`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `pm_schedules_checked_by_foreign` FOREIGN KEY (`checked_by`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `pm_schedules_created_by_foreign` FOREIGN KEY (`created_by`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `pm_schedules_prepared_by_foreign` FOREIGN KEY (`prepared_by`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `pm_schedules_project_id_foreign` FOREIGN KEY (`project_id`) REFERENCES `projects` (`id`) ON DELETE SET NULL
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `pm_schedules`
+--
+
+LOCK TABLES `pm_schedules` WRITE;
+/*!40000 ALTER TABLE `pm_schedules` DISABLE KEYS */;
+INSERT INTO `pm_schedules` VALUES (1,'PMS-2026-W46','Preventive Maintenance Schedule','OF/EAMD/074','1','Page 1 of 1',1,'All Sites / Central Workshop','2026-11-17','2026-11-16','2026-11-22','approved',1,'System Administrator','2026-11-15 06:59:21',1,'Equipment Manager','2026-11-16 06:59:21',1,'Head of EAMD','2026-11-17 06:59:21',NULL,NULL,1,'2026-11-17 06:59:21','2026-11-17 06:59:21',NULL),(2,'PMS-20261117-100155','Preventive Maintenance Schedule','OF/EAMD/074','1','Page 1 of 1',NULL,NULL,'2026-11-17',NULL,NULL,'draft',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,1,'2026-11-17 07:01:55','2026-11-17 07:01:55',NULL);
+/*!40000 ALTER TABLE `pm_schedules` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `project_subcontractor`
+--
+
+DROP TABLE IF EXISTS `project_subcontractor`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `project_subcontractor` (
+  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
+  `project_id` bigint unsigned NOT NULL,
+  `subcontractor_id` bigint unsigned NOT NULL,
+  `contract_amount` decimal(15,2) NOT NULL DEFAULT '0.00',
+  `contract_start_date` date DEFAULT NULL,
+  `contract_end_date` date DEFAULT NULL,
+  `scope_of_work` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `project_subcontractor_project_id_foreign` (`project_id`),
+  KEY `project_subcontractor_subcontractor_id_foreign` (`subcontractor_id`),
+  CONSTRAINT `project_subcontractor_project_id_foreign` FOREIGN KEY (`project_id`) REFERENCES `projects` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `project_subcontractor_subcontractor_id_foreign` FOREIGN KEY (`subcontractor_id`) REFERENCES `subcontractors` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `project_subcontractor`
+--
+
+LOCK TABLES `project_subcontractor` WRITE;
+/*!40000 ALTER TABLE `project_subcontractor` DISABLE KEYS */;
+INSERT INTO `project_subcontractor` VALUES (1,1,1,5750000.00,'2023-06-01','2024-06-30','Water proofing works for foundation and basement','2026-07-13 17:04:07','2026-07-13 17:04:07'),(3,2,3,4500000.00,'2023-06-01','2024-08-31','Complete electrical installation','2026-07-13 17:04:07','2026-07-13 17:04:07'),(4,2,4,2800000.00,'2023-08-01','2024-07-31','Plastering and finishing works','2026-07-13 17:04:07','2026-07-13 17:04:07'),(5,1,2,5000000.00,NULL,NULL,NULL,'2026-07-13 19:03:31','2026-07-13 19:03:49');
+/*!40000 ALTER TABLE `project_subcontractor` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `project_user`
+--
+
+DROP TABLE IF EXISTS `project_user`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `project_user` (
+  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
+  `project_id` bigint unsigned NOT NULL,
+  `user_id` bigint unsigned NOT NULL,
+  `role` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `assigned_date` date DEFAULT NULL,
+  `end_date` date DEFAULT NULL,
+  `is_active` tinyint(1) NOT NULL DEFAULT '1',
+  `responsibilities` text COLLATE utf8mb4_unicode_ci,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `project_user_project_id_user_id_role_unique` (`project_id`,`user_id`,`role`),
+  KEY `project_user_user_id_foreign` (`user_id`),
+  CONSTRAINT `project_user_project_id_foreign` FOREIGN KEY (`project_id`) REFERENCES `projects` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `project_user_user_id_foreign` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `project_user`
+--
+
+LOCK TABLES `project_user` WRITE;
+/*!40000 ALTER TABLE `project_user` DISABLE KEYS */;
+INSERT INTO `project_user` VALUES (1,1,2,'project_manager','2026-07-15',NULL,1,NULL,'2026-07-15 19:18:52','2026-07-15 19:18:52'),(2,1,6,'site_engineer','2026-11-17',NULL,1,NULL,'2026-11-17 07:39:52','2026-11-17 07:39:52'),(3,4,1,'project_manager','2026-11-18',NULL,1,NULL,'2026-11-18 04:22:43','2026-11-18 04:22:43');
+/*!40000 ALTER TABLE `project_user` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `projects`
+--
+
+DROP TABLE IF EXISTS `projects`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `projects` (
+  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
+  `name` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `location` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `client_name` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `consultant_name` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `contractor_name` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `start_date` date DEFAULT NULL,
+  `end_date` date DEFAULT NULL,
+  `contract_amount` decimal(15,2) NOT NULL DEFAULT '0.00',
+  `description` text COLLATE utf8mb4_unicode_ci,
+  `status` enum('active','completed','on_hold','cancelled') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'active',
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  `deleted_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `projects`
+--
+
+LOCK TABLES `projects` WRITE;
+/*!40000 ALTER TABLE `projects` DISABLE KEYS */;
+INSERT INTO `projects` VALUES (1,'Addis Ababa Corridor Development – Megenagna Bus & Taxi Terminal','Addis Ababa / Megenagna','Addis Ababa City Administration','Associated Engineering Consultants (AEC)','TNT Construction and Trading','2023-01-15','2024-06-30',50000000.00,'Construction of Megenagna Bus & Taxi Terminal including foundation, superstructure, finishing works, and external works.','active','2026-07-13 17:04:07','2026-07-13 17:04:07',NULL),(2,'Axolon Engineering Head Office Building','Addis Ababa / Kazanchis','Axolon Engineering PLC','BET Architects & Consulting Engineers','Axolon Construction','2023-03-01','2024-09-30',35000000.00,'Design and construction of 5-story office building with basement parking.','active','2026-07-13 17:04:07','2026-07-13 17:04:07',NULL),(3,'Bole Residential Apartments','Addis Ababa / Bole Rwanda','Bole Homes PLC','MH Engineering PLC','TNT Construction and Trading','2022-06-01','2023-12-31',25000000.00,'Construction of 3 residential apartment blocks.','completed','2026-07-13 17:04:07','2026-07-13 17:04:07',NULL),(4,'Hawassa Industrial Park Expansion','Hawassa / SNNPR','Industrial Parks Development Corporation (IPDC)','Ove Arup & Partners International','TNT Construction and Trading','2026-11-01','2027-11-01',45000000.00,'Civil and infrastructure expansion project.','active','2026-11-18 04:22:43','2026-11-18 04:22:43',NULL);
+/*!40000 ALTER TABLE `projects` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `quantity_takeoffs`
+--
+
+DROP TABLE IF EXISTS `quantity_takeoffs`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `quantity_takeoffs` (
+  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
+  `project_id` bigint unsigned NOT NULL,
+  `boq_item_id` bigint unsigned NOT NULL,
+  `structure_type` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `element_id` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `location_axis` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `quantity_count` int NOT NULL DEFAULT '1',
+  `length` decimal(15,4) DEFAULT NULL,
+  `width` decimal(15,4) DEFAULT NULL,
+  `height_depth` decimal(15,4) DEFAULT NULL,
+  `total_area_volume` decimal(15,4) DEFAULT NULL,
+  `measurement_date` date NOT NULL,
+  `measured_by` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `verified_by` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `status` enum('draft','verified','approved') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'draft',
+  `remarks` text COLLATE utf8mb4_unicode_ci,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `quantity_takeoffs_project_id_foreign` (`project_id`),
+  KEY `quantity_takeoffs_boq_item_id_foreign` (`boq_item_id`),
+  CONSTRAINT `quantity_takeoffs_boq_item_id_foreign` FOREIGN KEY (`boq_item_id`) REFERENCES `boq_items` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `quantity_takeoffs_project_id_foreign` FOREIGN KEY (`project_id`) REFERENCES `projects` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `quantity_takeoffs`
+--
+
+LOCK TABLES `quantity_takeoffs` WRITE;
+/*!40000 ALTER TABLE `quantity_takeoffs` DISABLE KEYS */;
+/*!40000 ALTER TABLE `quantity_takeoffs` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `roles`
+--
+
+DROP TABLE IF EXISTS `roles`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `roles` (
+  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
+  `name` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `display_name` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `description` text COLLATE utf8mb4_unicode_ci,
+  `permissions` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `roles_name_unique` (`name`),
+  CONSTRAINT `roles_chk_1` CHECK (json_valid(`permissions`))
+) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `roles`
+--
+
+LOCK TABLES `roles` WRITE;
+/*!40000 ALTER TABLE `roles` DISABLE KEYS */;
+INSERT INTO `roles` VALUES (1,'admin','Administrator','Full system access','[\"ipc.approve\"]','2026-07-13 17:04:06','2026-07-13 18:49:18'),(2,'manager','Project Manager','Can manage projects, BOQ, IPCs, and subcontractors','[\"projects.view\",\"projects.create\",\"projects.edit\",\"projects.delete\",\"boq.view\",\"boq.create\",\"boq.edit\",\"boq.delete\",\"ipc.view\",\"ipc.create\",\"ipc.approve\",\"subcontractors.view\",\"subcontractors.create\",\"subcontractors.edit\",\"cost-categories.view\",\"cost-categories.create\",\"cost-categories.edit\",\"reports.view\",\"reports.export\",\"users.view\"]','2026-07-13 17:04:06','2026-07-13 17:04:06'),(3,'engineer','Engineer / QS','Can create BOQ items and IPCs','[\"projects.view\",\"boq.view\",\"boq.create\",\"boq.edit\",\"ipc.view\",\"ipc.create\",\"subcontractors.view\",\"cost-categories.view\",\"reports.view\"]','2026-07-13 17:04:06','2026-07-13 17:04:06'),(4,'finance','Finance Officer','Can view and approve IPCs, access reports','[\"projects.view\",\"boq.view\",\"ipc.view\",\"ipc.approve\",\"reports.view\",\"reports.export\"]','2026-07-13 17:04:06','2026-07-13 17:04:06'),(5,'viewer','Viewer','Read-only access','[\"projects.view\",\"boq.view\",\"ipc.view\",\"reports.view\"]','2026-07-13 17:04:06','2026-07-13 17:04:06'),(6,'Contract','Contract',NULL,'[\"contractual-reports.view\",\"contractual-reports.create\",\"contractual-reports.edit\",\"contractual-reports.delete\",\"contractual-reports.export\"]','2026-11-17 09:24:51','2026-11-17 09:37:46');
+/*!40000 ALTER TABLE `roles` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `sessions`
+--
+
+DROP TABLE IF EXISTS `sessions`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `sessions` (
+  `id` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `user_id` bigint unsigned DEFAULT NULL,
+  `ip_address` varchar(45) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `user_agent` text COLLATE utf8mb4_unicode_ci,
+  `payload` longtext COLLATE utf8mb4_unicode_ci NOT NULL,
+  `last_activity` int NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `sessions_user_id_index` (`user_id`),
+  KEY `sessions_last_activity_index` (`last_activity`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `sessions`
+--
+
+LOCK TABLES `sessions` WRITE;
+/*!40000 ALTER TABLE `sessions` DISABLE KEYS */;
+INSERT INTO `sessions` VALUES ('Ax1n9Ldt7fCXfVzE4g2SWSDltdK1bw9ieWRqnVGB',1,'127.0.0.1','Python-urllib/3.14','eyJfdG9rZW4iOiI4cFVHaWc0Z2VuWklpb1kwY0lGTmNnSFRBQlJCcHJGTTBuNU84a3JjIiwiX3ByZXZpb3VzIjp7InVybCI6Imh0dHA6XC9cLzEyNy4wLjAuMTo4MDAwXC9jb250cmFjdHVhbC1yZXBvcnRzXC9jcmVhdGUiLCJyb3V0ZSI6ImNvbnRyYWN0dWFsLXJlcG9ydHMuY3JlYXRlIn0sIl9mbGFzaCI6eyJvbGQiOltdLCJuZXciOltdfSwibG9naW5fd2ViXzU5YmEzNmFkZGMyYjJmOTQwMTU4MGYwMTRjN2Y1OGVhNGUzMDk4OWQiOjF9',1794986526),('cESRcebp83bM6XzrO1lHHmr6Vr03voDRAKHNDgTN',1,'127.0.0.1','Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/156.0.0.0 Safari/537.36','eyJfdG9rZW4iOiIyME1KVGlrdzNMOWEwRFpORjFzdWV4U3hwbzlKdWNGZFUyNHM0REozIiwiX3ByZXZpb3VzIjp7InVybCI6Imh0dHA6XC9cLzEyNy4wLjAuMTo4MDAwXC9wcm9qZWN0c1wvNCIsInJvdXRlIjoicHJvamVjdHMuc2hvdyJ9LCJfZmxhc2giOnsib2xkIjpbXSwibmV3IjpbXX0sImxvZ2luX3dlYl81OWJhMzZhZGRjMmIyZjk0MDE1ODBmMDE0YzdmNThlYTRlMzA5ODlkIjoxfQ==',1794986933),('JE8odT26vKqgnsYaqknIXIZbvBy67z8EO0mN92ol',NULL,'127.0.0.1','curl/8.18.0','eyJfdG9rZW4iOiJaYXF6WTVRNWN1R3hsa2FLMTBYM2JWc1NJcGlNUVpqV0ZWSlE0bHM1IiwiX3ByZXZpb3VzIjp7InVybCI6Imh0dHA6XC9cLzEyNy4wLjAuMTo4MDAwXC9sb2dpbiIsInJvdXRlIjoibG9naW4ifSwiX2ZsYXNoIjp7Im9sZCI6W10sIm5ldyI6W119fQ==',1794986510),('jYkWVezMf7DQTnN2zt0RcLTSL08Ee0BTXPFhAqfc',1,'127.0.0.1','Python-urllib/3.14','eyJfdG9rZW4iOiIzQ0VNR0R5djJqWkdoY3BGRXV5Rkx3TkZiU09Db1NhUHloS3dGeTl0IiwiX3ByZXZpb3VzIjp7InVybCI6Imh0dHA6XC9cLzEyNy4wLjAuMTo4MDAwXC9jb250cmFjdHVhbC1yZXBvcnRzXC9jcmVhdGUiLCJyb3V0ZSI6ImNvbnRyYWN0dWFsLXJlcG9ydHMuY3JlYXRlIn0sIl9mbGFzaCI6eyJvbGQiOltdLCJuZXciOltdfSwibG9naW5fd2ViXzU5YmEzNmFkZGMyYjJmOTQwMTU4MGYwMTRjN2Y1OGVhNGUzMDk4OWQiOjF9',1794986563),('tYcQP09tX2vAyVDDMHP8N1gm0kcTmipV6g7cktNk',1,'127.0.0.1','Python-urllib/3.14','eyJfdG9rZW4iOiJVZzJUcVJyTndqTkwwaGwzekwwQ1VralFCMnFsVDNzMnlBT0tGcG1PIiwiX3ByZXZpb3VzIjp7InVybCI6Imh0dHA6XC9cLzEyNy4wLjAuMTo4MDAwIiwicm91dGUiOiJkYXNoYm9hcmQifSwiX2ZsYXNoIjp7Im9sZCI6W10sIm5ldyI6W119LCJsb2dpbl93ZWJfNTliYTM2YWRkYzJiMmY5NDAxNTgwZjAxNGM3ZjU4ZWE0ZTMwOTg5ZCI6MX0=',1794986540),('YFoPK1eSV9TbZFVLZghq1qfmO8WjP1olJFVhcwot',1,'127.0.0.1','Python-urllib/3.14','eyJfdG9rZW4iOiJuRldrWXlJbXkxbzFJcUIydXJZNWxmSDZreFoyUnE5YXNLVXg2em9LIiwiX3ByZXZpb3VzIjp7InVybCI6Imh0dHA6XC9cLzEyNy4wLjAuMTo4MDAwXC9jb250cmFjdHVhbC1yZXBvcnRzXC9jcmVhdGUiLCJyb3V0ZSI6ImNvbnRyYWN0dWFsLXJlcG9ydHMuY3JlYXRlIn0sIl9mbGFzaCI6eyJvbGQiOltdLCJuZXciOltdfSwibG9naW5fd2ViXzU5YmEzNmFkZGMyYjJmOTQwMTU4MGYwMTRjN2Y1OGVhNGUzMDk4OWQiOjF9',1794986667);
+/*!40000 ALTER TABLE `sessions` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `settings`
+--
+
+DROP TABLE IF EXISTS `settings`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `settings` (
+  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
+  `key` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `value` text COLLATE utf8mb4_unicode_ci,
+  `group` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'general',
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `settings_key_unique` (`key`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `settings`
+--
+
+LOCK TABLES `settings` WRITE;
+/*!40000 ALTER TABLE `settings` DISABLE KEYS */;
+/*!40000 ALTER TABLE `settings` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `subcontractors`
+--
+
+DROP TABLE IF EXISTS `subcontractors`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `subcontractors` (
+  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
+  `name` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `contact_person` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `email` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `phone` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `address` text COLLATE utf8mb4_unicode_ci,
+  `tax_id` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `is_active` tinyint(1) NOT NULL DEFAULT '1',
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  `deleted_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `subcontractors`
+--
+
+LOCK TABLES `subcontractors` WRITE;
+/*!40000 ALTER TABLE `subcontractors` DISABLE KEYS */;
+INSERT INTO `subcontractors` VALUES (1,'Amare Water Proofing PLC','Amare Abebe','amare@waterproofing.com','+251911234567','Bole Sub City, Addis Ababa','TIN-001234567',1,'2026-07-13 17:04:07','2026-07-13 17:04:07',NULL),(2,'Ethio Steel Works','Solomon Haile','solomon@ethiosteel.com','+251922345678','Akaki Kality, Addis Ababa','TIN-002345678',1,'2026-07-13 17:04:07','2026-07-13 17:04:07',NULL),(3,'Mekonnen Electrical Installation','Mekonnen Tesfaye','mekonnen@electrical.com','+251933456789','Megenagna, Addis Ababa','TIN-003456789',1,'2026-07-13 17:04:07','2026-07-13 17:04:07',NULL),(4,'Addis Plastering & Finishing','Dawit Girma','dawit@plastering.com','+251944567890','CMC, Addis Ababa','TIN-004567890',1,'2026-07-13 17:04:07','2026-07-13 17:04:07',NULL);
+/*!40000 ALTER TABLE `subcontractors` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `takeoff_descriptions`
+--
+
+DROP TABLE IF EXISTS `takeoff_descriptions`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `takeoff_descriptions` (
+  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
+  `takeoff_item_id` bigint unsigned NOT NULL,
+  `side` enum('left','right') COLLATE utf8mb4_unicode_ci NOT NULL,
+  `description` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `display_order` int NOT NULL DEFAULT '0',
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `takeoff_descriptions_takeoff_item_id_foreign` (`takeoff_item_id`),
+  CONSTRAINT `takeoff_descriptions_takeoff_item_id_foreign` FOREIGN KEY (`takeoff_item_id`) REFERENCES `takeoff_items` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `takeoff_descriptions`
+--
+
+LOCK TABLES `takeoff_descriptions` WRITE;
+/*!40000 ALTER TABLE `takeoff_descriptions` DISABLE KEYS */;
+/*!40000 ALTER TABLE `takeoff_descriptions` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `takeoff_items`
+--
+
+DROP TABLE IF EXISTS `takeoff_items`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `takeoff_items` (
+  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
+  `takeoff_sheet_id` bigint unsigned NOT NULL,
+  `boq_item_id` bigint unsigned DEFAULT NULL,
+  `item_number` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `description` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `display_order` int NOT NULL DEFAULT '0',
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `takeoff_items_takeoff_sheet_id_foreign` (`takeoff_sheet_id`),
+  KEY `takeoff_items_boq_item_id_foreign` (`boq_item_id`),
+  CONSTRAINT `takeoff_items_boq_item_id_foreign` FOREIGN KEY (`boq_item_id`) REFERENCES `boq_items` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `takeoff_items_takeoff_sheet_id_foreign` FOREIGN KEY (`takeoff_sheet_id`) REFERENCES `takeoff_sheets` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `takeoff_items`
+--
+
+LOCK TABLES `takeoff_items` WRITE;
+/*!40000 ALTER TABLE `takeoff_items` DISABLE KEYS */;
+/*!40000 ALTER TABLE `takeoff_items` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `takeoff_measurements`
+--
+
+DROP TABLE IF EXISTS `takeoff_measurements`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `takeoff_measurements` (
+  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
+  `takeoff_description_id` bigint unsigned NOT NULL,
+  `quantity_count` int NOT NULL DEFAULT '1',
+  `length` decimal(15,4) NOT NULL DEFAULT '0.0000',
+  `width` decimal(15,4) NOT NULL DEFAULT '1.0000',
+  `height_depth` decimal(15,4) NOT NULL DEFAULT '1.0000',
+  `total_area_volume` decimal(15,4) NOT NULL DEFAULT '0.0000',
+  `remarks` text COLLATE utf8mb4_unicode_ci,
+  `display_order` int NOT NULL DEFAULT '0',
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `takeoff_measurements_takeoff_description_id_foreign` (`takeoff_description_id`),
+  CONSTRAINT `takeoff_measurements_takeoff_description_id_foreign` FOREIGN KEY (`takeoff_description_id`) REFERENCES `takeoff_descriptions` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `takeoff_measurements`
+--
+
+LOCK TABLES `takeoff_measurements` WRITE;
+/*!40000 ALTER TABLE `takeoff_measurements` DISABLE KEYS */;
+/*!40000 ALTER TABLE `takeoff_measurements` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `takeoff_sheets`
+--
+
+DROP TABLE IF EXISTS `takeoff_sheets`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `takeoff_sheets` (
+  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
+  `project_id` bigint unsigned NOT NULL,
+  `sheet_number` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `division` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `page_no` int NOT NULL DEFAULT '1',
+  `measurement_date` date NOT NULL,
+  `measured_by` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `verified_by` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `approved_by` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `status` enum('draft','verified','approved') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'draft',
+  `remarks` text COLLATE utf8mb4_unicode_ci,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `takeoff_sheets_project_id_foreign` (`project_id`),
+  CONSTRAINT `takeoff_sheets_project_id_foreign` FOREIGN KEY (`project_id`) REFERENCES `projects` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `takeoff_sheets`
+--
+
+LOCK TABLES `takeoff_sheets` WRITE;
+/*!40000 ALTER TABLE `takeoff_sheets` DISABLE KEYS */;
+/*!40000 ALTER TABLE `takeoff_sheets` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `tax_settings`
+--
+
+DROP TABLE IF EXISTS `tax_settings`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `tax_settings` (
+  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
+  `key` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `display_name` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `rate` decimal(8,2) NOT NULL DEFAULT '0.00',
+  `type` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'percentage',
+  `description` text COLLATE utf8mb4_unicode_ci,
+  `is_active` tinyint(1) NOT NULL DEFAULT '1',
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `tax_settings_key_unique` (`key`)
+) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `tax_settings`
+--
+
+LOCK TABLES `tax_settings` WRITE;
+/*!40000 ALTER TABLE `tax_settings` DISABLE KEYS */;
+INSERT INTO `tax_settings` VALUES (1,'vat','VAT (Value Added Tax)',5.00,'percentage','Standard VAT rate applied to all certificates',1,'2026-07-13 17:39:51','2026-07-29 07:02:32'),(2,'retention','Retention Fee',5.00,'percentage','Retention percentage held from each payment',1,'2026-07-13 17:39:51','2026-07-13 17:39:51'),(3,'withholding_tax','Withholding Tax',3.00,'percentage','Tax withheld at source',1,'2026-07-13 17:39:51','2026-07-15 18:08:02'),(4,'service_charge','Service Charge',0.00,'percentage','Additional service charge',1,'2026-07-13 17:39:51','2026-07-15 18:08:13');
+/*!40000 ALTER TABLE `tax_settings` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `users`
+--
+
+DROP TABLE IF EXISTS `users`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `users` (
+  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
+  `role_id` bigint unsigned DEFAULT NULL,
+  `custom_permissions` json DEFAULT NULL,
+  `is_super_admin` tinyint(1) NOT NULL DEFAULT '0',
+  `name` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `username` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `email` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `email_verified_at` timestamp NULL DEFAULT NULL,
+  `password` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `remember_token` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  `role` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'engineer',
+  `department` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `phone` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `is_active` tinyint(1) NOT NULL DEFAULT '1',
+  `deleted_at` timestamp NULL DEFAULT NULL,
+  `position` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `avatar` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `last_login_at` timestamp NULL DEFAULT NULL,
+  `last_login_ip` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `users_email_unique` (`email`),
+  UNIQUE KEY `users_username_unique` (`username`),
+  KEY `users_role_id_foreign` (`role_id`),
+  CONSTRAINT `users_role_id_foreign` FOREIGN KEY (`role_id`) REFERENCES `roles` (`id`) ON DELETE SET NULL
+) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `users`
+--
+
+LOCK TABLES `users` WRITE;
+/*!40000 ALTER TABLE `users` DISABLE KEYS */;
+INSERT INTO `users` VALUES (1,1,NULL,0,'System Administrator',NULL,'admin@cms.com',NULL,'$2y$12$DCvhWevR2Gp/AjoxCk8WDuPgX.D4C5g6FXjaoJmKlEFdcwHRqgBv2',NULL,'2026-07-13 17:04:07','2026-11-18 04:24:27','engineer','IT Department',NULL,1,NULL,'System Administrator','avatars/oXS2CBcJmrbY1Jnsy8LkkPSjE6MaENBlzwYS5nfd.png','2026-11-18 04:24:27','127.0.0.1'),(2,2,NULL,0,'Abebe Kebede',NULL,'manager@cms.com',NULL,'$2y$12$Poh0vYLFZMSYnSoxJVd3zuhj3/YJ.bmb/Z/OZ7Tvo3Q8RHZ7uUNqK',NULL,'2026-07-13 17:04:07','2026-07-15 19:19:50','engineer','Project Management',NULL,1,NULL,'Senior Project Manager',NULL,'2026-07-15 19:19:50','127.0.0.1'),(3,3,NULL,0,'Tigist Haile',NULL,'engineer@cms.com',NULL,'$2y$12$7beEP9daZ/WiLLCzL5/1BuSfjtni3C7A3bv3weEWQP8sNrrwhZDnm',NULL,'2026-07-13 17:04:07','2026-07-13 19:19:50','engineer','Engineering',NULL,1,NULL,'Quantity Surveyor',NULL,'2026-07-13 19:19:50','127.0.0.1'),(4,4,NULL,0,'Meron Alemu',NULL,'finance@cms.com',NULL,'$2y$12$MJRqwScC8.Zr1BTb.AaKZuNfVrN8MJm7l.6exl99n1MzYKAaXaYB6',NULL,'2026-07-13 17:04:07','2026-07-13 17:04:07','engineer','Finance',NULL,1,NULL,'Finance Officer',NULL,NULL,NULL),(5,5,NULL,0,'Bereket Tadesse',NULL,'viewer@cms.com',NULL,'$2y$12$3Jr1HJQRBUY74H2UdCTgD.ChQVAh7gxUkM20r7K1mrVaXGNk2nlRe',NULL,'2026-07-13 17:04:07','2026-07-13 17:04:07','engineer','Management',NULL,1,NULL,'Stakeholder',NULL,NULL,NULL),(6,6,NULL,0,'menor','menor','menor@contrat.com',NULL,'$2y$12$qv8Pd4d87Rqgls5jg4O9ZeLU9PP3//ZHRyUkl9QiY7Hq8eZrThc0e',NULL,'2026-11-17 07:36:23','2026-11-17 09:37:59','engineer','contrat','0926520212',1,NULL,'Sunnier Contract',NULL,'2026-11-17 09:37:59','127.0.0.1');
+/*!40000 ALTER TABLE `users` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `workflow_permissions`
+--
+
+DROP TABLE IF EXISTS `workflow_permissions`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `workflow_permissions` (
+  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
+  `user_id` bigint unsigned NOT NULL,
+  `workflow_step` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `can_act` tinyint(1) NOT NULL DEFAULT '1',
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `workflow_permissions_user_id_workflow_step_unique` (`user_id`,`workflow_step`),
+  CONSTRAINT `workflow_permissions_user_id_foreign` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB AUTO_INCREMENT=153 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `workflow_permissions`
+--
+
+LOCK TABLES `workflow_permissions` WRITE;
+/*!40000 ALTER TABLE `workflow_permissions` DISABLE KEYS */;
+INSERT INTO `workflow_permissions` VALUES (78,1,'prepare',1,'2026-07-15 18:46:19','2026-07-15 18:46:19'),(79,1,'check',1,'2026-07-15 18:46:19','2026-07-15 18:46:19'),(80,1,'submit',1,'2026-07-15 18:46:19','2026-07-15 18:46:19'),(81,1,'approve',1,'2026-07-15 18:46:19','2026-07-15 18:46:19'),(82,1,'reject',1,'2026-07-15 18:46:19','2026-07-15 18:46:19'),(83,1,'pay',1,'2026-07-15 18:46:19','2026-07-15 18:46:19'),(84,2,'prepare',1,'2026-07-15 18:46:19','2026-07-15 18:46:19'),(85,2,'check',1,'2026-07-15 18:46:19','2026-07-15 18:46:19'),(86,2,'submit',1,'2026-07-15 18:46:19','2026-07-15 18:46:19'),(87,3,'prepare',1,'2026-07-15 18:46:19','2026-07-15 18:46:19'),(88,3,'check',1,'2026-07-15 18:46:19','2026-07-15 18:46:19'),(89,3,'submit',1,'2026-07-15 18:46:19','2026-07-15 18:46:19'),(90,4,'approve',1,'2026-07-15 18:46:19','2026-07-15 18:46:19'),(91,4,'reject',1,'2026-07-15 18:46:19','2026-07-15 18:46:19'),(92,4,'pay',1,'2026-07-15 18:46:19','2026-07-15 18:46:19'),(93,1,'verify_takeoff',1,'2026-11-17 06:18:53','2026-11-17 06:18:53'),(94,1,'approve_takeoff',1,'2026-11-17 06:18:53','2026-11-17 06:18:53'),(95,1,'verify_takeoff_sheet',1,'2026-11-17 06:18:53','2026-11-17 06:18:53'),(96,1,'approve_takeoff_sheet',1,'2026-11-17 06:18:53','2026-11-17 06:18:53'),(97,1,'record_delivery',1,'2026-11-17 06:18:53','2026-11-17 06:18:53'),(98,1,'confirm_delivery',1,'2026-11-17 06:18:53','2026-11-17 06:18:53'),(99,1,'prepare_contractual_report',1,'2026-11-17 06:18:53','2026-11-17 06:18:53'),(100,1,'check_contractual_report',1,'2026-11-17 06:18:53','2026-11-17 06:18:53'),(101,1,'approve_contractual_report',1,'2026-11-17 06:18:53','2026-11-17 06:18:53'),(102,1,'reject_contractual_report',1,'2026-11-17 06:18:53','2026-11-17 06:18:53'),(103,2,'approve',1,'2026-11-17 06:18:53','2026-11-17 06:18:53'),(104,2,'reject',1,'2026-11-17 06:18:53','2026-11-17 06:18:53'),(105,2,'verify_takeoff',1,'2026-11-17 06:18:53','2026-11-17 06:18:53'),(106,2,'approve_takeoff',1,'2026-11-17 06:18:53','2026-11-17 06:18:53'),(107,2,'verify_takeoff_sheet',1,'2026-11-17 06:18:53','2026-11-17 06:18:53'),(108,2,'approve_takeoff_sheet',1,'2026-11-17 06:18:53','2026-11-17 06:18:53'),(109,2,'record_delivery',1,'2026-11-17 06:18:53','2026-11-17 06:18:53'),(110,2,'confirm_delivery',1,'2026-11-17 06:18:53','2026-11-17 06:18:53'),(111,2,'prepare_contractual_report',1,'2026-11-17 06:18:53','2026-11-17 06:18:53'),(112,2,'check_contractual_report',1,'2026-11-17 06:18:53','2026-11-17 06:18:53'),(113,2,'approve_contractual_report',1,'2026-11-17 06:18:53','2026-11-17 06:18:53'),(114,2,'reject_contractual_report',1,'2026-11-17 06:18:53','2026-11-17 06:18:53'),(115,3,'verify_takeoff',1,'2026-11-17 06:18:53','2026-11-17 06:18:53'),(116,3,'verify_takeoff_sheet',1,'2026-11-17 06:18:53','2026-11-17 06:18:53'),(117,3,'record_delivery',1,'2026-11-17 06:18:53','2026-11-17 06:18:53'),(118,3,'prepare_contractual_report',1,'2026-11-17 06:18:53','2026-11-17 06:18:53'),(119,3,'check_contractual_report',1,'2026-11-17 06:18:53','2026-11-17 06:18:53'),(120,4,'confirm_delivery',1,'2026-11-17 06:18:53','2026-11-17 06:18:53'),(121,4,'approve_contractual_report',1,'2026-11-17 06:18:53','2026-11-17 06:18:53'),(122,4,'reject_contractual_report',1,'2026-11-17 06:18:53','2026-11-17 06:18:53'),(123,1,'prepare_equipment_schedule',1,'2026-11-17 06:50:50','2026-11-17 06:50:50'),(124,1,'check_equipment_schedule',1,'2026-11-17 06:50:50','2026-11-17 06:50:50'),(125,1,'approve_equipment_schedule',1,'2026-11-17 06:50:50','2026-11-17 06:50:50'),(126,1,'reject_equipment_schedule',1,'2026-11-17 06:50:50','2026-11-17 06:50:50'),(127,1,'prepare_maintenance_report',1,'2026-11-17 06:50:50','2026-11-17 06:50:50'),(128,1,'check_maintenance_report',1,'2026-11-17 06:50:50','2026-11-17 06:50:50'),(129,1,'approve_maintenance_report',1,'2026-11-17 06:50:50','2026-11-17 06:50:50'),(130,1,'reject_maintenance_report',1,'2026-11-17 06:50:50','2026-11-17 06:50:50'),(131,2,'prepare_equipment_schedule',1,'2026-11-17 06:50:50','2026-11-17 06:50:50'),(132,2,'check_equipment_schedule',1,'2026-11-17 06:50:50','2026-11-17 06:50:50'),(133,2,'approve_equipment_schedule',1,'2026-11-17 06:50:50','2026-11-17 06:50:50'),(134,2,'reject_equipment_schedule',1,'2026-11-17 06:50:50','2026-11-17 06:50:50'),(135,2,'prepare_maintenance_report',1,'2026-11-17 06:50:50','2026-11-17 06:50:50'),(136,2,'check_maintenance_report',1,'2026-11-17 06:50:50','2026-11-17 06:50:50'),(137,2,'approve_maintenance_report',1,'2026-11-17 06:50:50','2026-11-17 06:50:50'),(138,2,'reject_maintenance_report',1,'2026-11-17 06:50:50','2026-11-17 06:50:50'),(139,3,'prepare_equipment_schedule',1,'2026-11-17 06:50:50','2026-11-17 06:50:50'),(140,3,'check_equipment_schedule',1,'2026-11-17 06:50:50','2026-11-17 06:50:50'),(141,3,'prepare_maintenance_report',1,'2026-11-17 06:50:50','2026-11-17 06:50:50'),(142,3,'check_maintenance_report',1,'2026-11-17 06:50:50','2026-11-17 06:50:50'),(143,4,'approve_equipment_schedule',1,'2026-11-17 06:50:50','2026-11-17 06:50:50'),(144,4,'reject_equipment_schedule',1,'2026-11-17 06:50:50','2026-11-17 06:50:50'),(145,4,'approve_maintenance_report',1,'2026-11-17 06:50:50','2026-11-17 06:50:50'),(146,4,'reject_maintenance_report',1,'2026-11-17 06:50:50','2026-11-17 06:50:50'),(147,4,'prepare_contractual_report',1,'2026-11-17 07:37:04','2026-11-17 07:37:04'),(148,4,'check_contractual_report',1,'2026-11-17 07:37:04','2026-11-17 07:37:04'),(149,6,'prepare_contractual_report',1,'2026-11-17 09:37:28','2026-11-17 09:37:28'),(150,6,'check_contractual_report',1,'2026-11-17 09:37:28','2026-11-17 09:37:28'),(151,6,'approve_contractual_report',1,'2026-11-17 09:37:28','2026-11-17 09:37:28'),(152,6,'reject_contractual_report',1,'2026-11-17 09:37:28','2026-11-17 09:37:28');
+/*!40000 ALTER TABLE `workflow_permissions` ENABLE KEYS */;
+UNLOCK TABLES;
+/*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
+
+/*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
+/*!40014 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS */;
+/*!40014 SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS */;
+/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
+/*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
+/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
+/*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
+
+-- Dump completed on 2026-11-18 10:28:55

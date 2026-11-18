@@ -13,7 +13,8 @@ class User extends Authenticatable
     protected $fillable = [
         'name', 'username', 'email', 'password', 'phone',
         'department', 'position', 'role', 'role_id',
-        'avatar', 'is_active', 'last_login_at', 'last_login_ip'
+        'avatar', 'is_active', 'last_login_at', 'last_login_ip',
+        'custom_permissions', 'is_super_admin'
     ];
 
     protected $hidden = ['password', 'remember_token'];
@@ -23,6 +24,8 @@ class User extends Authenticatable
         'password' => 'hashed',
         'is_active' => 'boolean',
         'last_login_at' => 'datetime',
+        'custom_permissions' => 'array',
+        'is_super_admin' => 'boolean',
     ];
 
     public function roleRelation() { return $this->belongsTo(Role::class, 'role_id'); }
@@ -45,7 +48,15 @@ class User extends Authenticatable
         return $this->attributes['role'] ?? 'viewer';
     }
 
-    public function isAdmin(): bool { return $this->getRoleName() === 'admin'; }
+    public function isSuperAdmin(): bool
+    {
+        return (bool) ($this->is_super_admin || $this->isAdmin());
+    }
+
+    public function isAdmin(): bool
+    {
+        return $this->getRoleName() === 'admin';
+    }
     
     public function isManager(): bool { return in_array($this->getRoleName(), ['admin', 'manager']); }
     
@@ -56,69 +67,101 @@ class User extends Authenticatable
      */
     public function hasPermission(string $permission): bool
     {
-        // Admin has all permissions
-        if ($this->isAdmin()) return true;
-        
-        // Check Role model permissions
-        $roleName = $this->getRoleName();
-        $role = Role::where('name', $roleName)->first();
-        
-        if ($role && $role->permissions) {
+        // 1. Super Admin or Admin role has unrestricted access to all modules and documents
+        if ($this->is_super_admin || $this->isAdmin()) {
+            return true;
+        }
+
+        // 2. Check custom user-level permissions override if configured
+        if ($this->custom_permissions !== null && is_array($this->custom_permissions)) {
+            return in_array('*', $this->custom_permissions) || in_array($permission, $this->custom_permissions);
+        }
+
+        // 3. Check Role model permissions from DB relation or role name
+        $role = $this->roleRelation ?? ($this->role_id ? Role::find($this->role_id) : null);
+        if (!$role && !empty($this->role)) {
+            $role = Role::where('name', $this->role)->first();
+        }
+
+        if ($role && !empty($role->permissions)) {
             $permissions = is_string($role->permissions) ? json_decode($role->permissions, true) : $role->permissions;
             if (is_array($permissions)) {
                 return in_array('*', $permissions) || in_array($permission, $permissions);
             }
         }
-        
-        return $this->hasLegacyPermission($permission);
+
+        // 4. Fallback to default role permissions
+        $roleName = $this->getRoleName();
+        $defaultMap = \App\Services\PermissionRegistry::getDefaultRolePermissions();
+        $perms = $defaultMap[$roleName] ?? [];
+        return in_array('*', $perms) || in_array($permission, $perms);
     }
 
     public function hasAnyPermission(array $permissions): bool
     {
-        foreach ($permissions as $p) { if ($this->hasPermission($p)) return true; }
+        if ($this->is_super_admin || $this->isAdmin()) {
+            return true;
+        }
+        foreach ($permissions as $p) {
+            if ($this->hasPermission($p)) return true;
+        }
         return false;
     }
 
-    protected function hasLegacyPermission(string $permission): bool
+    /**
+     * Check if user can access at least one permission in a module prefix
+     */
+    public function canAccessModule(string $modulePrefix): bool
     {
-        $rolePermissions = [
-            'admin' => ['*'],
-            'manager' => [
-                'projects.view','projects.create','projects.edit','projects.delete',
-                'boq.view','boq.create','boq.edit','boq.delete',
-                'ipc.view','ipc.create','ipc.edit','ipc.approve','ipc.delete',
-                'subcontractors.view','subcontractors.create','subcontractors.edit','subcontractors.delete',
-                'cost-categories.view','cost-categories.create','cost-categories.edit','cost-categories.delete',
-                'reports.view','reports.export',
-                'actual-costs.view','actual-costs.create','actual-costs.edit','actual-costs.delete',
-                'users.view','users.create','users.edit',
-                'roles.view','roles.create','roles.edit',
-            ],
-            'engineer' => [
-                'projects.view',
-                'boq.view','boq.create','boq.edit',
-                'ipc.view','ipc.create','ipc.edit',
-                'subcontractors.view',
-                'cost-categories.view',
-                'reports.view',
-                'actual-costs.view','actual-costs.create',
-            ],
-            'finance' => [
-                'projects.view',
-                'boq.view',
-                'ipc.view','ipc.approve',
-                'reports.view','reports.export',
-                'actual-costs.view',
-            ],
-            'viewer' => [
-                'projects.view','boq.view','ipc.view','reports.view',
-            ],
-        ];
-        
-        $role = $this->attributes['role'] ?? 'viewer';
-        $perms = $rolePermissions[$role] ?? [];
-        return in_array('*', $perms) || in_array($permission, $perms);
+        if ($this->is_super_admin || $this->isAdmin()) {
+            return true;
+        }
+
+        $effective = $this->getEffectivePermissions();
+        if (in_array('*', $effective)) {
+            return true;
+        }
+
+        foreach ($effective as $perm) {
+            if ($perm === $modulePrefix || str_starts_with($perm, $modulePrefix . '.')) {
+                return true;
+            }
+        }
+        return false;
     }
+
+    /**
+     * Get all effective permissions for this user
+     */
+    public function getEffectivePermissions(): array
+    {
+        if ($this->is_super_admin || $this->isAdmin()) {
+            return ['*'];
+        }
+
+        // If user has custom permissions array set, return custom permissions
+        if ($this->custom_permissions !== null && is_array($this->custom_permissions)) {
+            return $this->custom_permissions;
+        }
+
+        // Role permissions
+        $role = $this->roleRelation ?? ($this->role_id ? Role::find($this->role_id) : null);
+        if (!$role && !empty($this->role)) {
+            $role = Role::where('name', $this->role)->first();
+        }
+
+        if ($role && !empty($role->permissions)) {
+            $rolePerms = is_string($role->permissions) ? json_decode($role->permissions, true) : $role->permissions;
+            if (is_array($rolePerms)) {
+                return $rolePerms;
+            }
+        }
+
+        $roleName = $this->getRoleName();
+        $defaultMap = \App\Services\PermissionRegistry::getDefaultRolePermissions();
+        return $defaultMap[$roleName] ?? [];
+    }
+
 
     public function getInitialsAttribute(): string
     {

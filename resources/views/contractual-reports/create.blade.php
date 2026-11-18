@@ -50,7 +50,7 @@
                         <option value="">-- Choose Project --</option>
                         @foreach($projects as $p)
                             <option value="{{ $p->id }}" 
-                                data-location="{{ $p->location ?? 'Addis Ababa' }}"
+                                data-location="{{ $p->location ?? '' }}"
                                 data-client="{{ $p->client_name ?? '' }}"
                                 data-consultant="{{ $p->consultant_name ?? '' }}"
                                 data-contractor="{{ $p->contractor_name ?? 'TNT Construction and Trading' }}"
@@ -65,7 +65,7 @@
                 <div class="col-md-4">
                     <label class="form-label fw-bold">Project Location</label>
                     <input type="text" name="project_location" id="project_location" class="form-control" 
-                           value="{{ old('project_location', $selectedProject?->location ?? 'Site Location') }}" placeholder="e.g. Addis Ababa / Megenagna">
+                           value="{{ old('project_location', $selectedProject?->location) }}" placeholder="e.g. Addis Ababa / Megenagna">
                 </div>
 
                 <div class="col-md-4">
@@ -498,8 +498,75 @@ function highlightChecked(cb) {
     }
 }
 
-// Initialize with one event row if empty
+// Auto-fill project details when a project is selected
+function applySelectedProjectDetails(isUserChange = false) {
+    const select = document.getElementById('project_select');
+    if (!select) return;
+    const option = select.options[select.selectedIndex];
+    if (!option || !option.value) {
+        if (isUserChange) {
+            document.getElementById('project_location').value = '';
+            document.getElementById('client_name').value = '';
+            document.getElementById('consultant_name').value = '';
+            document.getElementById('contractor_name').value = 'TNT CONSTRUCTION AND TRADING';
+        }
+        return;
+    }
+
+    const location = option.getAttribute('data-location') || '';
+    const client = option.getAttribute('data-client') || '';
+    const consultant = option.getAttribute('data-consultant') || '';
+    const contractor = option.getAttribute('data-contractor') || 'TNT CONSTRUCTION AND TRADING';
+
+    const locInput = document.getElementById('project_location');
+    const clientInput = document.getElementById('client_name');
+    const consultantInput = document.getElementById('consultant_name');
+    const contractorInput = document.getElementById('contractor_name');
+
+    if (locInput) {
+        locInput.value = location;
+        if (isUserChange) flashField(locInput);
+    }
+    if (clientInput) {
+        clientInput.value = client;
+        if (isUserChange) flashField(clientInput);
+    }
+    if (consultantInput) {
+        consultantInput.value = consultant;
+        if (isUserChange) flashField(consultantInput);
+    }
+    if (contractorInput) {
+        contractorInput.value = contractor;
+        if (isUserChange) flashField(contractorInput);
+    }
+}
+
+function flashField(element) {
+    element.classList.add('bg-success', 'bg-opacity-10', 'border-success');
+    setTimeout(() => {
+        element.classList.remove('bg-success', 'bg-opacity-10', 'border-success');
+    }, 1200);
+}
+
+// Initialize on page load
 document.addEventListener('DOMContentLoaded', function() {
+    const projectSelect = document.getElementById('project_select');
+    if (projectSelect) {
+        projectSelect.addEventListener('change', function() {
+            applySelectedProjectDetails(true);
+        });
+
+        // Auto-fill if project is pre-selected (via URL parameter or old input)
+        if (projectSelect.value) {
+            const locInput = document.getElementById('project_location');
+            const clientInput = document.getElementById('client_name');
+            const consultantInput = document.getElementById('consultant_name');
+            if (!locInput.value || !clientInput.value || !consultantInput.value) {
+                applySelectedProjectDetails(false);
+            }
+        }
+    }
+
     if (document.getElementById('claimEventsBody').children.length === 0) {
         addClaimEventRow();
     }
