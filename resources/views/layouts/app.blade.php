@@ -100,7 +100,10 @@
             </a>
             @endif
             @if(auth()->user()->hasPermission('takeoff-sheets.view'))
-            <a href="{{ route('takeoff-sheets.index') }}" class="{{ request()->routeIs('takeoff-sheets.*') ? 'active' : '' }}"><i class="fas fa-table"></i> Takeoff Sheets</a>
+            <a href="{{ route('takeoff-sheets.index') }}" class="{{ request()->routeIs('takeoff-sheets.*') ? 'active' : '' }}"><i class="fas fa-table"></i> Takeoff Sheets
+                @php $sheetsDraft = \App\Models\TakeoffSheet::where('status', 'draft')->count(); @endphp
+                @if($sheetsDraft > 0)<span class="badge bg-warning text-dark">{{ $sheetsDraft }}</span>@endif
+            </a>
             @endif
             @if(auth()->user()->hasPermission('contractual-reports.view'))
             <a href="{{ route('contractual-reports.index') }}" class="{{ request()->routeIs('contractual-reports.*') ? 'active' : '' }}"><i class="fas fa-file-contract"></i> Contractual Follow-up (CAD-01)
@@ -115,7 +118,10 @@
             </a>
             @endif
             @if(auth()->user()->hasPermission('deliveries.view'))
-            <a href="{{ route('material-deliveries.index') }}" class="{{ request()->routeIs('material-deliveries.*') ? 'active' : '' }}"><i class="fas fa-truck-loading"></i> Material Deliveries</a>
+            <a href="{{ route('material-deliveries.index') }}" class="{{ request()->routeIs('material-deliveries.*') ? 'active' : '' }}"><i class="fas fa-truck-loading"></i> Material Deliveries
+                @php $delivPending = \App\Models\MaterialDelivery::whereIn('status', ['received', 'inspected'])->count(); @endphp
+                @if($delivPending > 0)<span class="badge bg-warning text-dark">{{ $delivPending }}</span>@endif
+            </a>
             @endif
             @if(auth()->user()->hasPermission('actual-costs.view'))
             <a href="{{ route('actual-costs.index') }}" class="{{ request()->routeIs('actual-costs.*') ? 'active' : '' }}"><i class="fas fa-receipt"></i> Actual Costs</a>
@@ -199,7 +205,7 @@
             
             {{-- Alerts / Notifications --}}
             <div class="sidebar-label">Alerts</div>
-            <a href="{{ route('notifications.index') }}" class="{{ request()->routeIs('notifications.*') ? 'active' : '' }}"><i class="fas fa-bell"></i> Notifications
+            <a href="{{ route('notifications.index') }}" class="{{ request()->routeIs('notifications.*') ? 'active' : '' }}"><i class="fas fa-bell"></i> Notifications & News
                 @php $unread = \App\Models\Notification::unreadCount(); @endphp
                 @if($unread>0)<span class="badge bg-danger">{{ $unread }}</span>@endif
             </a>
@@ -217,11 +223,48 @@
         <div class="search-box"><i class="fas fa-search"></i><input type="text" placeholder="Search..." onkeypress="if(event.key==='Enter'){window.location.href='{{ route('projects.index') }}?search='+this.value}"></div>
         <div class="topbar-actions">
             <div class="dropdown">
-                <button class="btn-icon" data-bs-toggle="dropdown"><i class="fas fa-bell"></i>@if($unread>0)<span class="badge bg-danger">{{ $unread }}</span>@endif</button>
-                <div class="dropdown-menu dropdown-menu-end shadow-lg" style="width:320px;border-radius:12px;border:none;">
-                    <div class="d-flex justify-content-between px-3 py-2 border-bottom"><strong>Notifications</strong><a href="{{ route('notifications.mark-all-read') }}" class="text-muted small" onclick="event.preventDefault();document.getElementById('mark-all-form').submit();">Mark all read</a><form id="mark-all-form" action="{{ route('notifications.mark-all-read') }}" method="POST" class="d-none">@csrf</form></div>
-                    <div style="max-height:280px;overflow-y:auto;">@foreach(\App\Models\Notification::recent(auth()->id(),5) as $n)<a href="{{ route('notifications.read',$n) }}" class="dropdown-item {{ $n->is_read?'':'bg-light' }}"><small><i class="fas fa-{{ $n->icon }} text-{{ $n->color }} me-1"></i></small>{{ Str::limit($n->title,40) }}<br><small class="text-muted">{{ $n->created_at->diffForHumans() }}</small></a>@endforeach</div>
-                    <div class="text-center py-2 border-top"><a href="{{ route('notifications.index') }}" class="btn btn-sm btn-link">View All</a></div>
+                <button class="btn-icon position-relative" data-bs-toggle="dropdown" title="Notifications & Document Updates">
+                    <i class="fas fa-bell"></i>
+                    @if($unread>0)
+                        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="font-size:0.65rem;">
+                            {{ $unread > 99 ? '99+' : $unread }}
+                        </span>
+                    @endif
+                </button>
+                <div class="dropdown-menu dropdown-menu-end shadow-lg" style="width:360px;border-radius:14px;border:none;">
+                    <div class="d-flex justify-content-between align-items-center px-3 py-2 border-bottom bg-light" style="border-radius:14px 14px 0 0;">
+                        <div>
+                            <span class="fw-bold text-dark small"><i class="fas fa-bell text-primary me-1"></i> Document News & Alerts</span>
+                            @if($unread > 0)<span class="badge bg-danger ms-1" style="font-size:0.65rem;">{{ $unread }} New</span>@endif
+                        </div>
+                        @if($unread > 0)
+                        <a href="{{ route('notifications.mark-all-read') }}" class="text-primary small text-decoration-none fw-semibold" onclick="event.preventDefault();document.getElementById('mark-all-form').submit();" style="font-size:0.75rem;">Mark all read</a>
+                        <form id="mark-all-form" action="{{ route('notifications.mark-all-read') }}" method="POST" class="d-none">@csrf</form>
+                        @endif
+                    </div>
+                    <div style="max-height:320px;overflow-y:auto;">
+                        @forelse(\App\Models\Notification::recent(auth()->id(),6) as $n)
+                        <a href="{{ route('notifications.read',$n) }}" class="dropdown-item p-2 border-bottom {{ $n->is_read?'':'bg-light' }}" style="white-space:normal;">
+                            <div class="d-flex align-items-start gap-2">
+                                <span class="badge bg-{{ $n->color }} bg-opacity-10 text-{{ $n->color }} mt-1 p-2 rounded-circle" style="font-size:0.75rem;"><i class="fas fa-{{ $n->icon }}"></i></span>
+                                <div class="flex-grow-1" style="min-width:0;">
+                                    <div class="fw-bold text-dark small text-truncate">{{ $n->title }}</div>
+                                    <div class="text-muted text-truncate" style="font-size:0.75rem;">{{ $n->message }}</div>
+                                    <small class="text-muted" style="font-size:0.68rem;"><i class="far fa-clock me-1"></i>{{ $n->created_at->diffForHumans() }}</small>
+                                </div>
+                            </div>
+                        </a>
+                        @empty
+                        <div class="text-center py-4 text-muted small"><i class="fas fa-bell-slash d-block mb-1 opacity-50"></i>No new alerts</div>
+                        @endforelse
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center px-3 py-2 border-top bg-light" style="border-radius:0 0 14px 14px;">
+                        <a href="{{ route('notifications.index') }}" class="btn btn-sm btn-link text-decoration-none p-0 fw-semibold text-primary" style="font-size:0.78rem;">All News & Document Hub →</a>
+                        <form action="{{ route('notifications.sync-news') }}" method="POST" class="d-inline">
+                            @csrf
+                            <button type="submit" class="btn btn-sm btn-link text-muted p-0 text-decoration-none" title="Sync live document news" style="font-size:0.78rem;"><i class="fas fa-sync-alt me-1"></i>Sync</button>
+                        </form>
+                    </div>
                 </div>
             </div>
             @auth

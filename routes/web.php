@@ -29,6 +29,7 @@ Route::middleware(['auth'])->group(function () {
     
     // Notifications (accessible to all logged-in users)
     Route::get('/notifications', [App\Http\Controllers\NotificationController::class, 'index'])->name('notifications.index');
+    Route::post('/notifications/sync-news', [App\Http\Controllers\NotificationController::class, 'syncNews'])->name('notifications.sync-news');
     Route::get('/notifications/{notification}/read', [App\Http\Controllers\NotificationController::class, 'markAsRead'])->name('notifications.read');
     Route::post('/notifications/mark-all-read', [App\Http\Controllers\NotificationController::class, 'markAllAsRead'])->name('notifications.mark-all-read');
     Route::delete('/notifications/{notification}', [App\Http\Controllers\NotificationController::class, 'delete'])->name('notifications.delete');
