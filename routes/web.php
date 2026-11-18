@@ -433,7 +433,7 @@ Route::middleware(['auth'])->group(function () {
         });
 
         // Database Management & Backups
-        Route::middleware('permission:database.backup')->group(function () {
+        Route::middleware('permission:database.backup,database.sync,settings.manage')->group(function () {
             Route::get('/database-backups', [App\Http\Controllers\Admin\DatabaseBackupController::class, 'index'])->name('database-backups.index');
             Route::post('/database-backups', [App\Http\Controllers\Admin\DatabaseBackupController::class, 'createBackup'])->name('database-backups.create');
             Route::post('/database-backups/run-daily', [App\Http\Controllers\Admin\DatabaseBackupController::class, 'runDailySync'])->name('database-backups.run-daily');

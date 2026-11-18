@@ -171,7 +171,7 @@
             @endif
             
             {{-- Administration Section --}}
-            @if(auth()->user()->hasAnyPermission(['users.view', 'roles.view', 'workflow.manage', 'settings.manage', 'database.backup', 'audit.view']))
+            @if(auth()->user()->hasAnyPermission(['users.view', 'roles.view', 'workflow.manage', 'settings.manage', 'database.backup', 'database.sync', 'audit.view']))
             <div class="sidebar-label">Administration</div>
             @if(auth()->user()->hasPermission('users.view'))
             <a href="{{ route('admin.users.index') }}" class="{{ request()->routeIs('admin.users.*') ? 'active' : '' }}"><i class="fas fa-user-cog"></i> Users</a>
@@ -188,6 +188,8 @@
             @endif
             @if(auth()->user()->hasPermission('database.backup') || auth()->user()->hasPermission('settings.manage'))
             <a href="{{ route('admin.database-backups.index') }}" class="{{ request()->routeIs('admin.database-backups.*') ? 'active' : '' }}"><i class="fas fa-database"></i> Database Backup</a>
+            @endif
+            @if(auth()->user()->hasPermission('database.sync') || auth()->user()->hasPermission('settings.manage'))
             <a href="{{ route('admin.database-sync.index') }}" class="{{ request()->routeIs('admin.database-sync.*') ? 'active' : '' }}"><i class="fas fa-sync-alt"></i> Smart DB Sync</a>
             @endif
             @if(auth()->user()->hasPermission('audit.view'))

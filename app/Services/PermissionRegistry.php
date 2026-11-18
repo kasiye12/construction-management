@@ -128,6 +128,7 @@ class PermissionRegistry
                 'workflow.manage' => 'Manage 4-Stage Workflow Permissions Matrix',
                 'settings.manage' => 'Configure Company & Tax Settings',
                 'database.backup' => 'Manage Database Backups & Downloads',
+                'database.sync' => 'Smart Database Import & Synchronization',
                 'audit.view' => 'View System Audit Trail & Logs',
             ],
         ];
@@ -158,7 +159,7 @@ class PermissionRegistry
             'admin' => ['*'],
             'manager' => array_values(array_filter($allKeys, function($perm) {
                 // Project manager has full operational and reporting access except system role and DB administration
-                return !in_array($perm, ['roles.create', 'roles.delete', 'settings.manage', 'database.backup']);
+                return !in_array($perm, ['roles.create', 'roles.delete', 'settings.manage', 'database.backup', 'database.sync']);
             })),
             'engineer' => [
                 'projects.view',
@@ -212,6 +213,16 @@ class PermissionRegistry
                 'equipment-logs.view',
                 'reports.view',
                 'documents.view',
+            ],
+            'contract' => [
+                'projects.view',
+                'contractual-reports.view',
+                'contractual-reports.create',
+                'contractual-reports.edit',
+                'contractual-reports.delete',
+                'contractual-reports.export',
+                'documents.view',
+                'documents.upload',
             ],
         ];
     }

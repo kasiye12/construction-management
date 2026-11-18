@@ -28,6 +28,23 @@ class User extends Authenticatable
         'is_super_admin' => 'boolean',
     ];
 
+    protected static function booted()
+    {
+        static::saving(function ($user) {
+            if ($user->role_id && (empty($user->role) || $user->isDirty('role_id'))) {
+                $role = Role::find($user->role_id);
+                if ($role) {
+                    $user->role = $role->name;
+                }
+            } elseif (!empty($user->role) && empty($user->role_id)) {
+                $role = Role::where('name', $user->role)->first();
+                if ($role) {
+                    $user->role_id = $role->id;
+                }
+            }
+        });
+    }
+
     public function roleRelation() { return $this->belongsTo(Role::class, 'role_id'); }
     public function activityLogs() { return $this->hasMany(ActivityLog::class); }
     public function workflowPermissions() { return $this->hasMany(WorkflowPermission::class); }
