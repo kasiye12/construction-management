@@ -25,12 +25,12 @@ DROP TABLE IF EXISTS `activity_logs`;
 CREATE TABLE `activity_logs` (
   `id` bigint unsigned NOT NULL AUTO_INCREMENT,
   `user_id` bigint unsigned DEFAULT NULL,
-  `action` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `module` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `description` text COLLATE utf8mb4_unicode_ci,
+  `action` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `module` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `description` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
   `old_values` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin,
   `new_values` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin,
-  `ip_address` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `ip_address` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL,
   PRIMARY KEY (`id`),
@@ -38,7 +38,7 @@ CREATE TABLE `activity_logs` (
   CONSTRAINT `activity_logs_user_id_foreign` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL,
   CONSTRAINT `activity_logs_chk_1` CHECK (json_valid(`old_values`)),
   CONSTRAINT `activity_logs_chk_2` CHECK (json_valid(`new_values`))
-) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -47,7 +47,7 @@ CREATE TABLE `activity_logs` (
 
 LOCK TABLES `activity_logs` WRITE;
 /*!40000 ALTER TABLE `activity_logs` DISABLE KEYS */;
-INSERT INTO `activity_logs` VALUES (1,1,'imported','Project','Imported 19 new projects, updated 0, skipped 0.',NULL,'\"{\\\"imported\\\":19,\\\"updated\\\":0,\\\"skipped\\\":0}\"','127.0.0.1','2026-11-18 06:01:21','2026-11-18 06:01:21'),(2,1,'imported','Project','Imported 0 new projects, updated 19, skipped 0.',NULL,'\"{\\\"imported\\\":0,\\\"updated\\\":19,\\\"skipped\\\":0}\"','127.0.0.1','2026-11-18 06:01:35','2026-11-18 06:01:35'),(3,1,'imported','Project','Imported 1 new projects, updated 0, skipped 0.',NULL,'\"{\\\"imported\\\":1,\\\"updated\\\":0,\\\"skipped\\\":0}\"','127.0.0.1','2026-11-18 06:07:58','2026-11-18 06:07:58'),(4,1,'backup_created','DatabaseBackup','Created daily database backup (backup-construction_management-daily-2026-11-18_091946.sql, 333.19 KB) in 0.12s',NULL,'\"{\\\"filename\\\":\\\"backup-construction_management-daily-2026-11-18_091946.sql\\\",\\\"type\\\":\\\"daily\\\",\\\"size\\\":341191,\\\"duration_seconds\\\":0.12}\"','127.0.0.1','2026-11-18 06:19:47','2026-11-18 06:19:47'),(5,1,'backup_created','DatabaseBackup','Created manual database backup (backup-construction_management-manual-2026-11-18_092945.sql, 334.41 KB) in 0.12s',NULL,'\"{\\\"filename\\\":\\\"backup-construction_management-manual-2026-11-18_092945.sql\\\",\\\"type\\\":\\\"manual\\\",\\\"size\\\":342434,\\\"duration_seconds\\\":0.12}\"','127.0.0.1','2026-11-18 06:29:45','2026-11-18 06:29:45');
+INSERT INTO `activity_logs` VALUES (1,1,'imported','Project','Imported 19 new projects, updated 0, skipped 0.',NULL,'\"{\\\"imported\\\":19,\\\"updated\\\":0,\\\"skipped\\\":0}\"','127.0.0.1','2026-11-18 06:01:21','2026-11-18 06:01:21'),(2,1,'imported','Project','Imported 0 new projects, updated 19, skipped 0.',NULL,'\"{\\\"imported\\\":0,\\\"updated\\\":19,\\\"skipped\\\":0}\"','127.0.0.1','2026-11-18 06:01:35','2026-11-18 06:01:35'),(3,1,'imported','Project','Imported 1 new projects, updated 0, skipped 0.',NULL,'\"{\\\"imported\\\":1,\\\"updated\\\":0,\\\"skipped\\\":0}\"','127.0.0.1','2026-11-18 06:07:58','2026-11-18 06:07:58'),(4,1,'backup_created','DatabaseBackup','Created daily database backup (backup-construction_management-daily-2026-11-18_091946.sql, 333.19 KB) in 0.12s',NULL,'\"{\\\"filename\\\":\\\"backup-construction_management-daily-2026-11-18_091946.sql\\\",\\\"type\\\":\\\"daily\\\",\\\"size\\\":341191,\\\"duration_seconds\\\":0.12}\"','127.0.0.1','2026-11-18 06:19:47','2026-11-18 06:19:47'),(5,1,'backup_created','DatabaseBackup','Created manual database backup (backup-construction_management-manual-2026-11-18_092945.sql, 334.41 KB) in 0.12s',NULL,'\"{\\\"filename\\\":\\\"backup-construction_management-manual-2026-11-18_092945.sql\\\",\\\"type\\\":\\\"manual\\\",\\\"size\\\":342434,\\\"duration_seconds\\\":0.12}\"','127.0.0.1','2026-11-18 06:29:45','2026-11-18 06:29:45'),(6,1,'backup_created','DatabaseBackup','Created daily database backup (backup-construction_management-daily-2026-11-18_092945.sql, 334.79 KB) in 0.12s',NULL,'\"{\\\"filename\\\":\\\"backup-construction_management-daily-2026-11-18_092945.sql\\\",\\\"type\\\":\\\"daily\\\",\\\"size\\\":342821,\\\"duration_seconds\\\":0.12}\"','127.0.0.1','2026-11-18 06:29:45','2026-11-18 06:29:45'),(7,1,'backup_created','DatabaseBackup','Created post_rollback database backup (backup-construction_management-post_rollback-2026-11-18_102240.sql, 344.45 KB) in 0.14s',NULL,'\"{\\\"filename\\\":\\\"backup-construction_management-post_rollback-2026-11-18_102240.sql\\\",\\\"type\\\":\\\"post_rollback\\\",\\\"size\\\":352721,\\\"duration_seconds\\\":0.14}\"','127.0.0.1','2026-11-18 07:22:40','2026-11-18 07:22:40'),(8,1,'database_rollback','SmartDatabaseSync','Database rolled back for batch sync_20261118_102219_nw0gas using /home/ks/Documents/construction-management/storage/app/backups/backup-construction_management-pre_sync-2026-11-18_102219.sql.',NULL,'\"{\\\"batch_id\\\":\\\"sync_20261118_102219_nw0gas\\\",\\\"backup_file\\\":\\\"\\\\\\/home\\\\\\/ks\\\\\\/Documents\\\\\\/construction-management\\\\\\/storage\\\\\\/app\\\\\\/backups\\\\\\/backup-construction_management-pre_sync-2026-11-18_102219.sql\\\"}\"','127.0.0.1','2026-11-18 07:22:40','2026-11-18 07:22:40');
 /*!40000 ALTER TABLE `activity_logs` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -62,13 +62,13 @@ CREATE TABLE `actual_costs` (
   `id` bigint unsigned NOT NULL AUTO_INCREMENT,
   `project_id` bigint unsigned NOT NULL,
   `boq_item_id` bigint unsigned DEFAULT NULL,
-  `cost_type` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `description` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `cost_type` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `description` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   `amount` decimal(15,2) NOT NULL,
   `cost_date` date NOT NULL,
-  `vendor` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `invoice_number` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `remarks` text COLLATE utf8mb4_unicode_ci,
+  `vendor` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `invoice_number` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `remarks` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
   `created_by` bigint unsigned DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL,
@@ -101,15 +101,15 @@ DROP TABLE IF EXISTS `audit_trails`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `audit_trails` (
   `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `auditable_type` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `auditable_type` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   `auditable_id` bigint unsigned NOT NULL,
   `user_id` bigint unsigned DEFAULT NULL,
-  `action` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `field_name` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `old_value` text COLLATE utf8mb4_unicode_ci,
-  `new_value` text COLLATE utf8mb4_unicode_ci,
-  `ip_address` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `user_agent` text COLLATE utf8mb4_unicode_ci,
+  `action` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `field_name` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `old_value` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  `new_value` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  `ip_address` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `user_agent` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL,
   PRIMARY KEY (`id`),
@@ -141,9 +141,9 @@ CREATE TABLE `boq_items` (
   `project_id` bigint unsigned NOT NULL,
   `cost_category_id` bigint unsigned DEFAULT NULL,
   `parent_id` bigint unsigned DEFAULT NULL,
-  `item_number` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `description` text COLLATE utf8mb4_unicode_ci NOT NULL,
-  `unit` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `item_number` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `description` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `unit` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   `quantity` decimal(15,4) NOT NULL DEFAULT '0.0000',
   `unit_rate` decimal(15,2) NOT NULL DEFAULT '0.00',
   `revenue_amount` decimal(15,2) NOT NULL DEFAULT '0.00',
@@ -152,7 +152,7 @@ CREATE TABLE `boq_items` (
   `planned_end_date` date DEFAULT NULL,
   `display_order` int NOT NULL DEFAULT '0',
   `is_parent` tinyint(1) NOT NULL DEFAULT '0',
-  `status` enum('pending','in_progress','completed') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'pending',
+  `status` enum('pending','in_progress','completed') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'pending',
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL,
   `deleted_at` timestamp NULL DEFAULT NULL,
@@ -184,8 +184,8 @@ DROP TABLE IF EXISTS `cache`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `cache` (
-  `key` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `value` mediumtext COLLATE utf8mb4_unicode_ci NOT NULL,
+  `key` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `value` mediumtext CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   `expiration` bigint NOT NULL,
   PRIMARY KEY (`key`),
   KEY `cache_expiration_index` (`expiration`)
@@ -209,8 +209,8 @@ DROP TABLE IF EXISTS `cache_locks`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `cache_locks` (
-  `key` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `owner` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `key` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `owner` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   `expiration` bigint NOT NULL,
   PRIMARY KEY (`key`),
   KEY `cache_locks_expiration_index` (`expiration`)
@@ -235,10 +235,10 @@ DROP TABLE IF EXISTS `company_settings`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `company_settings` (
   `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `key` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `value` text COLLATE utf8mb4_unicode_ci,
-  `type` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'text',
-  `group` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'general',
+  `key` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `value` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  `type` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'text',
+  `group` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'general',
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL,
   PRIMARY KEY (`id`),
@@ -266,10 +266,10 @@ DROP TABLE IF EXISTS `contractual_claim_checks`;
 CREATE TABLE `contractual_claim_checks` (
   `id` bigint unsigned NOT NULL AUTO_INCREMENT,
   `contractual_report_id` bigint unsigned NOT NULL,
-  `category` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `category_title` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `item_code` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `item_title` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `category` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `category_title` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `item_code` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `item_title` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   `monday` tinyint(1) NOT NULL DEFAULT '0',
   `tuesday` tinyint(1) NOT NULL DEFAULT '0',
   `wednesday` tinyint(1) NOT NULL DEFAULT '0',
@@ -307,11 +307,11 @@ CREATE TABLE `contractual_claim_events` (
   `id` bigint unsigned NOT NULL AUTO_INCREMENT,
   `contractual_report_id` bigint unsigned NOT NULL,
   `event_date` date DEFAULT NULL,
-  `issue_number` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `cause_description` text COLLATE utf8mb4_unicode_ci,
-  `effect_on_progress` text COLLATE utf8mb4_unicode_ci,
-  `action_taken` text COLLATE utf8mb4_unicode_ci,
-  `remark` text COLLATE utf8mb4_unicode_ci,
+  `issue_number` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `cause_description` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  `effect_on_progress` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  `action_taken` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  `remark` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
   `sort_order` int NOT NULL DEFAULT '0',
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL,
@@ -341,10 +341,10 @@ DROP TABLE IF EXISTS `contractual_correspondence_checks`;
 CREATE TABLE `contractual_correspondence_checks` (
   `id` bigint unsigned NOT NULL AUTO_INCREMENT,
   `contractual_report_id` bigint unsigned NOT NULL,
-  `direction` enum('incoming','outgoing') COLLATE utf8mb4_unicode_ci NOT NULL,
-  `direction_title` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `item_code` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `party_title` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `direction` enum('incoming','outgoing') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `direction_title` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `item_code` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `party_title` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   `monday` tinyint(1) NOT NULL DEFAULT '0',
   `tuesday` tinyint(1) NOT NULL DEFAULT '0',
   `wednesday` tinyint(1) NOT NULL DEFAULT '0',
@@ -381,29 +381,29 @@ DROP TABLE IF EXISTS `contractual_reports`;
 CREATE TABLE `contractual_reports` (
   `id` bigint unsigned NOT NULL AUTO_INCREMENT,
   `project_id` bigint unsigned NOT NULL,
-  `report_number` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `document_code` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'OF/TNT/CAD/01',
-  `issue_no` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '1',
-  `project_location` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `client_name` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `consultant_name` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `contractor_name` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'TNT CONSTRUCTION AND TRADING',
+  `report_number` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `document_code` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'OF/TNT/CAD/01',
+  `issue_no` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '1',
+  `project_location` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `client_name` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `consultant_name` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `contractor_name` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'TNT CONSTRUCTION AND TRADING',
   `week_start_date` date NOT NULL,
   `week_end_date` date NOT NULL,
-  `status` enum('draft','submitted','checked','approved','rejected') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'draft',
+  `status` enum('draft','submitted','checked','approved','rejected') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'draft',
   `prepared_by` bigint unsigned DEFAULT NULL,
-  `prepared_name` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `prepared_name` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `prepared_at` timestamp NULL DEFAULT NULL,
   `checked_by` bigint unsigned DEFAULT NULL,
-  `checked_name` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `checked_name` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `checked_at` timestamp NULL DEFAULT NULL,
   `approved_by` bigint unsigned DEFAULT NULL,
-  `approved_name` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `approved_name` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `approved_at` timestamp NULL DEFAULT NULL,
-  `rejection_reason` text COLLATE utf8mb4_unicode_ci,
-  `page1_notes` text COLLATE utf8mb4_unicode_ci,
-  `page2_remark` text COLLATE utf8mb4_unicode_ci,
-  `page3_remark` text COLLATE utf8mb4_unicode_ci,
+  `rejection_reason` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  `page1_notes` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  `page2_remark` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  `page3_remark` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
   `created_by` bigint unsigned DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL,
@@ -443,9 +443,9 @@ DROP TABLE IF EXISTS `cost_categories`;
 CREATE TABLE `cost_categories` (
   `id` bigint unsigned NOT NULL AUTO_INCREMENT,
   `project_id` bigint unsigned NOT NULL,
-  `code` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `name` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `description` text COLLATE utf8mb4_unicode_ci,
+  `code` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `name` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `description` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
   `display_order` int NOT NULL DEFAULT '0',
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL,
@@ -466,6 +466,53 @@ INSERT INTO `cost_categories` VALUES (1,1,'A','SUB-STRUCTURE',NULL,1,'2026-07-13
 UNLOCK TABLES;
 
 --
+-- Table structure for table `database_sync_logs`
+--
+
+DROP TABLE IF EXISTS `database_sync_logs`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `database_sync_logs` (
+  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
+  `batch_id` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `uploaded_filename` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `file_path` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `file_size` bigint unsigned NOT NULL DEFAULT '0',
+  `user_id` bigint unsigned DEFAULT NULL,
+  `admin_name` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `status` enum('previewed','applied','rolled_back','failed') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'previewed',
+  `tables_created_count` int NOT NULL DEFAULT '0',
+  `columns_added_count` int NOT NULL DEFAULT '0',
+  `records_inserted_count` int NOT NULL DEFAULT '0',
+  `records_updated_count` int NOT NULL DEFAULT '0',
+  `records_unchanged_count` int NOT NULL DEFAULT '0',
+  `backup_file` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `tables_created` json DEFAULT NULL,
+  `columns_added` json DEFAULT NULL,
+  `changes_summary` json DEFAULT NULL,
+  `incompatible_warnings` json DEFAULT NULL,
+  `error_message` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  `applied_at` timestamp NULL DEFAULT NULL,
+  `rolled_back_at` timestamp NULL DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `database_sync_logs_batch_id_unique` (`batch_id`),
+  KEY `database_sync_logs_status_created_at_index` (`status`,`created_at`)
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `database_sync_logs`
+--
+
+LOCK TABLES `database_sync_logs` WRITE;
+/*!40000 ALTER TABLE `database_sync_logs` DISABLE KEYS */;
+INSERT INTO `database_sync_logs` VALUES (1,'sync_20261118_102219_nw0gas','developer_mail_and_project_update.sql','/home/ks/Documents/construction-management/storage/app/sync_uploads/sync_20261118_102219_nw0gas_developer_mail_and_project_update.sql',2827,1,'System Administrator','rolled_back',1,1,3,1,0,NULL,'[{\"rows_count\": 2, \"table_name\": \"mail_messages\"}]','[{\"table_name\": \"projects\", \"column_name\": \"funding_source\", \"column_type\": \"varchar(150)\", \"after_column\": \"contractor_name\", \"column_definition\": \"varchar(150) NULL DEFAULT NULL\"}]','{\"projects\": {\"table_name\": \"projects\", \"new_columns\": [{\"table_name\": \"projects\", \"column_name\": \"funding_source\", \"column_type\": \"varchar(150)\", \"after_column\": \"contractor_name\", \"column_definition\": \"varchar(150) NULL DEFAULT NULL\"}], \"primary_key\": [\"id\"], \"is_new_table\": false, \"common_columns\": [\"id\", \"project_code\", \"name\", \"location\", \"client_name\", \"consultant_name\", \"contractor_name\", \"contract_signing_date\", \"start_date\", \"end_date\", \"contract_amount\", \"tnt_share\", \"description\", \"status\", \"created_at\", \"updated_at\", \"deleted_at\"], \"new_columns_count\": 1, \"records_to_insert\": 1, \"records_to_update\": 1, \"records_unchanged\": 0}, \"mail_messages\": {\"table_name\": \"mail_messages\", \"new_columns\": [], \"primary_key\": [\"id\"], \"is_new_table\": true, \"new_columns_count\": 0, \"records_to_insert\": 2, \"records_to_update\": 0, \"records_unchanged\": 0}}','[]',NULL,NULL,'2026-11-18 07:22:40','2026-11-18 07:22:19','2026-11-18 07:22:40'),(2,'sync_20261118_102832_cfofl7','developer_mail_and_project_update.sql','/home/ks/Documents/construction-management/storage/app/sync_uploads/sync_20261118_102832_cfofl7_developer_mail_and_project_update.sql',2827,1,'System Administrator','rolled_back',0,1,1,3,0,NULL,'[]','[{\"table_name\": \"projects\", \"column_name\": \"funding_source\", \"column_type\": \"varchar(150)\", \"after_column\": \"contractor_name\", \"column_definition\": \"varchar(150) NULL DEFAULT NULL\"}]','{\"projects\": {\"table_name\": \"projects\", \"new_columns\": [{\"table_name\": \"projects\", \"column_name\": \"funding_source\", \"column_type\": \"varchar(150)\", \"after_column\": \"contractor_name\", \"column_definition\": \"varchar(150) NULL DEFAULT NULL\"}], \"primary_key\": [\"id\"], \"is_new_table\": false, \"common_columns\": [\"id\", \"project_code\", \"name\", \"location\", \"client_name\", \"consultant_name\", \"contractor_name\", \"contract_signing_date\", \"start_date\", \"end_date\", \"contract_amount\", \"tnt_share\", \"description\", \"status\", \"created_at\", \"updated_at\", \"deleted_at\"], \"new_columns_count\": 1, \"records_to_insert\": 1, \"records_to_update\": 1, \"records_unchanged\": 0}, \"mail_messages\": {\"table_name\": \"mail_messages\", \"new_columns\": [], \"primary_key\": [\"id\"], \"is_new_table\": false, \"common_columns\": [\"id\", \"sender_email\", \"recipient_email\", \"subject\", \"body\", \"is_read\", \"created_at\", \"updated_at\"], \"new_columns_count\": 0, \"records_to_insert\": 0, \"records_to_update\": 2, \"records_unchanged\": 0}}','[]',NULL,NULL,'2026-11-18 07:28:35','2026-11-18 07:28:32','2026-11-18 07:28:35');
+/*!40000 ALTER TABLE `database_sync_logs` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
 -- Table structure for table `document_numbers`
 --
 
@@ -474,8 +521,8 @@ DROP TABLE IF EXISTS `document_numbers`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `document_numbers` (
   `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `prefix` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `type` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `prefix` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `type` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   `project_id` bigint unsigned NOT NULL,
   `sequence_number` int NOT NULL DEFAULT '0',
   `year` int NOT NULL,
@@ -506,14 +553,14 @@ DROP TABLE IF EXISTS `documents`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `documents` (
   `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `name` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `file_path` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `file_type` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `name` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `file_path` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `file_type` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `file_size` bigint DEFAULT NULL,
-  `documentable_type` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `documentable_type` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   `documentable_id` bigint unsigned NOT NULL,
   `uploaded_by` bigint unsigned DEFAULT NULL,
-  `description` text COLLATE utf8mb4_unicode_ci,
+  `description` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL,
   PRIMARY KEY (`id`),
@@ -542,26 +589,26 @@ DROP TABLE IF EXISTS `equipment`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `equipment` (
   `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `code` varchar(50) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `name` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `equipment_type` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `category` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `make` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `model` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `plate_serial_no` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `serial_no` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `code` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `name` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `equipment_type` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `category` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `make` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `model` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `plate_serial_no` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `serial_no` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `project_id` bigint unsigned DEFAULT NULL,
-  `location_name` varchar(150) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `reading_unit` enum('hr','km') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'hr',
+  `location_name` varchar(150) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `reading_unit` enum('hr','km') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'hr',
   `current_reading` decimal(14,2) NOT NULL DEFAULT '0.00',
   `current_reading_date` date DEFAULT NULL,
   `last_service_reading` decimal(14,2) DEFAULT NULL,
   `last_service_date` date DEFAULT NULL,
-  `last_service_type` varchar(50) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `last_service_type` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `next_service_reading` decimal(14,2) DEFAULT NULL,
-  `next_service_type` varchar(50) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `status` enum('active','due_service','under_maintenance','breakdown','idle') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'active',
-  `remarks` text COLLATE utf8mb4_unicode_ci,
+  `next_service_type` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `status` enum('active','due_service','under_maintenance','breakdown','idle') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'active',
+  `remarks` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
   `created_by` bigint unsigned DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL,
@@ -597,17 +644,17 @@ CREATE TABLE `equipment_breakdown_items` (
   `id` bigint unsigned NOT NULL AUTO_INCREMENT,
   `breakdown_report_id` bigint unsigned NOT NULL,
   `equipment_id` bigint unsigned DEFAULT NULL,
-  `category` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `equipment_type` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `category` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `equipment_type` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   `quantity` int NOT NULL DEFAULT '1',
-  `plate_no_sn` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `plate_no_sn` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `down_date` date DEFAULT NULL,
-  `reason_of_down` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `action_taken` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `location` varchar(150) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `repair_status` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'down',
+  `reason_of_down` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `action_taken` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `location` varchar(150) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `repair_status` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'down',
   `finished_date` date DEFAULT NULL,
-  `remarks` text COLLATE utf8mb4_unicode_ci,
+  `remarks` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
   `sort_order` int NOT NULL DEFAULT '0',
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL,
@@ -638,26 +685,26 @@ DROP TABLE IF EXISTS `equipment_breakdown_reports`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `equipment_breakdown_reports` (
   `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `report_code` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `title` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'Maintenance Report',
-  `document_code` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'OF/TNT/ EAMD/030',
-  `issue_no` varchar(20) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '1',
-  `page_no` varchar(30) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'Page 1 of 1',
+  `report_code` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `title` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'Maintenance Report',
+  `document_code` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'OF/TNT/ EAMD/030',
+  `issue_no` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '1',
+  `page_no` varchar(30) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'Page 1 of 1',
   `report_date` date NOT NULL,
   `project_id` bigint unsigned DEFAULT NULL,
-  `location_name` varchar(150) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `status` enum('draft','submitted','checked','approved','rejected') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'draft',
+  `location_name` varchar(150) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `status` enum('draft','submitted','checked','approved','rejected') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'draft',
   `prepared_by` bigint unsigned DEFAULT NULL,
-  `prepared_name` varchar(150) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `prepared_name` varchar(150) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `prepared_at` timestamp NULL DEFAULT NULL,
   `checked_by` bigint unsigned DEFAULT NULL,
-  `checked_name` varchar(150) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `checked_name` varchar(150) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `checked_at` timestamp NULL DEFAULT NULL,
   `approved_by` bigint unsigned DEFAULT NULL,
-  `approved_name` varchar(150) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `approved_name` varchar(150) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `approved_at` timestamp NULL DEFAULT NULL,
-  `rejection_reason` text COLLATE utf8mb4_unicode_ci,
-  `notes` text COLLATE utf8mb4_unicode_ci,
+  `rejection_reason` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  `notes` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
   `created_by` bigint unsigned DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL,
@@ -697,20 +744,20 @@ DROP TABLE IF EXISTS `equipment_maintenance_logs`;
 CREATE TABLE `equipment_maintenance_logs` (
   `id` bigint unsigned NOT NULL AUTO_INCREMENT,
   `equipment_id` bigint unsigned DEFAULT NULL,
-  `equipment_type` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `equipment_plate` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `spare_part_name` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `po_no` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `unit` varchar(30) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'PCS',
+  `equipment_type` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `equipment_plate` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `spare_part_name` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `po_no` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `unit` varchar(30) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'PCS',
   `quantity` decimal(12,2) NOT NULL DEFAULT '1.00',
   `unit_cost` decimal(14,2) NOT NULL DEFAULT '0.00',
   `total_cost_with_vat` decimal(14,2) NOT NULL DEFAULT '0.00',
-  `supplier` varchar(150) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `supplier` varchar(150) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `log_date` date NOT NULL,
   `project_id` bigint unsigned DEFAULT NULL,
-  `location_name` varchar(150) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `location_name` varchar(150) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `logged_by` bigint unsigned DEFAULT NULL,
-  `remarks` text COLLATE utf8mb4_unicode_ci,
+  `remarks` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL,
   `deleted_at` timestamp NULL DEFAULT NULL,
@@ -744,7 +791,7 @@ DROP TABLE IF EXISTS `equipment_resources`;
 CREATE TABLE `equipment_resources` (
   `id` bigint unsigned NOT NULL AUTO_INCREMENT,
   `boq_item_id` bigint unsigned NOT NULL,
-  `description` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `description` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   `duration_days` decimal(10,2) DEFAULT NULL,
   `number_of_units` int NOT NULL DEFAULT '1',
   `total_hours` decimal(10,2) NOT NULL DEFAULT '0.00',
@@ -777,11 +824,11 @@ DROP TABLE IF EXISTS `failed_jobs`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `failed_jobs` (
   `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `uuid` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `connection` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `queue` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `payload` longtext COLLATE utf8mb4_unicode_ci NOT NULL,
-  `exception` longtext COLLATE utf8mb4_unicode_ci NOT NULL,
+  `uuid` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `connection` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `queue` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `payload` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `exception` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   `failed_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   UNIQUE KEY `failed_jobs_uuid_unique` (`uuid`),
@@ -818,7 +865,7 @@ CREATE TABLE `ipc_items` (
   `to_date_quantity` decimal(15,4) NOT NULL DEFAULT '0.0000',
   `to_date_amount` decimal(15,2) NOT NULL DEFAULT '0.00',
   `percentage_complete` decimal(5,2) NOT NULL DEFAULT '0.00',
-  `remark` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `remark` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL,
   PRIMARY KEY (`id`),
@@ -850,7 +897,7 @@ CREATE TABLE `ipcs` (
   `id` bigint unsigned NOT NULL AUTO_INCREMENT,
   `project_id` bigint unsigned NOT NULL,
   `subcontractor_id` bigint unsigned NOT NULL,
-  `ipc_number` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `ipc_number` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   `issue_number` int NOT NULL DEFAULT '1',
   `ipc_date` date NOT NULL,
   `period_start_date` date NOT NULL,
@@ -861,22 +908,22 @@ CREATE TABLE `ipcs` (
   `retention_percentage` decimal(5,2) NOT NULL DEFAULT '5.00',
   `retention_amount` decimal(15,2) NOT NULL DEFAULT '0.00',
   `net_payment_amount` decimal(15,2) NOT NULL DEFAULT '0.00',
-  `remarks` text COLLATE utf8mb4_unicode_ci,
-  `status` varchar(20) COLLATE utf8mb4_unicode_ci DEFAULT 'draft',
+  `remarks` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  `status` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT 'draft',
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL,
   `deleted_at` timestamp NULL DEFAULT NULL,
-  `prepared_by` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `prepared_by` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `prepared_at` timestamp NULL DEFAULT NULL,
-  `checked_by` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `checked_by` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `checked_at` timestamp NULL DEFAULT NULL,
-  `submitted_by` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `submitted_by` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `submitted_at` timestamp NULL DEFAULT NULL,
-  `approved_by` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `approved_by` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `approved_at` timestamp NULL DEFAULT NULL,
-  `paid_by` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `paid_by` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `paid_at` timestamp NULL DEFAULT NULL,
-  `rejected_by` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `rejected_by` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `rejected_at` timestamp NULL DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `ipcs_project_id_foreign` (`project_id`),
@@ -904,13 +951,13 @@ DROP TABLE IF EXISTS `job_batches`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `job_batches` (
-  `id` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `name` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `id` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `name` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   `total_jobs` int NOT NULL,
   `pending_jobs` int NOT NULL,
   `failed_jobs` int NOT NULL,
-  `failed_job_ids` longtext COLLATE utf8mb4_unicode_ci NOT NULL,
-  `options` mediumtext COLLATE utf8mb4_unicode_ci,
+  `failed_job_ids` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `options` mediumtext CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
   `cancelled_at` int DEFAULT NULL,
   `created_at` int NOT NULL,
   `finished_at` int DEFAULT NULL,
@@ -936,8 +983,8 @@ DROP TABLE IF EXISTS `jobs`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `jobs` (
   `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `queue` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `payload` longtext COLLATE utf8mb4_unicode_ci NOT NULL,
+  `queue` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `payload` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   `attempts` smallint unsigned NOT NULL,
   `reserved_at` int unsigned DEFAULT NULL,
   `available_at` int unsigned NOT NULL,
@@ -966,7 +1013,7 @@ DROP TABLE IF EXISTS `labor_resources`;
 CREATE TABLE `labor_resources` (
   `id` bigint unsigned NOT NULL AUTO_INCREMENT,
   `boq_item_id` bigint unsigned NOT NULL,
-  `trade_name` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `trade_name` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   `number_of_workers` decimal(10,2) NOT NULL DEFAULT '0.00',
   `total_hours` decimal(10,2) NOT NULL DEFAULT '0.00',
   `wage_per_day` decimal(10,2) NOT NULL DEFAULT '0.00',
@@ -990,6 +1037,36 @@ INSERT INTO `labor_resources` VALUES (1,3,'Equipment Operator',1.00,40.00,800.00
 UNLOCK TABLES;
 
 --
+-- Table structure for table `mail_messages`
+--
+
+DROP TABLE IF EXISTS `mail_messages`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `mail_messages` (
+  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
+  `sender_email` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `recipient_email` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `subject` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `body` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  `is_read` tinyint(1) NOT NULL DEFAULT '0',
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `mail_messages`
+--
+
+LOCK TABLES `mail_messages` WRITE;
+/*!40000 ALTER TABLE `mail_messages` DISABLE KEYS */;
+INSERT INTO `mail_messages` VALUES (1,'pm@tnt-constructions.com','client@aastu.edu.et','Monthly Progress Report #04','Please find attached progress report.',1,'2026-11-18 10:22:19','2026-11-18 10:22:19'),(2,'consultant@eec.gov.et','contracts@tnt-constructions.com','Site Inspection Approval','Foundation inspection approved.',0,'2026-11-18 10:22:19','2026-11-18 10:22:19');
+/*!40000 ALTER TABLE `mail_messages` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
 -- Table structure for table `material_deliveries`
 --
 
@@ -1001,16 +1078,16 @@ CREATE TABLE `material_deliveries` (
   `project_id` bigint unsigned NOT NULL,
   `subcontractor_id` bigint unsigned DEFAULT NULL,
   `boq_item_id` bigint unsigned DEFAULT NULL,
-  `item_description` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `unit` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `item_description` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `unit` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   `quantity` decimal(15,4) NOT NULL,
   `unit_multiplier` decimal(10,4) NOT NULL DEFAULT '1.0000',
   `converted_quantity` decimal(15,4) DEFAULT NULL,
-  `gate_pass_number` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `gate_pass_number` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `delivery_date` date NOT NULL,
-  `source_location` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `remarks` text COLLATE utf8mb4_unicode_ci,
-  `status` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'recorded',
+  `source_location` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `remarks` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  `status` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'recorded',
   `created_by` bigint unsigned DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL,
@@ -1049,8 +1126,8 @@ DROP TABLE IF EXISTS `material_resources`;
 CREATE TABLE `material_resources` (
   `id` bigint unsigned NOT NULL AUTO_INCREMENT,
   `boq_item_id` bigint unsigned NOT NULL,
-  `description` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `unit` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `description` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `unit` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   `quantity` decimal(15,4) NOT NULL DEFAULT '0.0000',
   `unit_rate` decimal(15,2) NOT NULL DEFAULT '0.00',
   `amount` decimal(15,2) NOT NULL DEFAULT '0.00',
@@ -1081,10 +1158,10 @@ DROP TABLE IF EXISTS `migrations`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `migrations` (
   `id` int unsigned NOT NULL AUTO_INCREMENT,
-  `migration` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `migration` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   `batch` int NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=42 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=43 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1093,7 +1170,7 @@ CREATE TABLE `migrations` (
 
 LOCK TABLES `migrations` WRITE;
 /*!40000 ALTER TABLE `migrations` DISABLE KEYS */;
-INSERT INTO `migrations` VALUES (1,'0001_01_01_000000_create_users_table',1),(2,'0001_01_01_000001_create_cache_table',1),(3,'0001_01_01_000002_create_jobs_table',1),(4,'2024_01_01_000011_add_fields_to_users_table',1),(5,'2024_01_01_000012_create_activity_logs_table',1),(6,'2024_01_01_000013_create_settings_table',1),(7,'2024_01_01_000030_create_roles_table',1),(8,'2024_01_01_000031_add_profile_fields_to_users',1),(9,'2026_07_13_182620_create_projects_table',1),(10,'2026_07_13_182715_create_subcontractors_table',1),(11,'2026_07_13_182734_create_cost_categories_table',1),(12,'2026_07_13_182751_create_boq_items_table',1),(13,'2026_07_13_182813_create_labor_resources_table',1),(14,'2026_07_13_182827_create_material_resources_table',1),(15,'2026_07_13_182852_create_equipment_resources_table',1),(16,'2026_07_13_182907_create_ipcs_table',1),(17,'2026_07_13_182923_create_ipc_items_table',1),(18,'2026_07_13_182941_create_project_subcontractor_table',1),(19,'2024_01_01_000040_create_tax_settings_table',2),(20,'2024_01_01_000050_create_actual_costs_table',3),(21,'2024_01_01_000060_create_documents_table',4),(22,'2024_01_01_000070_create_notifications_table',5),(23,'2024_01_01_000080_add_approval_fields_to_ipcs',6),(24,'2024_01_01_000090_update_ipc_status_enum',7),(25,'2024_01_01_000100_add_rejected_fields_to_ipcs',8),(26,'2024_01_01_000110_create_workflow_permissions_table',9),(27,'2024_01_01_000120_create_project_user_table',10),(28,'2024_01_01_000200_add_workflow_columns_to_ipcs',11),(29,'2024_01_01_000300_create_material_deliveries_table',11),(30,'2024_01_01_000301_create_quantity_takeoffs_table',11),(31,'2024_01_01_000302_create_document_numbers_table',11),(32,'2024_01_01_000303_create_audit_trails_table',11),(33,'2024_01_01_000400_create_company_settings_table',11),(34,'2024_01_01_000500_add_workflow_fields',11),(35,'2024_01_01_000600_create_takeoff_sheets_table',11),(36,'2026_07_21_113154_add_description_to_takeoff_measurements_table',11),(37,'2026_07_28_000690_add_location_and_consultant_to_projects_table',12),(38,'2026_07_28_000700_create_contractual_reports_tables',12),(39,'2026_07_28_000800_create_equipment_and_maintenance_tables',13),(40,'2026_07_28_000900_add_custom_permissions_to_users_table',14),(41,'2026_07_28_000950_add_tnt_share_and_contract_signing_date_to_projects_table',15);
+INSERT INTO `migrations` VALUES (1,'0001_01_01_000000_create_users_table',1),(2,'0001_01_01_000001_create_cache_table',1),(3,'0001_01_01_000002_create_jobs_table',1),(4,'2024_01_01_000011_add_fields_to_users_table',1),(5,'2024_01_01_000012_create_activity_logs_table',1),(6,'2024_01_01_000013_create_settings_table',1),(7,'2024_01_01_000030_create_roles_table',1),(8,'2024_01_01_000031_add_profile_fields_to_users',1),(9,'2026_07_13_182620_create_projects_table',1),(10,'2026_07_13_182715_create_subcontractors_table',1),(11,'2026_07_13_182734_create_cost_categories_table',1),(12,'2026_07_13_182751_create_boq_items_table',1),(13,'2026_07_13_182813_create_labor_resources_table',1),(14,'2026_07_13_182827_create_material_resources_table',1),(15,'2026_07_13_182852_create_equipment_resources_table',1),(16,'2026_07_13_182907_create_ipcs_table',1),(17,'2026_07_13_182923_create_ipc_items_table',1),(18,'2026_07_13_182941_create_project_subcontractor_table',1),(19,'2024_01_01_000040_create_tax_settings_table',2),(20,'2024_01_01_000050_create_actual_costs_table',3),(21,'2024_01_01_000060_create_documents_table',4),(22,'2024_01_01_000070_create_notifications_table',5),(23,'2024_01_01_000080_add_approval_fields_to_ipcs',6),(24,'2024_01_01_000090_update_ipc_status_enum',7),(25,'2024_01_01_000100_add_rejected_fields_to_ipcs',8),(26,'2024_01_01_000110_create_workflow_permissions_table',9),(27,'2024_01_01_000120_create_project_user_table',10),(28,'2024_01_01_000200_add_workflow_columns_to_ipcs',11),(29,'2024_01_01_000300_create_material_deliveries_table',11),(30,'2024_01_01_000301_create_quantity_takeoffs_table',11),(31,'2024_01_01_000302_create_document_numbers_table',11),(32,'2024_01_01_000303_create_audit_trails_table',11),(33,'2024_01_01_000400_create_company_settings_table',11),(34,'2024_01_01_000500_add_workflow_fields',11),(35,'2024_01_01_000600_create_takeoff_sheets_table',11),(36,'2026_07_21_113154_add_description_to_takeoff_measurements_table',11),(37,'2026_07_28_000690_add_location_and_consultant_to_projects_table',12),(38,'2026_07_28_000700_create_contractual_reports_tables',12),(39,'2026_07_28_000800_create_equipment_and_maintenance_tables',13),(40,'2026_07_28_000900_add_custom_permissions_to_users_table',14),(41,'2026_07_28_000950_add_tnt_share_and_contract_signing_date_to_projects_table',15),(42,'2026_07_28_000960_create_database_sync_logs_table',16);
 /*!40000 ALTER TABLE `migrations` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -1107,12 +1184,12 @@ DROP TABLE IF EXISTS `notifications`;
 CREATE TABLE `notifications` (
   `id` bigint unsigned NOT NULL AUTO_INCREMENT,
   `user_id` bigint unsigned NOT NULL,
-  `type` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `title` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `message` text COLLATE utf8mb4_unicode_ci NOT NULL,
-  `icon` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'bell',
-  `color` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'primary',
-  `link` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `type` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `title` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `message` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `icon` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'bell',
+  `color` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'primary',
+  `link` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `is_read` tinyint(1) NOT NULL DEFAULT '0',
   `read_at` timestamp NULL DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
@@ -1141,8 +1218,8 @@ DROP TABLE IF EXISTS `password_reset_tokens`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `password_reset_tokens` (
-  `email` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `token` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `email` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `token` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
   PRIMARY KEY (`email`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -1168,23 +1245,23 @@ CREATE TABLE `pm_schedule_items` (
   `id` bigint unsigned NOT NULL AUTO_INCREMENT,
   `pm_schedule_id` bigint unsigned NOT NULL,
   `equipment_id` bigint unsigned DEFAULT NULL,
-  `category` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `equipment_type` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `make` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `model` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `plate_serial_no` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `serial_no` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `location` varchar(150) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `category` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `equipment_type` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `make` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `model` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `plate_serial_no` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `serial_no` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `location` varchar(150) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `last_service_reading` decimal(14,2) DEFAULT NULL,
   `last_service_date` date DEFAULT NULL,
-  `last_service_type` varchar(50) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `last_service_type` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `next_service_reading` decimal(14,2) DEFAULT NULL,
-  `next_service_type` varchar(50) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `next_service_type` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `current_reading` decimal(14,2) DEFAULT NULL,
   `current_reading_date` date DEFAULT NULL,
   `remain_reading` decimal(14,2) DEFAULT NULL,
-  `service_status` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'Normal',
-  `remark` text COLLATE utf8mb4_unicode_ci,
+  `service_status` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'Normal',
+  `remark` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
   `sort_order` int NOT NULL DEFAULT '0',
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL,
@@ -1215,28 +1292,28 @@ DROP TABLE IF EXISTS `pm_schedules`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `pm_schedules` (
   `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `schedule_code` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `title` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'Preventive Maintenance Schedule',
-  `document_code` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'OF/EAMD/074',
-  `issue_no` varchar(20) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '1',
-  `page_no` varchar(30) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'Page 1 of 1',
+  `schedule_code` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `title` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'Preventive Maintenance Schedule',
+  `document_code` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'OF/EAMD/074',
+  `issue_no` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '1',
+  `page_no` varchar(30) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'Page 1 of 1',
   `project_id` bigint unsigned DEFAULT NULL,
-  `project_location` varchar(150) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `project_location` varchar(150) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `schedule_date` date DEFAULT NULL,
   `period_start` date DEFAULT NULL,
   `period_end` date DEFAULT NULL,
-  `status` enum('draft','submitted','checked','approved','rejected') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'draft',
+  `status` enum('draft','submitted','checked','approved','rejected') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'draft',
   `prepared_by` bigint unsigned DEFAULT NULL,
-  `prepared_name` varchar(150) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `prepared_name` varchar(150) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `prepared_at` timestamp NULL DEFAULT NULL,
   `checked_by` bigint unsigned DEFAULT NULL,
-  `checked_name` varchar(150) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `checked_name` varchar(150) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `checked_at` timestamp NULL DEFAULT NULL,
   `approved_by` bigint unsigned DEFAULT NULL,
-  `approved_name` varchar(150) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `approved_name` varchar(150) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `approved_at` timestamp NULL DEFAULT NULL,
-  `rejection_reason` text COLLATE utf8mb4_unicode_ci,
-  `notes` text COLLATE utf8mb4_unicode_ci,
+  `rejection_reason` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  `notes` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
   `created_by` bigint unsigned DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL,
@@ -1280,7 +1357,7 @@ CREATE TABLE `project_subcontractor` (
   `contract_amount` decimal(15,2) NOT NULL DEFAULT '0.00',
   `contract_start_date` date DEFAULT NULL,
   `contract_end_date` date DEFAULT NULL,
-  `scope_of_work` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `scope_of_work` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL,
   PRIMARY KEY (`id`),
@@ -1312,11 +1389,11 @@ CREATE TABLE `project_user` (
   `id` bigint unsigned NOT NULL AUTO_INCREMENT,
   `project_id` bigint unsigned NOT NULL,
   `user_id` bigint unsigned NOT NULL,
-  `role` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `role` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   `assigned_date` date DEFAULT NULL,
   `end_date` date DEFAULT NULL,
   `is_active` tinyint(1) NOT NULL DEFAULT '1',
-  `responsibilities` text COLLATE utf8mb4_unicode_ci,
+  `responsibilities` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL,
   PRIMARY KEY (`id`),
@@ -1346,19 +1423,19 @@ DROP TABLE IF EXISTS `projects`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `projects` (
   `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `project_code` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `name` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `location` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `client_name` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `consultant_name` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `contractor_name` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `project_code` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `name` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `location` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `client_name` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `consultant_name` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `contractor_name` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `contract_signing_date` date DEFAULT NULL,
   `start_date` date DEFAULT NULL,
   `end_date` date DEFAULT NULL,
   `contract_amount` decimal(15,2) NOT NULL DEFAULT '0.00',
   `tnt_share` decimal(5,2) DEFAULT '100.00',
-  `description` text COLLATE utf8mb4_unicode_ci,
-  `status` enum('active','completed','on_hold','cancelled') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'active',
+  `description` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  `status` enum('active','completed','on_hold','cancelled') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'active',
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL,
   `deleted_at` timestamp NULL DEFAULT NULL,
@@ -1387,19 +1464,19 @@ CREATE TABLE `quantity_takeoffs` (
   `id` bigint unsigned NOT NULL AUTO_INCREMENT,
   `project_id` bigint unsigned NOT NULL,
   `boq_item_id` bigint unsigned NOT NULL,
-  `structure_type` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `element_id` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `location_axis` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `structure_type` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `element_id` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `location_axis` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `quantity_count` int NOT NULL DEFAULT '1',
   `length` decimal(15,4) DEFAULT NULL,
   `width` decimal(15,4) DEFAULT NULL,
   `height_depth` decimal(15,4) DEFAULT NULL,
   `total_area_volume` decimal(15,4) DEFAULT NULL,
   `measurement_date` date NOT NULL,
-  `measured_by` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `verified_by` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `status` enum('draft','verified','approved') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'draft',
-  `remarks` text COLLATE utf8mb4_unicode_ci,
+  `measured_by` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `verified_by` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `status` enum('draft','verified','approved') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'draft',
+  `remarks` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL,
   PRIMARY KEY (`id`),
@@ -1428,9 +1505,9 @@ DROP TABLE IF EXISTS `roles`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `roles` (
   `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `name` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `display_name` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `description` text COLLATE utf8mb4_unicode_ci,
+  `name` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `display_name` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `description` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
   `permissions` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL,
@@ -1458,11 +1535,11 @@ DROP TABLE IF EXISTS `sessions`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `sessions` (
-  `id` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `id` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   `user_id` bigint unsigned DEFAULT NULL,
-  `ip_address` varchar(45) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `user_agent` text COLLATE utf8mb4_unicode_ci,
-  `payload` longtext COLLATE utf8mb4_unicode_ci NOT NULL,
+  `ip_address` varchar(45) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `user_agent` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  `payload` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   `last_activity` int NOT NULL,
   PRIMARY KEY (`id`),
   KEY `sessions_user_id_index` (`user_id`),
@@ -1476,7 +1553,7 @@ CREATE TABLE `sessions` (
 
 LOCK TABLES `sessions` WRITE;
 /*!40000 ALTER TABLE `sessions` DISABLE KEYS */;
-INSERT INTO `sessions` VALUES ('56RUY4cdNKfBJMnHr8Lg45t5cnztgwfpR34nN5py',1,'127.0.0.1','python-requests/2.32.5','eyJfdG9rZW4iOiJMTEduZkVKcGxjZFk5UHRzYXpGa2xOczNIMjJEaFpabllXb1l2NzJxIiwiX3ByZXZpb3VzIjp7InVybCI6Imh0dHA6XC9cLzEyNy4wLjAuMTo4MDAwXC9wcm9qZWN0cyIsInJvdXRlIjoicHJvamVjdHMuaW5kZXgifSwiX2ZsYXNoIjp7Im9sZCI6W10sIm5ldyI6W119LCJsb2dpbl93ZWJfNTliYTM2YWRkYzJiMmY5NDAxNTgwZjAxNGM3ZjU4ZWE0ZTMwOTg5ZCI6MX0=',1794992878),('Ax1n9Ldt7fCXfVzE4g2SWSDltdK1bw9ieWRqnVGB',1,'127.0.0.1','Python-urllib/3.14','eyJfdG9rZW4iOiI4cFVHaWc0Z2VuWklpb1kwY0lGTmNnSFRBQlJCcHJGTTBuNU84a3JjIiwiX3ByZXZpb3VzIjp7InVybCI6Imh0dHA6XC9cLzEyNy4wLjAuMTo4MDAwXC9jb250cmFjdHVhbC1yZXBvcnRzXC9jcmVhdGUiLCJyb3V0ZSI6ImNvbnRyYWN0dWFsLXJlcG9ydHMuY3JlYXRlIn0sIl9mbGFzaCI6eyJvbGQiOltdLCJuZXciOltdfSwibG9naW5fd2ViXzU5YmEzNmFkZGMyYjJmOTQwMTU4MGYwMTRjN2Y1OGVhNGUzMDk4OWQiOjF9',1794986526),('cESRcebp83bM6XzrO1lHHmr6Vr03voDRAKHNDgTN',1,'127.0.0.1','Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/156.0.0.0 Safari/537.36','eyJfdG9rZW4iOiIyME1KVGlrdzNMOWEwRFpORjFzdWV4U3hwbzlKdWNGZFUyNHM0REozIiwiX3ByZXZpb3VzIjp7InVybCI6Imh0dHA6XC9cLzEyNy4wLjAuMTo4MDAwXC9wcm9qZWN0c1wvMjQiLCJyb3V0ZSI6InByb2plY3RzLnNob3cifSwiX2ZsYXNoIjp7Im9sZCI6W10sIm5ldyI6W119LCJsb2dpbl93ZWJfNTliYTM2YWRkYzJiMmY5NDAxNTgwZjAxNGM3ZjU4ZWE0ZTMwOTg5ZCI6MX0=',1794993429),('CiKxSoHSsOUgPEKFpE0QlvQ5VkJmaUQYmVyYsXfu',1,'127.0.0.1','python-requests/2.32.5','eyJfdG9rZW4iOiJHck52NFJUbE0yUGxzUzA4QnRsMzMzMzhMVkwyZ3NVRzAyN0NTRVpIIiwiX3ByZXZpb3VzIjp7InVybCI6Imh0dHA6XC9cLzEyNy4wLjAuMTo4MDAwXC9wcm9qZWN0cz9wYWdlPTMiLCJyb3V0ZSI6InByb2plY3RzLmluZGV4In0sIl9mbGFzaCI6eyJvbGQiOltdLCJuZXciOltdfSwibG9naW5fd2ViXzU5YmEzNmFkZGMyYjJmOTQwMTU4MGYwMTRjN2Y1OGVhNGUzMDk4OWQiOjF9',1794992851),('GWXm846tLVEcPYNpkZF5mdp3e1U37ufBYxvcNbNQ',1,'127.0.0.1','python-requests/2.32.5','eyJfdG9rZW4iOiI0dU02NGhTUkpyTkJXaDZKZG56R3RDYTliaG5zNXhidWJxbTlIdEVqIiwiX3ByZXZpb3VzIjp7InVybCI6Imh0dHA6XC9cLzEyNy4wLjAuMTo4MDAwXC9hZG1pblwvZGF0YWJhc2UtYmFja3VwcyIsInJvdXRlIjoiYWRtaW4uZGF0YWJhc2UtYmFja3Vwcy5pbmRleCJ9LCJfZmxhc2giOnsib2xkIjpbXSwibmV3IjpbXX0sImxvZ2luX3dlYl81OWJhMzZhZGRjMmIyZjk0MDE1ODBmMDE0YzdmNThlYTRlMzA5ODlkIjoxfQ==',1794993981),('JE8odT26vKqgnsYaqknIXIZbvBy67z8EO0mN92ol',NULL,'127.0.0.1','curl/8.18.0','eyJfdG9rZW4iOiJaYXF6WTVRNWN1R3hsa2FLMTBYM2JWc1NJcGlNUVpqV0ZWSlE0bHM1IiwiX3ByZXZpb3VzIjp7InVybCI6Imh0dHA6XC9cLzEyNy4wLjAuMTo4MDAwXC9sb2dpbiIsInJvdXRlIjoibG9naW4ifSwiX2ZsYXNoIjp7Im9sZCI6W10sIm5ldyI6W119fQ==',1794986510),('jYkWVezMf7DQTnN2zt0RcLTSL08Ee0BTXPFhAqfc',1,'127.0.0.1','Python-urllib/3.14','eyJfdG9rZW4iOiIzQ0VNR0R5djJqWkdoY3BGRXV5Rkx3TkZiU09Db1NhUHloS3dGeTl0IiwiX3ByZXZpb3VzIjp7InVybCI6Imh0dHA6XC9cLzEyNy4wLjAuMTo4MDAwXC9jb250cmFjdHVhbC1yZXBvcnRzXC9jcmVhdGUiLCJyb3V0ZSI6ImNvbnRyYWN0dWFsLXJlcG9ydHMuY3JlYXRlIn0sIl9mbGFzaCI6eyJvbGQiOltdLCJuZXciOltdfSwibG9naW5fd2ViXzU5YmEzNmFkZGMyYjJmOTQwMTU4MGYwMTRjN2Y1OGVhNGUzMDk4OWQiOjF9',1794986563),('O2FMACYLml3G1o8N1mXrHHnqkqn2dYKP9I5HcnCw',1,'127.0.0.1','python-requests/2.32.5','eyJfdG9rZW4iOiJ3czNQMjhNWGFjRFdUZW8xYUVXdllSazlyUU12NklOb0QyWDE0dUdZIiwiX3ByZXZpb3VzIjp7InVybCI6Imh0dHA6XC9cLzEyNy4wLjAuMTo4MDAwXC9hZG1pblwvZGF0YWJhc2UtYmFja3VwcyIsInJvdXRlIjoiYWRtaW4uZGF0YWJhc2UtYmFja3Vwcy5pbmRleCJ9LCJfZmxhc2giOnsib2xkIjpbXSwibmV3IjpbXX0sImxvZ2luX3dlYl81OWJhMzZhZGRjMmIyZjk0MDE1ODBmMDE0YzdmNThlYTRlMzA5ODlkIjoxfQ==',1794994185),('poE8NaE2CkzSIAS243w5QECuGI12Qcj9mrath8P0',NULL,'127.0.0.1','curl/8.18.0','eyJfdG9rZW4iOiJmQ0JVWURFcVdPTmg4d0NybE1VT1NzTm1mRVZqRmRablZuS1dRWWY4IiwiX2ZsYXNoIjp7Im9sZCI6W10sIm5ldyI6W119fQ==',1794987068),('qnBKScgBOFm835GLuBJMln74NzA8B5I5rUi68w9n',NULL,'127.0.0.1','python-requests/2.32.5','eyJfdG9rZW4iOiJhcXRja083OHIwaDdlQkk1Y3FHTGxXUVh3TjFybWNPVTVDZENObExtIiwiX3ByZXZpb3VzIjp7InVybCI6Imh0dHA6XC9cLzEyNy4wLjAuMTo4MDAwXC9sb2dpbiIsInJvdXRlIjoibG9naW4ifSwiX2ZsYXNoIjp7Im9sZCI6W10sIm5ldyI6W119LCJ1cmwiOnsiaW50ZW5kZWQiOiJodHRwOlwvXC8xMjcuMC4wLjE6ODAwMFwvcHJvamVjdHMifX0=',1794992549),('tYcQP09tX2vAyVDDMHP8N1gm0kcTmipV6g7cktNk',1,'127.0.0.1','Python-urllib/3.14','eyJfdG9rZW4iOiJVZzJUcVJyTndqTkwwaGwzekwwQ1VralFCMnFsVDNzMnlBT0tGcG1PIiwiX3ByZXZpb3VzIjp7InVybCI6Imh0dHA6XC9cLzEyNy4wLjAuMTo4MDAwIiwicm91dGUiOiJkYXNoYm9hcmQifSwiX2ZsYXNoIjp7Im9sZCI6W10sIm5ldyI6W119LCJsb2dpbl93ZWJfNTliYTM2YWRkYzJiMmY5NDAxNTgwZjAxNGM3ZjU4ZWE0ZTMwOTg5ZCI6MX0=',1794986540),('uREISw49gnRYt9AeYWCEvcQHpXWmixWSjgwihbYC',1,'127.0.0.1','python-requests/2.32.5','eyJfdG9rZW4iOiJ3bkhhRWpOZFRCaHZCS3pqV0NMVG9wRE1zZjdTRTlmbzJaUFk3cmluIiwiX3ByZXZpb3VzIjp7InVybCI6Imh0dHA6XC9cLzEyNy4wLjAuMTo4MDAwXC9wcm9qZWN0cyIsInJvdXRlIjoicHJvamVjdHMuaW5kZXgifSwiX2ZsYXNoIjp7Im9sZCI6W10sIm5ldyI6W119LCJsb2dpbl93ZWJfNTliYTM2YWRkYzJiMmY5NDAxNTgwZjAxNGM3ZjU4ZWE0ZTMwOTg5ZCI6MX0=',1794992839),('YFoPK1eSV9TbZFVLZghq1qfmO8WjP1olJFVhcwot',1,'127.0.0.1','Python-urllib/3.14','eyJfdG9rZW4iOiJuRldrWXlJbXkxbzFJcUIydXJZNWxmSDZreFoyUnE5YXNLVXg2em9LIiwiX3ByZXZpb3VzIjp7InVybCI6Imh0dHA6XC9cLzEyNy4wLjAuMTo4MDAwXC9jb250cmFjdHVhbC1yZXBvcnRzXC9jcmVhdGUiLCJyb3V0ZSI6ImNvbnRyYWN0dWFsLXJlcG9ydHMuY3JlYXRlIn0sIl9mbGFzaCI6eyJvbGQiOltdLCJuZXciOltdfSwibG9naW5fd2ViXzU5YmEzNmFkZGMyYjJmOTQwMTU4MGYwMTRjN2Y1OGVhNGUzMDk4OWQiOjF9',1794986667),('zBwAMGlZjvyIv1NV13ShpKYiv3h84RzcaVHRNOh4',1,'127.0.0.1','python-requests/2.32.5','eyJfdG9rZW4iOiI0WHB1SXl6TkE3bHJhOWJpQ0ZjY2lhQVB4WWZmTUZqNnV4Zkg0WkJ5IiwiX3ByZXZpb3VzIjp7InVybCI6Imh0dHA6XC9cLzEyNy4wLjAuMTo4MDAwXC9jb250cmFjdHVhbC1yZXBvcnRzXC9jcmVhdGUiLCJyb3V0ZSI6ImNvbnRyYWN0dWFsLXJlcG9ydHMuY3JlYXRlIn0sIl9mbGFzaCI6eyJvbGQiOltdLCJuZXciOltdfSwibG9naW5fd2ViXzU5YmEzNmFkZGMyYjJmOTQwMTU4MGYwMTRjN2Y1OGVhNGUzMDk4OWQiOjF9',1794992886);
+INSERT INTO `sessions` VALUES ('0BKbdmGYLK6Bew8Ei1DU8LqLXOXSe64KQ57zW693',1,'127.0.0.1','python-requests/2.32.5','eyJfdG9rZW4iOiJGNllkVDQzOWViVnFxZjlZSDA2bnRINjNQTG8yYTZ4MlR3Wnc2V1hwIiwiX3ByZXZpb3VzIjp7InVybCI6Imh0dHA6XC9cLzEyNy4wLjAuMTo4MDAwXC9hZG1pblwvZGF0YWJhc2Utc3luY1wvcHJldmlld1wvc3luY18yMDI2MTExOF8xMDIyMTlfbncwZ2FzIiwicm91dGUiOiJhZG1pbi5kYXRhYmFzZS1zeW5jLnByZXZpZXcifSwiX2ZsYXNoIjp7Im9sZCI6W10sIm5ldyI6W119LCJsb2dpbl93ZWJfNTliYTM2YWRkYzJiMmY5NDAxNTgwZjAxNGM3ZjU4ZWE0ZTMwOTg5ZCI6MX0=',1794997369),('56RUY4cdNKfBJMnHr8Lg45t5cnztgwfpR34nN5py',1,'127.0.0.1','python-requests/2.32.5','eyJfdG9rZW4iOiJMTEduZkVKcGxjZFk5UHRzYXpGa2xOczNIMjJEaFpabllXb1l2NzJxIiwiX3ByZXZpb3VzIjp7InVybCI6Imh0dHA6XC9cLzEyNy4wLjAuMTo4MDAwXC9wcm9qZWN0cyIsInJvdXRlIjoicHJvamVjdHMuaW5kZXgifSwiX2ZsYXNoIjp7Im9sZCI6W10sIm5ldyI6W119LCJsb2dpbl93ZWJfNTliYTM2YWRkYzJiMmY5NDAxNTgwZjAxNGM3ZjU4ZWE0ZTMwOTg5ZCI6MX0=',1794992878),('acPXag6Mtc8uNqwzZICThOAL8HU0llxHDDtz3Lf6',NULL,'127.0.0.1','python-requests/2.32.5','eyJfdG9rZW4iOiJxaWR0Z01LdE9rdUVad0xETnplM2h0TThnaGoxNkZ6RzB6dEZWTTFSIiwidXJsIjp7ImludGVuZGVkIjoiaHR0cDpcL1wvMTI3LjAuMC4xOjgwMDBcL2FkbWluXC9kYXRhYmFzZS1zeW5jXC9wcmV2aWV3XC9zeW5jXzIwMjYxMTE4XzEwMjIxOV9udzBnYXMifSwiX3ByZXZpb3VzIjp7InVybCI6Imh0dHA6XC9cLzEyNy4wLjAuMTo4MDAwXC9sb2dpbiIsInJvdXRlIjoibG9naW4ifSwiX2ZsYXNoIjp7Im9sZCI6W10sIm5ldyI6W119fQ==',1794997360),('cESRcebp83bM6XzrO1lHHmr6Vr03voDRAKHNDgTN',1,'127.0.0.1','Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/156.0.0.0 Safari/537.36','eyJfdG9rZW4iOiIyME1KVGlrdzNMOWEwRFpORjFzdWV4U3hwbzlKdWNGZFUyNHM0REozIiwiX3ByZXZpb3VzIjp7InVybCI6Imh0dHA6XC9cLzEyNy4wLjAuMTo4MDAwXC9hZG1pblwvZGF0YWJhc2UtYmFja3Vwc1wvZG93bmxvYWRcL2NvbnN0cnVjdGlvbl9tYW5hZ2VtZW50LnNxbCIsInJvdXRlIjoiYWRtaW4uZGF0YWJhc2UtYmFja3Vwcy5kb3dubG9hZCJ9LCJfZmxhc2giOnsib2xkIjpbXSwibmV3IjpbXX0sImxvZ2luX3dlYl81OWJhMzZhZGRjMmIyZjk0MDE1ODBmMDE0YzdmNThlYTRlMzA5ODlkIjoxfQ==',1794996290),('CiKxSoHSsOUgPEKFpE0QlvQ5VkJmaUQYmVyYsXfu',1,'127.0.0.1','python-requests/2.32.5','eyJfdG9rZW4iOiJHck52NFJUbE0yUGxzUzA4QnRsMzMzMzhMVkwyZ3NVRzAyN0NTRVpIIiwiX3ByZXZpb3VzIjp7InVybCI6Imh0dHA6XC9cLzEyNy4wLjAuMTo4MDAwXC9wcm9qZWN0cz9wYWdlPTMiLCJyb3V0ZSI6InByb2plY3RzLmluZGV4In0sIl9mbGFzaCI6eyJvbGQiOltdLCJuZXciOltdfSwibG9naW5fd2ViXzU5YmEzNmFkZGMyYjJmOTQwMTU4MGYwMTRjN2Y1OGVhNGUzMDk4OWQiOjF9',1794992851),('GWXm846tLVEcPYNpkZF5mdp3e1U37ufBYxvcNbNQ',1,'127.0.0.1','python-requests/2.32.5','eyJfdG9rZW4iOiI0dU02NGhTUkpyTkJXaDZKZG56R3RDYTliaG5zNXhidWJxbTlIdEVqIiwiX3ByZXZpb3VzIjp7InVybCI6Imh0dHA6XC9cLzEyNy4wLjAuMTo4MDAwXC9hZG1pblwvZGF0YWJhc2UtYmFja3VwcyIsInJvdXRlIjoiYWRtaW4uZGF0YWJhc2UtYmFja3Vwcy5pbmRleCJ9LCJfZmxhc2giOnsib2xkIjpbXSwibmV3IjpbXX0sImxvZ2luX3dlYl81OWJhMzZhZGRjMmIyZjk0MDE1ODBmMDE0YzdmNThlYTRlMzA5ODlkIjoxfQ==',1794993981),('hF2zCooZS9kSEbI7GwDaq2vQkWSa85uKNLA6v3ff',1,'127.0.0.1','python-requests/2.32.5','eyJfdG9rZW4iOiJYUUNwWjU0SzZOMFh0bVo4OXp4UGpjdUlBVEdOZ0UyNlByT3hqUWdKIiwiX3ByZXZpb3VzIjp7InVybCI6Imh0dHA6XC9cLzEyNy4wLjAuMTo4MDAwXC9hZG1pblwvZGF0YWJhc2Utc3luYyIsInJvdXRlIjoiYWRtaW4uZGF0YWJhc2Utc3luYy5pbmRleCJ9LCJfZmxhc2giOnsib2xkIjpbXSwibmV3IjpbXX0sImxvZ2luX3dlYl81OWJhMzZhZGRjMmIyZjk0MDE1ODBmMDE0YzdmNThlYTRlMzA5ODlkIjoxfQ==',1794997308),('O2FMACYLml3G1o8N1mXrHHnqkqn2dYKP9I5HcnCw',1,'127.0.0.1','python-requests/2.32.5','eyJfdG9rZW4iOiJ3czNQMjhNWGFjRFdUZW8xYUVXdllSazlyUU12NklOb0QyWDE0dUdZIiwiX3ByZXZpb3VzIjp7InVybCI6Imh0dHA6XC9cLzEyNy4wLjAuMTo4MDAwXC9hZG1pblwvZGF0YWJhc2UtYmFja3VwcyIsInJvdXRlIjoiYWRtaW4uZGF0YWJhc2UtYmFja3Vwcy5pbmRleCJ9LCJfZmxhc2giOnsib2xkIjpbXSwibmV3IjpbXX0sImxvZ2luX3dlYl81OWJhMzZhZGRjMmIyZjk0MDE1ODBmMDE0YzdmNThlYTRlMzA5ODlkIjoxfQ==',1794994185),('qnBKScgBOFm835GLuBJMln74NzA8B5I5rUi68w9n',NULL,'127.0.0.1','python-requests/2.32.5','eyJfdG9rZW4iOiJhcXRja083OHIwaDdlQkk1Y3FHTGxXUVh3TjFybWNPVTVDZENObExtIiwiX3ByZXZpb3VzIjp7InVybCI6Imh0dHA6XC9cLzEyNy4wLjAuMTo4MDAwXC9sb2dpbiIsInJvdXRlIjoibG9naW4ifSwiX2ZsYXNoIjp7Im9sZCI6W10sIm5ldyI6W119LCJ1cmwiOnsiaW50ZW5kZWQiOiJodHRwOlwvXC8xMjcuMC4wLjE6ODAwMFwvcHJvamVjdHMifX0=',1794992549),('uonuf320roIsGCSSUHifaJcwGiomLLfvCwKqJOkP',NULL,'127.0.0.1','curl/8.18.0','eyJfdG9rZW4iOiJtUWhlWVNCa3Vvc0lyZ0NqOGtxMUN1ZHRjQlRIaXVua3NEdzdzR2IxIiwiX2ZsYXNoIjp7Im9sZCI6W10sIm5ldyI6W119fQ==',1794994229),('uREISw49gnRYt9AeYWCEvcQHpXWmixWSjgwihbYC',1,'127.0.0.1','python-requests/2.32.5','eyJfdG9rZW4iOiJ3bkhhRWpOZFRCaHZCS3pqV0NMVG9wRE1zZjdTRTlmbzJaUFk3cmluIiwiX3ByZXZpb3VzIjp7InVybCI6Imh0dHA6XC9cLzEyNy4wLjAuMTo4MDAwXC9wcm9qZWN0cyIsInJvdXRlIjoicHJvamVjdHMuaW5kZXgifSwiX2ZsYXNoIjp7Im9sZCI6W10sIm5ldyI6W119LCJsb2dpbl93ZWJfNTliYTM2YWRkYzJiMmY5NDAxNTgwZjAxNGM3ZjU4ZWE0ZTMwOTg5ZCI6MX0=',1794992839),('utyDrgDbaLLSMydr1qGGw38ZmAxYfymSs3PStk3L',1,'127.0.0.1','python-requests/2.32.5','eyJfdG9rZW4iOiJ5Ym1MWnlSUHNFRDlidnlwbmFtWENxZlRMQTdscDBiMDlOSGZUczBOIiwiX3ByZXZpb3VzIjp7InVybCI6Imh0dHA6XC9cLzEyNy4wLjAuMTo4MDAwXC9hZG1pblwvZGF0YWJhc2Utc3luY1wvcHJldmlld1wvc3luY18yMDI2MTExOF8xMDIyMTlfbncwZ2FzIiwicm91dGUiOiJhZG1pbi5kYXRhYmFzZS1zeW5jLnByZXZpZXcifSwiX2ZsYXNoIjp7Im9sZCI6W10sIm5ldyI6W119LCJsb2dpbl93ZWJfNTliYTM2YWRkYzJiMmY5NDAxNTgwZjAxNGM3ZjU4ZWE0ZTMwOTg5ZCI6MX0=',1794997339),('w6ZSU6IxixsIqfQfcWtHPCCU5ikQ779Vwx3h3OiF',1,'127.0.0.1','python-requests/2.32.5','eyJfdG9rZW4iOiJ6TUJvclB5dFBrNFBzVTV3YkhqeU1SaEliTzZia1oyamxLT0pTSWYzIiwiX3ByZXZpb3VzIjp7InVybCI6Imh0dHA6XC9cLzEyNy4wLjAuMTo4MDAwXC9hZG1pblwvZGF0YWJhc2Utc3luY1wvcHJldmlld1wvc3luY18yMDI2MTExOF8xMDI4MzJfY2ZvZmw3Iiwicm91dGUiOiJhZG1pbi5kYXRhYmFzZS1zeW5jLnByZXZpZXcifSwiX2ZsYXNoIjp7Im9sZCI6W10sIm5ldyI6W119LCJsb2dpbl93ZWJfNTliYTM2YWRkYzJiMmY5NDAxNTgwZjAxNGM3ZjU4ZWE0ZTMwOTg5ZCI6MX0=',1794997712),('zBwAMGlZjvyIv1NV13ShpKYiv3h84RzcaVHRNOh4',1,'127.0.0.1','python-requests/2.32.5','eyJfdG9rZW4iOiI0WHB1SXl6TkE3bHJhOWJpQ0ZjY2lhQVB4WWZmTUZqNnV4Zkg0WkJ5IiwiX3ByZXZpb3VzIjp7InVybCI6Imh0dHA6XC9cLzEyNy4wLjAuMTo4MDAwXC9jb250cmFjdHVhbC1yZXBvcnRzXC9jcmVhdGUiLCJyb3V0ZSI6ImNvbnRyYWN0dWFsLXJlcG9ydHMuY3JlYXRlIn0sIl9mbGFzaCI6eyJvbGQiOltdLCJuZXciOltdfSwibG9naW5fd2ViXzU5YmEzNmFkZGMyYjJmOTQwMTU4MGYwMTRjN2Y1OGVhNGUzMDk4OWQiOjF9',1794992886);
 /*!40000 ALTER TABLE `sessions` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -1489,9 +1566,9 @@ DROP TABLE IF EXISTS `settings`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `settings` (
   `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `key` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `value` text COLLATE utf8mb4_unicode_ci,
-  `group` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'general',
+  `key` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `value` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  `group` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'general',
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL,
   PRIMARY KEY (`id`),
@@ -1517,12 +1594,12 @@ DROP TABLE IF EXISTS `subcontractors`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `subcontractors` (
   `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `name` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `contact_person` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `email` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `phone` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `address` text COLLATE utf8mb4_unicode_ci,
-  `tax_id` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `name` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `contact_person` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `email` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `phone` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `address` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  `tax_id` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `is_active` tinyint(1) NOT NULL DEFAULT '1',
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL,
@@ -1551,8 +1628,8 @@ DROP TABLE IF EXISTS `takeoff_descriptions`;
 CREATE TABLE `takeoff_descriptions` (
   `id` bigint unsigned NOT NULL AUTO_INCREMENT,
   `takeoff_item_id` bigint unsigned NOT NULL,
-  `side` enum('left','right') COLLATE utf8mb4_unicode_ci NOT NULL,
-  `description` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `side` enum('left','right') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `description` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   `display_order` int NOT NULL DEFAULT '0',
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL,
@@ -1582,8 +1659,8 @@ CREATE TABLE `takeoff_items` (
   `id` bigint unsigned NOT NULL AUTO_INCREMENT,
   `takeoff_sheet_id` bigint unsigned NOT NULL,
   `boq_item_id` bigint unsigned DEFAULT NULL,
-  `item_number` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `description` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `item_number` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `description` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `display_order` int NOT NULL DEFAULT '0',
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL,
@@ -1619,7 +1696,7 @@ CREATE TABLE `takeoff_measurements` (
   `width` decimal(15,4) NOT NULL DEFAULT '1.0000',
   `height_depth` decimal(15,4) NOT NULL DEFAULT '1.0000',
   `total_area_volume` decimal(15,4) NOT NULL DEFAULT '0.0000',
-  `remarks` text COLLATE utf8mb4_unicode_ci,
+  `remarks` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
   `display_order` int NOT NULL DEFAULT '0',
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL,
@@ -1648,15 +1725,15 @@ DROP TABLE IF EXISTS `takeoff_sheets`;
 CREATE TABLE `takeoff_sheets` (
   `id` bigint unsigned NOT NULL AUTO_INCREMENT,
   `project_id` bigint unsigned NOT NULL,
-  `sheet_number` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `division` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `sheet_number` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `division` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `page_no` int NOT NULL DEFAULT '1',
   `measurement_date` date NOT NULL,
-  `measured_by` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `verified_by` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `approved_by` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `status` enum('draft','verified','approved') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'draft',
-  `remarks` text COLLATE utf8mb4_unicode_ci,
+  `measured_by` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `verified_by` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `approved_by` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `status` enum('draft','verified','approved') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'draft',
+  `remarks` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL,
   PRIMARY KEY (`id`),
@@ -1683,11 +1760,11 @@ DROP TABLE IF EXISTS `tax_settings`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `tax_settings` (
   `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `key` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `display_name` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `key` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `display_name` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   `rate` decimal(8,2) NOT NULL DEFAULT '0.00',
-  `type` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'percentage',
-  `description` text COLLATE utf8mb4_unicode_ci,
+  `type` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'percentage',
+  `description` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
   `is_active` tinyint(1) NOT NULL DEFAULT '1',
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL,
@@ -1718,23 +1795,23 @@ CREATE TABLE `users` (
   `role_id` bigint unsigned DEFAULT NULL,
   `custom_permissions` json DEFAULT NULL,
   `is_super_admin` tinyint(1) NOT NULL DEFAULT '0',
-  `name` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `username` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `email` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `name` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `username` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `email` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   `email_verified_at` timestamp NULL DEFAULT NULL,
-  `password` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `remember_token` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `password` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `remember_token` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL,
-  `role` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'engineer',
-  `department` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `phone` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `role` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'engineer',
+  `department` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `phone` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `is_active` tinyint(1) NOT NULL DEFAULT '1',
   `deleted_at` timestamp NULL DEFAULT NULL,
-  `position` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `avatar` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `position` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `avatar` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `last_login_at` timestamp NULL DEFAULT NULL,
-  `last_login_ip` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `last_login_ip` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `users_email_unique` (`email`),
   UNIQUE KEY `users_username_unique` (`username`),
@@ -1749,7 +1826,7 @@ CREATE TABLE `users` (
 
 LOCK TABLES `users` WRITE;
 /*!40000 ALTER TABLE `users` DISABLE KEYS */;
-INSERT INTO `users` VALUES (1,1,NULL,0,'System Administrator',NULL,'admin@cms.com',NULL,'$2y$12$DCvhWevR2Gp/AjoxCk8WDuPgX.D4C5g6FXjaoJmKlEFdcwHRqgBv2',NULL,'2026-07-13 17:04:07','2026-11-18 06:29:45','engineer','IT Department',NULL,1,NULL,'System Administrator','avatars/oXS2CBcJmrbY1Jnsy8LkkPSjE6MaENBlzwYS5nfd.png','2026-11-18 06:29:45','127.0.0.1'),(2,2,NULL,0,'Abebe Kebede',NULL,'manager@cms.com',NULL,'$2y$12$Poh0vYLFZMSYnSoxJVd3zuhj3/YJ.bmb/Z/OZ7Tvo3Q8RHZ7uUNqK',NULL,'2026-07-13 17:04:07','2026-07-15 19:19:50','engineer','Project Management',NULL,1,NULL,'Senior Project Manager',NULL,'2026-07-15 19:19:50','127.0.0.1'),(3,3,NULL,0,'Tigist Haile',NULL,'engineer@cms.com',NULL,'$2y$12$7beEP9daZ/WiLLCzL5/1BuSfjtni3C7A3bv3weEWQP8sNrrwhZDnm',NULL,'2026-07-13 17:04:07','2026-07-13 19:19:50','engineer','Engineering',NULL,1,NULL,'Quantity Surveyor',NULL,'2026-07-13 19:19:50','127.0.0.1'),(4,4,NULL,0,'Meron Alemu',NULL,'finance@cms.com',NULL,'$2y$12$MJRqwScC8.Zr1BTb.AaKZuNfVrN8MJm7l.6exl99n1MzYKAaXaYB6',NULL,'2026-07-13 17:04:07','2026-07-13 17:04:07','engineer','Finance',NULL,1,NULL,'Finance Officer',NULL,NULL,NULL),(5,5,NULL,0,'Bereket Tadesse',NULL,'viewer@cms.com',NULL,'$2y$12$3Jr1HJQRBUY74H2UdCTgD.ChQVAh7gxUkM20r7K1mrVaXGNk2nlRe',NULL,'2026-07-13 17:04:07','2026-07-13 17:04:07','engineer','Management',NULL,1,NULL,'Stakeholder',NULL,NULL,NULL),(6,6,NULL,0,'menor','menor','menor@contrat.com',NULL,'$2y$12$qv8Pd4d87Rqgls5jg4O9ZeLU9PP3//ZHRyUkl9QiY7Hq8eZrThc0e',NULL,'2026-11-17 07:36:23','2026-11-17 09:37:59','engineer','contrat','0926520212',1,NULL,'Sunnier Contract',NULL,'2026-11-17 09:37:59','127.0.0.1');
+INSERT INTO `users` VALUES (1,1,NULL,0,'System Administrator',NULL,'admin@cms.com',NULL,'$2y$12$DCvhWevR2Gp/AjoxCk8WDuPgX.D4C5g6FXjaoJmKlEFdcwHRqgBv2',NULL,'2026-07-13 17:04:07','2026-11-18 07:28:32','engineer','IT Department',NULL,1,NULL,'System Administrator','avatars/oXS2CBcJmrbY1Jnsy8LkkPSjE6MaENBlzwYS5nfd.png','2026-11-18 07:28:32','127.0.0.1'),(2,2,NULL,0,'Abebe Kebede',NULL,'manager@cms.com',NULL,'$2y$12$Poh0vYLFZMSYnSoxJVd3zuhj3/YJ.bmb/Z/OZ7Tvo3Q8RHZ7uUNqK',NULL,'2026-07-13 17:04:07','2026-07-15 19:19:50','engineer','Project Management',NULL,1,NULL,'Senior Project Manager',NULL,'2026-07-15 19:19:50','127.0.0.1'),(3,3,NULL,0,'Tigist Haile',NULL,'engineer@cms.com',NULL,'$2y$12$7beEP9daZ/WiLLCzL5/1BuSfjtni3C7A3bv3weEWQP8sNrrwhZDnm',NULL,'2026-07-13 17:04:07','2026-07-13 19:19:50','engineer','Engineering',NULL,1,NULL,'Quantity Surveyor',NULL,'2026-07-13 19:19:50','127.0.0.1'),(4,4,NULL,0,'Meron Alemu',NULL,'finance@cms.com',NULL,'$2y$12$MJRqwScC8.Zr1BTb.AaKZuNfVrN8MJm7l.6exl99n1MzYKAaXaYB6',NULL,'2026-07-13 17:04:07','2026-07-13 17:04:07','engineer','Finance',NULL,1,NULL,'Finance Officer',NULL,NULL,NULL),(5,5,NULL,0,'Bereket Tadesse',NULL,'viewer@cms.com',NULL,'$2y$12$3Jr1HJQRBUY74H2UdCTgD.ChQVAh7gxUkM20r7K1mrVaXGNk2nlRe',NULL,'2026-07-13 17:04:07','2026-07-13 17:04:07','engineer','Management',NULL,1,NULL,'Stakeholder',NULL,NULL,NULL),(6,6,NULL,0,'menor','menor','menor@contrat.com',NULL,'$2y$12$qv8Pd4d87Rqgls5jg4O9ZeLU9PP3//ZHRyUkl9QiY7Hq8eZrThc0e',NULL,'2026-11-17 07:36:23','2026-11-17 09:37:59','engineer','contrat','0926520212',1,NULL,'Sunnier Contract',NULL,'2026-11-17 09:37:59','127.0.0.1');
 /*!40000 ALTER TABLE `users` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -1763,7 +1840,7 @@ DROP TABLE IF EXISTS `workflow_permissions`;
 CREATE TABLE `workflow_permissions` (
   `id` bigint unsigned NOT NULL AUTO_INCREMENT,
   `user_id` bigint unsigned NOT NULL,
-  `workflow_step` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `workflow_step` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   `can_act` tinyint(1) NOT NULL DEFAULT '1',
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL,
@@ -1796,4 +1873,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2026-11-18 12:29:45
+-- Dump completed on 2026-11-18 13:28:35

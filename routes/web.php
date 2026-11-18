@@ -439,6 +439,13 @@ Route::middleware(['auth'])->group(function () {
             Route::post('/database-backups/run-daily', [App\Http\Controllers\Admin\DatabaseBackupController::class, 'runDailySync'])->name('database-backups.run-daily');
             Route::get('/database-backups/download/{filename}', [App\Http\Controllers\Admin\DatabaseBackupController::class, 'download'])->name('database-backups.download');
             Route::delete('/database-backups/{filename}', [App\Http\Controllers\Admin\DatabaseBackupController::class, 'destroy'])->name('database-backups.destroy');
+
+            // Smart Database Import & Synchronization (Preserve Existing Data)
+            Route::get('/database-sync', [App\Http\Controllers\Admin\SmartDatabaseSyncController::class, 'index'])->name('database-sync.index');
+            Route::post('/database-sync/upload', [App\Http\Controllers\Admin\SmartDatabaseSyncController::class, 'upload'])->name('database-sync.upload');
+            Route::get('/database-sync/preview/{batchId}', [App\Http\Controllers\Admin\SmartDatabaseSyncController::class, 'preview'])->name('database-sync.preview');
+            Route::post('/database-sync/apply/{batchId}', [App\Http\Controllers\Admin\SmartDatabaseSyncController::class, 'apply'])->name('database-sync.apply');
+            Route::post('/database-sync/rollback/{batchId}', [App\Http\Controllers\Admin\SmartDatabaseSyncController::class, 'rollback'])->name('database-sync.rollback');
         });
 
         // Audit Trail

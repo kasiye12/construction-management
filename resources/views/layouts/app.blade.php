@@ -188,6 +188,7 @@
             @endif
             @if(auth()->user()->hasPermission('database.backup') || auth()->user()->hasPermission('settings.manage'))
             <a href="{{ route('admin.database-backups.index') }}" class="{{ request()->routeIs('admin.database-backups.*') ? 'active' : '' }}"><i class="fas fa-database"></i> Database Backup</a>
+            <a href="{{ route('admin.database-sync.index') }}" class="{{ request()->routeIs('admin.database-sync.*') ? 'active' : '' }}"><i class="fas fa-sync-alt"></i> Smart DB Sync</a>
             @endif
             @if(auth()->user()->hasPermission('audit.view'))
             <a href="{{ route('admin.audit.index') }}" class="{{ request()->routeIs('admin.audit.*') ? 'active' : '' }}"><i class="fas fa-history"></i> Audit Trail</a>

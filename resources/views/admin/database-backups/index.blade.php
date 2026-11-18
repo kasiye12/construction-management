@@ -17,6 +17,9 @@
             </nav>
         </div>
         <div class="d-flex gap-2 align-items-center flex-wrap">
+            <a href="{{ route('admin.database-sync.index') }}" class="btn btn-outline-primary">
+                <i class="fas fa-magic me-1"></i> Smart DB Import & Sync
+            </a>
             <a href="{{ route('admin.database-backups.download', ['filename' => 'construction_management.sql']) }}" class="btn btn-outline-info">
                 <i class="fas fa-download me-1"></i> Download Master Dump (.sql)
             </a>
