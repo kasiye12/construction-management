@@ -6,6 +6,7 @@ use App\Models\Ipc;
 use App\Models\BoqItem;
 use App\Models\Notification;
 use App\Models\Role;
+use App\Services\ProjectImportExportService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
@@ -37,28 +38,96 @@ class ProjectController extends Controller
         return $query;
     }
 
-    public function index()
+    public function index(Request $request)
     {
-        $projects = $this->getUserProjects()->orderBy('created_at', 'desc')->paginate(10);
+        $query = $this->getUserProjects();
+
+        if ($request->filled('search')) {
+            $search = trim($request->query('search'));
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                  ->orWhere('project_code', 'like', "%{$search}%")
+                  ->orWhere('location', 'like', "%{$search}%")
+                  ->orWhere('client_name', 'like', "%{$search}%")
+                  ->orWhere('consultant_name', 'like', "%{$search}%");
+            });
+        }
+
+        $projects = $query->orderBy('created_at', 'desc')->paginate(15)->appends($request->query());
         return view('projects.index', compact('projects'));
     }
 
     public function create() { return view('projects.create'); }
 
+    public function importView()
+    {
+        return view('projects.import');
+    }
+
+    public function downloadTemplate(Request $request, ProjectImportExportService $importService)
+    {
+        $format = strtolower($request->query('format', 'xlsx'));
+        if (!in_array($format, ['xlsx', 'csv'])) {
+            $format = 'xlsx';
+        }
+
+        try {
+            $filePath = $importService->generateTemplate($format);
+            $filename = 'TNT_Projects_Master_Import_Template.' . ($format === 'csv' ? 'csv' : 'xlsx');
+            
+            return response()->download($filePath, $filename);
+        } catch (\Throwable $e) {
+            return back()->with('error', 'Could not generate template: ' . $e->getMessage());
+        }
+    }
+
+    public function import(Request $request, ProjectImportExportService $importService)
+    {
+        $request->validate([
+            'file' => 'required|file|mimes:xlsx,xls,csv,txt|max:30720',
+            'update_existing' => 'nullable|boolean',
+        ]);
+
+        try {
+            $updateExisting = $request->boolean('update_existing', true);
+            $result = $importService->importFromFile(
+                $request->file('file'),
+                $updateExisting,
+                Auth::id()
+            );
+
+            $msg = "Import completed successfully! " . 
+                   "{$result['imported_count']} new project(s) imported, " .
+                   "{$result['updated_count']} updated, " .
+                   "{$result['skipped_count']} skipped.";
+
+            return redirect()->route('projects.index')->with('success', $msg);
+        } catch (\Throwable $e) {
+            return back()->with('error', 'Import failed: ' . $e->getMessage());
+        }
+    }
+
     public function store(Request $request)
     {
         $validated = $request->validate([
+            'project_code' => 'nullable|string|max:100',
             'name' => 'required|string|max:255|min:3',
             'location' => 'nullable|string|max:255',
             'client_name' => 'nullable|string|max:255',
             'consultant_name' => 'nullable|string|max:255',
             'contractor_name' => 'nullable|string|max:255',
+            'contract_signing_date' => 'nullable|date',
             'start_date' => 'nullable|date',
             'end_date' => 'nullable|date|after_or_equal:start_date',
             'contract_amount' => 'nullable|numeric|min:0',
+            'tnt_share' => 'nullable|numeric|min:0|max:100',
             'description' => 'nullable|string',
             'status' => 'required|in:active,completed,on_hold,cancelled'
         ]);
+
+        if (empty($validated['start_date']) && !empty($validated['contract_signing_date'])) {
+            $validated['start_date'] = $validated['contract_signing_date'];
+        }
         
         $project = Project::create($validated);
         
@@ -97,17 +166,25 @@ class ProjectController extends Controller
         if (!$this->canAccessProject($project)) abort(403);
         
         $validated = $request->validate([
+            'project_code' => 'nullable|string|max:100',
             'name' => 'required|string|max:255|min:3',
             'location' => 'nullable|string|max:255',
             'client_name' => 'nullable|string|max:255',
             'consultant_name' => 'nullable|string|max:255',
             'contractor_name' => 'nullable|string|max:255',
+            'contract_signing_date' => 'nullable|date',
             'start_date' => 'nullable|date',
             'end_date' => 'nullable|date|after_or_equal:start_date',
             'contract_amount' => 'nullable|numeric|min:0',
+            'tnt_share' => 'nullable|numeric|min:0|max:100',
             'description' => 'nullable|string',
             'status' => 'required|in:active,completed,on_hold,cancelled'
         ]);
+
+        if (empty($validated['start_date']) && !empty($validated['contract_signing_date'])) {
+            $validated['start_date'] = $validated['contract_signing_date'];
+        }
+
         $project->update($validated);
         return redirect()->route('projects.index')->with('success', 'Project updated.');
     }
@@ -202,7 +279,9 @@ class ProjectController extends Controller
     private function canAccessProject(Project $project): bool
     {
         $user = Auth::user();
-        if ($user->isAdmin()) return true;
+        if (!$user) return false;
+        if ($user->isAdmin() || $user->is_super_admin) return true;
+        if ($user->hasPermission('projects.view')) return true;
         return $project->teamMembers()->where('user_id', $user->id)->where('project_user.is_active', true)->exists();
     }
 }

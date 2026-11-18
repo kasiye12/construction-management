@@ -51,9 +51,12 @@ Route::middleware(['auth'])->group(function () {
         Route::delete('/documents/{document}', [App\Http\Controllers\DocumentController::class, 'destroy'])->name('documents.destroy');
     });
 
-    // 1. Projects (create defined before {project} to prevent route model binding conflicts)
+    // 1. Projects (create & import defined before {project} to prevent route model binding conflicts)
     Route::middleware('permission:projects.create')->group(function () {
         Route::get('/projects/create', [App\Http\Controllers\ProjectController::class, 'create'])->name('projects.create');
+        Route::get('/projects/import', [App\Http\Controllers\ProjectController::class, 'importView'])->name('projects.import');
+        Route::post('/projects/import', [App\Http\Controllers\ProjectController::class, 'import'])->name('projects.import.post');
+        Route::get('/projects/template/download', [App\Http\Controllers\ProjectController::class, 'downloadTemplate'])->name('projects.template.download');
         Route::post('/projects', [App\Http\Controllers\ProjectController::class, 'store'])->name('projects.store');
         Route::post('/projects/{project}/subcontractors/assign', [App\Http\Controllers\ProjectSubcontractorController::class, 'assign'])->name('projects.subcontractors.assign');
         Route::post('/projects/{project}/team/assign', [App\Http\Controllers\TeamController::class, 'assign'])->name('projects.team.assign');

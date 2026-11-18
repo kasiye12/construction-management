@@ -11,15 +11,31 @@ class Project extends Model
     use HasFactory, SoftDeletes, HasDocuments;
 
     protected $fillable = [
-        'name', 'location', 'client_name', 'consultant_name', 'contractor_name', 'start_date',
-        'end_date', 'contract_amount', 'description', 'status'
+        'project_code', 'name', 'location', 'client_name', 'consultant_name', 'contractor_name',
+        'contract_signing_date', 'start_date', 'end_date', 'contract_amount', 'tnt_share',
+        'description', 'status'
     ];
 
     protected $casts = [
+        'contract_signing_date' => 'date',
         'start_date' => 'date',
         'end_date' => 'date',
-        'contract_amount' => 'decimal:2'
+        'contract_amount' => 'decimal:2',
+        'tnt_share' => 'decimal:2',
     ];
+
+    public function getFormattedTntShareAttribute(): string
+    {
+        if ($this->tnt_share === null) {
+            return '100%';
+        }
+        $val = (float) $this->tnt_share;
+        // If stored as 1.00 or <= 1, convert to percentage representation
+        if ($val <= 1.0 && $val > 0) {
+            $val = $val * 100;
+        }
+        return (fmod($val, 1) === 0.0 ? (int)$val : number_format($val, 2)) . '%';
+    }
 
     public function contractualReports() { return $this->hasMany(ContractualReport::class); }
     public function equipment() { return $this->hasMany(Equipment::class); }

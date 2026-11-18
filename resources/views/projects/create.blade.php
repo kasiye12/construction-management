@@ -20,13 +20,23 @@
             <form action="{{ route('projects.store') }}" method="POST">
                 @csrf
                 
-                <div class="mb-3">
-                    <label for="name" class="form-label">Project Name <span class="text-danger">*</span></label>
-                    <input type="text" class="form-control @error('name') is-invalid @enderror" 
-                           id="name" name="name" value="{{ old('name') }}" required>
-                    @error('name')
-                        <div class="invalid-feedback">{{ $message }}</div>
-                    @enderror
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <label for="project_code" class="form-label">Project Code / No</label>
+                        <input type="text" class="form-control @error('project_code') is-invalid @enderror" 
+                               id="project_code" name="project_code" value="{{ old('project_code') }}" placeholder="e.g. PRJ-001">
+                        @error('project_code')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
+                    </div>
+                    <div class="col-md-8 mb-3">
+                        <label for="name" class="form-label">Project Name <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control @error('name') is-invalid @enderror" 
+                               id="name" name="name" value="{{ old('name') }}" required>
+                        @error('name')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
+                    </div>
                 </div>
                 
                 <div class="row">
@@ -56,17 +66,22 @@
                 </div>
                 
                 <div class="row">
-                    <div class="col-md-4 mb-3">
+                    <div class="col-md-3 mb-3">
+                        <label for="contract_signing_date" class="form-label">Contract Signing Date</label>
+                        <input type="date" class="form-control" id="contract_signing_date" name="contract_signing_date" 
+                               value="{{ old('contract_signing_date') }}">
+                    </div>
+                    <div class="col-md-3 mb-3">
                         <label for="start_date" class="form-label">Start Date</label>
                         <input type="date" class="form-control" id="start_date" name="start_date" 
                                value="{{ old('start_date') }}">
                     </div>
-                    <div class="col-md-4 mb-3">
+                    <div class="col-md-3 mb-3">
                         <label for="end_date" class="form-label">End Date</label>
                         <input type="date" class="form-control" id="end_date" name="end_date" 
                                value="{{ old('end_date') }}">
                     </div>
-                    <div class="col-md-4 mb-3">
+                    <div class="col-md-3 mb-3">
                         <label for="status" class="form-label">Status <span class="text-danger">*</span></label>
                         <select class="form-select" id="status" name="status" required>
                             <option value="active" {{ old('status') == 'active' ? 'selected' : '' }}>Active</option>
@@ -77,10 +92,17 @@
                     </div>
                 </div>
                 
-                <div class="mb-3">
-                    <label for="contract_amount" class="form-label">Contract Amount (ETB)</label>
-                    <input type="number" class="form-control" id="contract_amount" name="contract_amount" 
-                           value="{{ old('contract_amount', 0) }}" step="0.01" min="0">
+                <div class="row">
+                    <div class="col-md-8 mb-3">
+                        <label for="contract_amount" class="form-label">Contract Amount (ETB)</label>
+                        <input type="number" class="form-control" id="contract_amount" name="contract_amount" 
+                               value="{{ old('contract_amount', 0) }}" step="0.01" min="0">
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label for="tnt_share" class="form-label">TNT Share (%)</label>
+                        <input type="number" class="form-control" id="tnt_share" name="tnt_share" 
+                               value="{{ old('tnt_share', 100) }}" step="0.01" min="0" max="100" placeholder="100">
+                    </div>
                 </div>
                 
                 <div class="mb-3">

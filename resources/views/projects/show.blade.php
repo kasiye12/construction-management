@@ -78,7 +78,11 @@
             <hr>
             <table class="table table-bordered">
                 <tr>
-                    <th width="30%">Client</th>
+                    <th width="30%">Project Code</th>
+                    <td><span class="badge bg-light text-dark border">{{ $project->project_code ?? 'PRJ-' . str_pad($project->id, 3, '0', STR_PAD_LEFT) }}</span></td>
+                </tr>
+                <tr>
+                    <th>Client</th>
                     <td>{{ $project->client_name ?? 'N/A' }}</td>
                 </tr>
                 <tr>
@@ -87,11 +91,19 @@
                 </tr>
                 <tr>
                     <th>Contractor</th>
-                    <td>{{ $project->contractor_name ?? 'N/A' }}</td>
+                    <td>{{ $project->contractor_name ?? 'TNT Construction and Trading' }}</td>
                 </tr>
                 <tr>
                     <th>Location / Site</th>
                     <td>{{ $project->location ?? 'N/A' }}</td>
+                </tr>
+                <tr>
+                    <th>TNT Share</th>
+                    <td><span class="badge bg-primary fs-6">{{ $project->formatted_tnt_share }}</span></td>
+                </tr>
+                <tr>
+                    <th>Contract Signing Date</th>
+                    <td>{{ $project->contract_signing_date ? $project->contract_signing_date->format('M d, Y') : 'N/A' }}</td>
                 </tr>
                 <tr>
                     <th>Status</th>
