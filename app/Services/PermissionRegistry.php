@@ -127,6 +127,7 @@ class PermissionRegistry
             'Administration & System Settings' => [
                 'workflow.manage' => 'Manage 4-Stage Workflow Permissions Matrix',
                 'settings.manage' => 'Configure Company & Tax Settings',
+                'database.backup' => 'Manage Database Backups & Downloads',
                 'audit.view' => 'View System Audit Trail & Logs',
             ],
         ];
@@ -156,8 +157,8 @@ class PermissionRegistry
         return [
             'admin' => ['*'],
             'manager' => array_values(array_filter($allKeys, function($perm) {
-                // Project manager has full operational and reporting access except system role creation
-                return !in_array($perm, ['roles.create', 'roles.delete', 'settings.manage']);
+                // Project manager has full operational and reporting access except system role and DB administration
+                return !in_array($perm, ['roles.create', 'roles.delete', 'settings.manage', 'database.backup']);
             })),
             'engineer' => [
                 'projects.view',

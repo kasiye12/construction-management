@@ -171,7 +171,7 @@
             @endif
             
             {{-- Administration Section --}}
-            @if(auth()->user()->hasAnyPermission(['users.view', 'roles.view', 'workflow.manage', 'settings.manage', 'audit.view']))
+            @if(auth()->user()->hasAnyPermission(['users.view', 'roles.view', 'workflow.manage', 'settings.manage', 'database.backup', 'audit.view']))
             <div class="sidebar-label">Administration</div>
             @if(auth()->user()->hasPermission('users.view'))
             <a href="{{ route('admin.users.index') }}" class="{{ request()->routeIs('admin.users.*') ? 'active' : '' }}"><i class="fas fa-user-cog"></i> Users</a>
@@ -185,6 +185,9 @@
             @if(auth()->user()->hasPermission('settings.manage'))
             <a href="{{ route('admin.company-settings.index') }}" class="{{ request()->routeIs('admin.company-settings.*') ? 'active' : '' }}"><i class="fas fa-building"></i> Company Settings</a>
             <a href="{{ route('admin.settings.index') }}" class="{{ request()->routeIs('admin.settings.*') ? 'active' : '' }}"><i class="fas fa-cog"></i> Tax Settings</a>
+            @endif
+            @if(auth()->user()->hasPermission('database.backup') || auth()->user()->hasPermission('settings.manage'))
+            <a href="{{ route('admin.database-backups.index') }}" class="{{ request()->routeIs('admin.database-backups.*') ? 'active' : '' }}"><i class="fas fa-database"></i> Database Backup</a>
             @endif
             @if(auth()->user()->hasPermission('audit.view'))
             <a href="{{ route('admin.audit.index') }}" class="{{ request()->routeIs('admin.audit.*') ? 'active' : '' }}"><i class="fas fa-history"></i> Audit Trail</a>

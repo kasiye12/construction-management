@@ -432,6 +432,15 @@ Route::middleware(['auth'])->group(function () {
             Route::put('/settings', [App\Http\Controllers\Admin\SettingsController::class, 'update'])->name('settings.update');
         });
 
+        // Database Management & Backups
+        Route::middleware('permission:database.backup')->group(function () {
+            Route::get('/database-backups', [App\Http\Controllers\Admin\DatabaseBackupController::class, 'index'])->name('database-backups.index');
+            Route::post('/database-backups', [App\Http\Controllers\Admin\DatabaseBackupController::class, 'createBackup'])->name('database-backups.create');
+            Route::post('/database-backups/run-daily', [App\Http\Controllers\Admin\DatabaseBackupController::class, 'runDailySync'])->name('database-backups.run-daily');
+            Route::get('/database-backups/download/{filename}', [App\Http\Controllers\Admin\DatabaseBackupController::class, 'download'])->name('database-backups.download');
+            Route::delete('/database-backups/{filename}', [App\Http\Controllers\Admin\DatabaseBackupController::class, 'destroy'])->name('database-backups.destroy');
+        });
+
         // Audit Trail
         Route::middleware('permission:audit.view')->group(function () {
             Route::get('/audit', function () { return view('admin.audit.index'); })->name('audit.index');
