@@ -29,25 +29,25 @@ class ContractualReportController extends Controller
     {
         $user = Auth::user();
         if (!$user) return [];
-        if ($user->isAdmin() || $user->is_super_admin || $user->role === 'Contract') {
+        if ($user->isAdmin() || $user->is_super_admin) {
             return Project::withTrashed()->pluck('id')->toArray();
         }
-        $assigned = $user->projects()->where('project_user.is_active', true)->pluck('projects.id')->toArray();
-        if (empty($assigned) && $user->hasPermission('contractual-reports.view')) {
-            return Project::withTrashed()->pluck('id')->toArray();
-        }
-        return $assigned;
+        return $user->projects()
+            ->withTrashed()
+            ->where('project_user.is_active', true)
+            ->pluck('projects.id')
+            ->toArray();
     }
 
     private function getUserProjects()
     {
         $user = Auth::user();
         if (!$user) return collect();
-        if ($user->isAdmin() || $user->is_super_admin || $user->role === 'Contract') {
+        if ($user->isAdmin() || $user->is_super_admin) {
             return Project::all();
         }
         $ids = $this->getUserProjectIds();
-        return Project::withTrashed()->whereIn('id', $ids)->get();
+        return Project::whereIn('id', $ids)->get();
     }
 
     // ==========================================
@@ -113,7 +113,16 @@ class ContractualReportController extends Controller
         }
 
         $projects = $this->getUserProjects();
+        if ($projects->isEmpty()) {
+            return redirect()->route('contractual-reports.index')
+                ->with('error', 'You do not have any assigned projects to prepare reports for.');
+        }
+
+        $userProjectIds = $this->getUserProjectIds();
         $projectId = $request->get('project_id', $projects->first()?->id);
+        if (!$user->isAdmin() && !$user->is_super_admin && !in_array($projectId, $userProjectIds)) {
+            $projectId = $projects->first()?->id;
+        }
         $selectedProject = $projectId ? Project::find($projectId) : null;
 
         // Default week: Monday to Sunday of current week
@@ -168,6 +177,11 @@ class ContractualReportController extends Controller
             'correspondences' => 'nullable|array',
             'attachments.*' => 'nullable|file|max:10240',
         ]);
+
+        $userProjectIds = $this->getUserProjectIds();
+        if (!$user->isAdmin() && !$user->is_super_admin && !in_array($validated['project_id'], $userProjectIds)) {
+            return back()->withInput()->with('error', 'Unauthorized: You are not assigned to this project.');
+        }
 
         $project = Project::findOrFail($validated['project_id']);
 
@@ -329,6 +343,12 @@ class ContractualReportController extends Controller
     // ==========================================
     public function show(ContractualReport $contractualReport)
     {
+        $user = Auth::user();
+        $userProjectIds = $this->getUserProjectIds();
+        if (!$user->isAdmin() && !$user->is_super_admin && !in_array($contractualReport->project_id, $userProjectIds)) {
+            abort(403, 'Unauthorized access to this project report.');
+        }
+
         $contractualReport->load([
             'project',
             'claimChecks',
@@ -355,6 +375,11 @@ class ContractualReportController extends Controller
     public function edit(ContractualReport $contractualReport)
     {
         $user = Auth::user();
+        $userProjectIds = $this->getUserProjectIds();
+        if (!$user->isAdmin() && !$user->is_super_admin && !in_array($contractualReport->project_id, $userProjectIds)) {
+            abort(403, 'Unauthorized access to this project report.');
+        }
+
         $canEdit = $user && ($user->isAdmin() || $user->isManager() || $user->hasPermission('contractual-reports.edit') || $contractualReport->prepared_by === $user->id || $user->role === 'Contract');
         if ((!$contractualReport->isDraft() && !$contractualReport->isRejected()) || !$canEdit) {
             return redirect()->route('contractual-reports.show', $contractualReport)
@@ -387,6 +412,12 @@ class ContractualReportController extends Controller
     // ==========================================
     public function update(Request $request, ContractualReport $contractualReport)
     {
+        $user = Auth::user();
+        $userProjectIds = $this->getUserProjectIds();
+        if (!$user->isAdmin() && !$user->is_super_admin && !in_array($contractualReport->project_id, $userProjectIds)) {
+            abort(403, 'Unauthorized access to this project report.');
+        }
+
         if (!$contractualReport->isDraft() && !$contractualReport->isRejected() && !Auth::user()->isAdmin()) {
             return redirect()->route('contractual-reports.show', $contractualReport)
                 ->with('error', 'Only draft or rejected reports can be updated.');
@@ -558,6 +589,11 @@ class ContractualReportController extends Controller
     public function destroy(ContractualReport $contractualReport)
     {
         $user = Auth::user();
+        $userProjectIds = $this->getUserProjectIds();
+        if (!$user->isAdmin() && !$user->is_super_admin && !in_array($contractualReport->project_id, $userProjectIds)) {
+            abort(403, 'Unauthorized access to this project report.');
+        }
+
         $canDelete = $user && (
             $user->isAdmin() ||
             $user->isManager() ||
@@ -668,6 +704,12 @@ class ContractualReportController extends Controller
     // ==========================================
     public function exportExcel(ContractualReport $contractualReport)
     {
+        $user = Auth::user();
+        $userProjectIds = $this->getUserProjectIds();
+        if (!$user->isAdmin() && !$user->is_super_admin && !in_array($contractualReport->project_id, $userProjectIds)) {
+            abort(403, 'Unauthorized access to this project report.');
+        }
+
         try {
             $filePath = $this->excelService->export($contractualReport);
             $filename = 'Weekly_Contractual_Report_' . str_replace('/', '-', $contractualReport->report_number) . '_' . date('Ymd') . '.xlsx';
@@ -718,6 +760,12 @@ class ContractualReportController extends Controller
     // ==========================================
     public function print(ContractualReport $contractualReport)
     {
+        $user = Auth::user();
+        $userProjectIds = $this->getUserProjectIds();
+        if (!$user->isAdmin() && !$user->is_super_admin && !in_array($contractualReport->project_id, $userProjectIds)) {
+            abort(403, 'Unauthorized access to this project report.');
+        }
+
         $contractualReport->load([
             'project',
             'claimChecks',
