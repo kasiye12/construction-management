@@ -106,10 +106,30 @@ class ContractualReportExcelService
                 }
             }
 
-            // Signatures
-            $sheet1->setCellValue('A33', $preparedText);
-            $sheet1->setCellValue('D33', $checkedText);
-            $sheet1->setCellValue('K33', $approvedText);
+            // Custom Claim Checks
+            $customChecks = $report->claimChecks()->whereNotIn('item_code', array_keys($claimRowMap))->get();
+            if ($customChecks->isNotEmpty()) {
+                $insertAt = 32;
+                $sheet1->insertNewRowBefore($insertAt, $customChecks->count());
+                foreach ($customChecks as $cIdx => $cCheck) {
+                    $cRow = $insertAt + $cIdx;
+                    $sheet1->setCellValue('A' . $cRow, $cCheck->item_code . ' ' . $cCheck->item_title);
+                    foreach ($dayCols as $day => $cols) {
+                        $isYes = (bool)$cCheck->$day;
+                        $sheet1->setCellValue($cols['yes'] . $cRow, $isYes ? '✓' : '');
+                        $sheet1->setCellValue($cols['no'] . $cRow, $isYes ? '' : '✓');
+                    }
+                }
+                $sigRow = 33 + $customChecks->count();
+                $sheet1->setCellValue('A' . $sigRow, $preparedText);
+                $sheet1->setCellValue('D' . $sigRow, $checkedText);
+                $sheet1->setCellValue('K' . $sigRow, $approvedText);
+            } else {
+                // Signatures
+                $sheet1->setCellValue('A33', $preparedText);
+                $sheet1->setCellValue('D33', $checkedText);
+                $sheet1->setCellValue('K33', $approvedText);
+            }
         }
 
         // ==========================================

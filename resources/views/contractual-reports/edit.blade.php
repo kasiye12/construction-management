@@ -147,17 +147,25 @@
         <!-- ========================================== -->
         <div class="tab-pane fade show active" id="page1" role="tabpanel">
             <div class="card shadow-sm border-0 mb-4">
-                <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+                <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center flex-wrap gap-2">
                     <div>
                         <h5 class="mb-0 text-dark fw-bold">Causes of Claim - Follow up Form</h5>
                         <small class="text-muted">Check "Yes" for any day when a contractual delay or claim issue was encountered.</small>
                     </div>
+                    <div class="d-flex gap-2">
+                        <button type="button" class="btn btn-primary btn-sm" onclick="openAddClaimModal()">
+                            <i class="fas fa-plus-circle me-1"></i> Add Cause of Claim
+                        </button>
+                        <button type="button" class="btn btn-outline-secondary btn-sm" onclick="clearAllCheckboxes('claims')">
+                            <i class="fas fa-undo me-1"></i> Clear All
+                        </button>
+                    </div>
                 </div>
                 <div class="table-responsive">
-                    <table class="table table-bordered table-hover align-middle mb-0 text-center">
+                    <table class="table table-bordered table-hover align-middle mb-0 text-center" id="claimsTable">
                         <thead class="table-dark">
                             <tr>
-                                <th rowspan="2" class="text-start" style="width: 40%;">Claim Issues encountered throughout the week</th>
+                                <th rowspan="2" class="text-start" style="width: 38%;">Claim Issues encountered throughout the week</th>
                                 <th colspan="2">Monday</th>
                                 <th colspan="2">Tuesday</th>
                                 <th colspan="2">Wednesday</th>
@@ -165,6 +173,7 @@
                                 <th colspan="2">Friday</th>
                                 <th colspan="2">Saturday</th>
                                 <th colspan="2">Sunday</th>
+                                <th rowspan="2" class="text-center" style="width: 70px;">Action</th>
                             </tr>
                             <tr class="table-secondary text-dark small">
                                 <th>Yes</th><th>No</th>
@@ -176,17 +185,21 @@
                                 <th>Yes</th><th>No</th>
                             </tr>
                         </thead>
-                        <tbody>
-                            @php $checksMap = $contractualReport->claimChecks->keyBy('item_code'); @endphp
+                        <tbody id="claimsTableBody">
+                            @php 
+                                $checksMap = $contractualReport->claimChecks->keyBy('item_code');
+                                $customIdx = 0;
+                                $renderedCustomIds = [];
+                            @endphp
                             @foreach($claimCategories as $catKey => $catData)
-                                <tr class="table-primary text-start fw-bold">
-                                    <td colspan="15" class="py-2">
+                                <tr class="table-primary text-start fw-bold category-header-row" data-cat-key="{{ $catKey }}">
+                                    <td colspan="16" class="py-2">
                                         <i class="fas fa-folder-open me-2"></i>{{ $catData['title'] }}
                                     </td>
                                 </tr>
                                 @foreach($catData['items'] as $code => $title)
                                     @php $existingCheck = $checksMap->get($code); @endphp
-                                    <tr>
+                                    <tr class="claim-item-row" data-cat-key="{{ $catKey }}" data-code="{{ $code }}">
                                         <td class="text-start ps-4">
                                             <span class="badge bg-secondary me-2">{{ $code }}</span>
                                             {{ $title }}
@@ -199,6 +212,7 @@
                                             <td class="bg-light {{ $isChecked ? 'bg-warning bg-opacity-25' : '' }}">
                                                 <input type="checkbox" name="{{ $fieldYes }}" value="1" 
                                                        class="form-check-input claim-check border-danger" 
+                                                       data-day="{{ $day }}" data-code="{{ $code }}"
                                                        {{ $isChecked ? 'checked' : '' }}
                                                        onchange="highlightChecked(this)">
                                             </td>
@@ -206,11 +220,102 @@
                                                 <i class="fas fa-times opacity-25"></i>
                                             </td>
                                         @endforeach
+                                        <td class="text-center">
+                                            <span class="badge bg-light text-muted border small">Standard</span>
+                                        </td>
                                     </tr>
                                 @endforeach
+
+                                {{-- Render custom claims under this standard category --}}
+                                @if(isset($customClaimChecks))
+                                    @foreach($customClaimChecks->where('category', $catKey) as $customChk)
+                                        @php $renderedCustomIds[] = $customChk->id; @endphp
+                                        <tr class="custom-claim-row table-warning bg-opacity-10" data-cat-key="{{ $catKey }}" data-code="{{ $customChk->item_code }}">
+                                            <td class="text-start ps-4">
+                                                <input type="hidden" name="custom_claims[{{ $customIdx }}][category]" value="{{ $customChk->category }}">
+                                                <input type="hidden" name="custom_claims[{{ $customIdx }}][category_title]" value="{{ $customChk->category_title }}">
+                                                <input type="hidden" name="custom_claims[{{ $customIdx }}][item_code]" value="{{ $customChk->item_code }}">
+                                                <input type="hidden" name="custom_claims[{{ $customIdx }}][item_title]" value="{{ $customChk->item_title }}">
+                                                <span class="badge bg-primary me-2">{{ $customChk->item_code }}</span>
+                                                <span class="fw-semibold">{{ $customChk->item_title }}</span>
+                                                <span class="badge bg-info text-dark ms-2 small">Custom</span>
+                                            </td>
+                                            @foreach(['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'] as $day)
+                                                @php $isChecked = old("custom_claims.{$customIdx}.{$day}", (bool)$customChk->$day); @endphp
+                                                <td class="bg-light {{ $isChecked ? 'bg-warning bg-opacity-25' : '' }}">
+                                                    <input type="checkbox" name="custom_claims[{{ $customIdx }}][{{ $day }}]" value="1"
+                                                           class="form-check-input claim-check border-danger"
+                                                           {{ $isChecked ? 'checked' : '' }}
+                                                           onchange="highlightChecked(this)">
+                                                </td>
+                                                <td class="text-muted small">
+                                                    <i class="fas fa-times opacity-25"></i>
+                                                </td>
+                                            @endforeach
+                                            <td class="text-center">
+                                                <button type="button" class="btn btn-outline-danger btn-sm" onclick="removeCustomClaimRow(this, '{{ $customChk->item_code }}')" title="Delete this custom Cause of Claim">
+                                                    <i class="fas fa-trash-alt"></i>
+                                                </button>
+                                            </td>
+                                        </tr>
+                                        @php $customIdx++; @endphp
+                                    @endforeach
+                                @endif
                             @endforeach
+
+                            {{-- Render custom claims under separate/new categories --}}
+                            @if(isset($customClaimChecks))
+                                @php
+                                    $remainingCustom = $customClaimChecks->whereNotIn('id', $renderedCustomIds)->groupBy('category_title');
+                                @endphp
+                                @foreach($remainingCustom as $catTitle => $grp)
+                                    @php $firstCustom = $grp->first(); @endphp
+                                    <tr class="table-primary text-start fw-bold category-header-row" data-cat-key="{{ $firstCustom->category }}">
+                                        <td colspan="16" class="py-2">
+                                            <i class="fas fa-folder-plus me-2"></i>{{ $catTitle }}
+                                        </td>
+                                    </tr>
+                                    @foreach($grp as $customChk)
+                                        <tr class="custom-claim-row table-warning bg-opacity-10" data-cat-key="{{ $customChk->category }}" data-code="{{ $customChk->item_code }}">
+                                            <td class="text-start ps-4">
+                                                <input type="hidden" name="custom_claims[{{ $customIdx }}][category]" value="{{ $customChk->category }}">
+                                                <input type="hidden" name="custom_claims[{{ $customIdx }}][category_title]" value="{{ $customChk->category_title }}">
+                                                <input type="hidden" name="custom_claims[{{ $customIdx }}][item_code]" value="{{ $customChk->item_code }}">
+                                                <input type="hidden" name="custom_claims[{{ $customIdx }}][item_title]" value="{{ $customChk->item_title }}">
+                                                <span class="badge bg-primary me-2">{{ $customChk->item_code }}</span>
+                                                <span class="fw-semibold">{{ $customChk->item_title }}</span>
+                                                <span class="badge bg-info text-dark ms-2 small">Custom</span>
+                                            </td>
+                                            @foreach(['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'] as $day)
+                                                @php $isChecked = old("custom_claims.{$customIdx}.{$day}", (bool)$customChk->$day); @endphp
+                                                <td class="bg-light {{ $isChecked ? 'bg-warning bg-opacity-25' : '' }}">
+                                                    <input type="checkbox" name="custom_claims[{{ $customIdx }}][{{ $day }}]" value="1"
+                                                           class="form-check-input claim-check border-danger"
+                                                           {{ $isChecked ? 'checked' : '' }}
+                                                           onchange="highlightChecked(this)">
+                                                </td>
+                                                <td class="text-muted small">
+                                                    <i class="fas fa-times opacity-25"></i>
+                                                </td>
+                                            @endforeach
+                                            <td class="text-center">
+                                                <button type="button" class="btn btn-outline-danger btn-sm" onclick="removeCustomClaimRow(this, '{{ $customChk->item_code }}')" title="Delete this custom Cause of Claim">
+                                                    <i class="fas fa-trash-alt"></i>
+                                                </button>
+                                            </td>
+                                        </tr>
+                                        @php $customIdx++; @endphp
+                                    @endforeach
+                                @endforeach
+                            @endif
                         </tbody>
                     </table>
+                </div>
+                <div class="d-flex justify-content-between align-items-center p-3 bg-light border-top flex-wrap gap-2">
+                    <button type="button" class="btn btn-outline-primary btn-sm" onclick="openAddClaimModal()">
+                        <i class="fas fa-plus-circle me-1"></i> Add New Cause of Claim (Custom Item)
+                    </button>
+                    <small class="text-muted"><i class="fas fa-info-circle me-1"></i> You can add extra contractual claim causes under any category with daily tracking</small>
                 </div>
                 <div class="card-body border-top">
                     <label class="form-label fw-bold">Page 1 General Notes / Observations</label>
@@ -538,6 +643,316 @@ document.addEventListener('DOMContentLoaded', function() {
     } else {
         addClaimEventRow();
     }
+
+    // Register existing custom claim codes into issueOptions for Page 2
+    @if(isset($customClaimChecks))
+        const existingCustomClaims = @json($customClaimChecks);
+        existingCustomClaims.forEach(chk => {
+            issueOptions.push({ code: chk.item_code, title: `${chk.item_code} ${chk.item_title}` });
+        });
+    @endif
 });
+
+let customClaimIndex = {{ isset($customClaimChecks) ? $customClaimChecks->count() : 0 }};
+let addClaimModalInstance = null;
+
+function openAddClaimModal() {
+    if (!addClaimModalInstance) {
+        const modalEl = document.getElementById('addClaimModal');
+        if (modalEl) addClaimModalInstance = new bootstrap.Modal(modalEl);
+    }
+    
+    // Reset inputs
+    document.getElementById('newClaimTitle').value = '';
+    document.getElementById('customCategoryTitle').value = '';
+    document.getElementById('customCategoryDiv').style.display = 'none';
+    
+    ['m_mon', 'm_tue', 'm_wed', 'm_thu', 'm_fri', 'm_sat', 'm_sun'].forEach(id => {
+        const cb = document.getElementById(id);
+        if (cb) cb.checked = false;
+    });
+
+    const select = document.getElementById('newClaimCategorySelect');
+    if (select) {
+        select.value = 'suspension_of_works';
+        handleCategorySelection('suspension_of_works');
+    }
+
+    if (addClaimModalInstance) addClaimModalInstance.show();
+}
+
+function handleCategorySelection(val) {
+    const customDiv = document.getElementById('customCategoryDiv');
+    if (val === '__custom__') {
+        customDiv.style.display = 'block';
+        document.getElementById('newClaimCode').value = suggestNextClaimCode('custom');
+    } else {
+        customDiv.style.display = 'none';
+        document.getElementById('newClaimCode').value = suggestNextClaimCode(val);
+    }
+}
+
+function suggestNextClaimCode(catKey) {
+    const select = document.getElementById('newClaimCategorySelect');
+    const opt = select.querySelector(`option[value="${catKey}"]`);
+    const prefix = opt ? opt.getAttribute('data-prefix') : 'C-';
+    
+    if (catKey === 'custom' || !prefix) {
+        return 'C-' + (document.querySelectorAll('.custom-claim-row').length + 1);
+    }
+
+    let maxSub = 0;
+    document.querySelectorAll('#claimsTableBody tr[data-code]').forEach(tr => {
+        const code = tr.getAttribute('data-code');
+        if (code && code.startsWith(prefix)) {
+            const parts = code.split('.');
+            if (parts.length >= 2) {
+                const sub = parseInt(parts[1], 10);
+                if (!isNaN(sub) && sub > maxSub) maxSub = sub;
+            }
+        }
+    });
+
+    return prefix + (maxSub + 1);
+}
+
+function confirmAddClaimRow() {
+    const select = document.getElementById('newClaimCategorySelect');
+    const catVal = select.value;
+    let catTitle = '';
+    let catKey = catVal;
+
+    if (catVal === '__custom__') {
+        catTitle = document.getElementById('customCategoryTitle').value.trim();
+        if (!catTitle) {
+            alert('Please enter a custom category title.');
+            document.getElementById('customCategoryTitle').focus();
+            return;
+        }
+        catKey = 'custom_' + catTitle.toLowerCase().replace(/[^a-z0-9]/g, '_');
+    } else {
+        const opt = select.options[select.selectedIndex];
+        catTitle = opt.getAttribute('data-title') || opt.text;
+    }
+
+    const code = document.getElementById('newClaimCode').value.trim();
+    const title = document.getElementById('newClaimTitle').value.trim();
+
+    if (!code) {
+        alert('Please enter an item code (e.g. 3.6).');
+        document.getElementById('newClaimCode').focus();
+        return;
+    }
+    if (!title) {
+        alert('Please enter a description for the cause of claim.');
+        document.getElementById('newClaimTitle').focus();
+        return;
+    }
+
+    const exists = document.querySelector(`#claimsTableBody tr[data-code="${code}"]`);
+    if (exists) {
+        alert(`An item with code "${code}" already exists in the checklist.`);
+        document.getElementById('newClaimCode').focus();
+        return;
+    }
+
+    const mon = document.getElementById('m_mon').checked;
+    const tue = document.getElementById('m_tue').checked;
+    const wed = document.getElementById('m_wed').checked;
+    const thu = document.getElementById('m_thu').checked;
+    const fri = document.getElementById('m_fri').checked;
+    const sat = document.getElementById('m_sat').checked;
+    const sun = document.getElementById('m_sun').checked;
+
+    appendCustomClaimRow({
+        category: catKey,
+        category_title: catTitle,
+        item_code: code,
+        item_title: title,
+        monday: mon,
+        tuesday: tue,
+        wednesday: wed,
+        thursday: thu,
+        friday: fri,
+        saturday: sat,
+        sunday: sun
+    });
+
+    // Also register into Page 2 issueOptions so it can be picked in Claim Events
+    issueOptions.push({ code: code, title: `${code} ${title}` });
+
+    if (addClaimModalInstance) addClaimModalInstance.hide();
+}
+
+function appendCustomClaimRow(data) {
+    const tbody = document.getElementById('claimsTableBody');
+    const idx = customClaimIndex++;
+
+    let headerRow = tbody.querySelector(`tr.category-header-row[data-cat-key="${data.category}"]`);
+    if (!headerRow) {
+        headerRow = document.createElement('tr');
+        headerRow.className = 'table-primary text-start fw-bold category-header-row';
+        headerRow.setAttribute('data-cat-key', data.category);
+        headerRow.innerHTML = `<td colspan="16" class="py-2"><i class="fas fa-folder-plus me-2"></i>${data.category_title}</td>`;
+        tbody.appendChild(headerRow);
+    }
+
+    const tr = document.createElement('tr');
+    tr.className = 'custom-claim-row table-warning bg-opacity-10';
+    tr.setAttribute('data-cat-key', data.category);
+    tr.setAttribute('data-code', data.item_code);
+
+    const days = [
+        { key: 'monday', checked: data.monday },
+        { key: 'tuesday', checked: data.tuesday },
+        { key: 'wednesday', checked: data.wednesday },
+        { key: 'thursday', checked: data.thursday },
+        { key: 'friday', checked: data.friday },
+        { key: 'saturday', checked: data.saturday },
+        { key: 'sunday', checked: data.sunday }
+    ];
+
+    let daysHtml = '';
+    days.forEach(d => {
+        const isChecked = d.checked ? 'checked' : '';
+        const bgCls = d.checked ? 'bg-warning bg-opacity-25' : '';
+        daysHtml += `
+            <td class="bg-light ${bgCls}">
+                <input type="checkbox" name="custom_claims[${idx}][${d.key}]" value="1"
+                       class="form-check-input claim-check border-danger" ${isChecked}
+                       onchange="highlightChecked(this)">
+            </td>
+            <td class="text-muted small">
+                <i class="fas fa-times opacity-25"></i>
+            </td>
+        `;
+    });
+
+    tr.innerHTML = `
+        <td class="text-start ps-4">
+            <input type="hidden" name="custom_claims[${idx}][category]" value="${data.category}">
+            <input type="hidden" name="custom_claims[${idx}][category_title]" value="${data.category_title}">
+            <input type="hidden" name="custom_claims[${idx}][item_code]" value="${data.item_code}">
+            <input type="hidden" name="custom_claims[${idx}][item_title]" value="${data.item_title}">
+            <span class="badge bg-primary me-2">${data.item_code}</span>
+            <span class="fw-semibold">${data.item_title}</span>
+            <span class="badge bg-info text-dark ms-2 small">Custom</span>
+        </td>
+        ${daysHtml}
+        <td class="text-center">
+            <button type="button" class="btn btn-outline-danger btn-sm" onclick="removeCustomClaimRow(this, '${data.item_code}')" title="Delete this custom Cause of Claim">
+                <i class="fas fa-trash-alt"></i>
+            </button>
+        </td>
+    `;
+
+    let lastRow = headerRow;
+    let nextEl = headerRow.nextElementSibling;
+    while (nextEl && nextEl.getAttribute('data-cat-key') === data.category && !nextEl.classList.contains('category-header-row')) {
+        lastRow = nextEl;
+        nextEl = nextEl.nextElementSibling;
+    }
+    lastRow.insertAdjacentElement('afterend', tr);
+}
+
+function removeCustomClaimRow(btn, code) {
+    if (confirm(`Remove custom cause of claim ${code ? '"' + code + '"' : ''}?`)) {
+        const row = btn.closest('tr');
+        const catKey = row.getAttribute('data-cat-key');
+        row.remove();
+
+        const remaining = document.querySelectorAll(`#claimsTableBody tr[data-cat-key="${catKey}"]:not(.category-header-row)`);
+        if (remaining.length === 0) {
+            const header = document.querySelector(`#claimsTableBody tr.category-header-row[data-cat-key="${catKey}"]`);
+            if (header && catKey.startsWith('custom_')) header.remove();
+        }
+    }
+}
 </script>
+
+<!-- Modal: Add Custom Cause of Claim -->
+<div class="modal fade" id="addClaimModal" tabindex="-1" aria-labelledby="addClaimModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content shadow border-0">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title" id="addClaimModalLabel">
+                    <i class="fas fa-plus-circle me-2"></i> Add New Cause of Claim
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4">
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Select Category <span class="text-danger">*</span></label>
+                    <select class="form-select" id="newClaimCategorySelect" onchange="handleCategorySelection(this.value)">
+                        <option value="design_issues" data-title="Design related issues" data-prefix="1.">1. Design related issues</option>
+                        <option value="work_orders" data-title="Work Orders" data-prefix="2.">2. Work Orders</option>
+                        <option value="suspension_of_works" data-title="Suspension of works" data-prefix="3.">3. Suspension of works</option>
+                        <option value="row_issues" data-title="Right of Way (ROW) issues" data-prefix="4.">4. Right of Way (ROW) issues</option>
+                        <option value="financial_issues" data-title="Payment & Financial issues" data-prefix="5.">5. Payment & Financial issues</option>
+                        <option value="material_issues" data-title="Materials & Equipment issues" data-prefix="6.">6. Materials & Equipment issues</option>
+                        <option value="other" data-title="Other Contractual Causes" data-prefix="7.">7. Other Contractual Causes</option>
+                        <option value="__custom__">➕ Add New Custom Category...</option>
+                    </select>
+                </div>
+
+                <div class="mb-3" id="customCategoryDiv" style="display: none;">
+                    <label class="form-label fw-bold">Custom Category Title <span class="text-danger">*</span></label>
+                    <input type="text" class="form-control" id="customCategoryTitle" placeholder="e.g. Environmental Obstacles & Local Permits">
+                </div>
+
+                <div class="row g-2 mb-3">
+                    <div class="col-md-4">
+                        <label class="form-label fw-bold">Item Code <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="newClaimCode" placeholder="e.g. 3.6" required>
+                        <small class="text-muted">Unique identifier</small>
+                    </div>
+                    <div class="col-md-8">
+                        <label class="form-label fw-bold">Cause of Claim Description <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="newClaimTitle" placeholder="e.g. Delay in employer payment certificate" required>
+                    </div>
+                </div>
+
+                <div class="mb-2">
+                    <label class="form-label fw-bold small text-muted text-uppercase">Pre-check Applicable Days (Optional):</label>
+                    <div class="d-flex justify-content-between bg-light p-2 rounded border">
+                        <div class="form-check form-check-inline m-0">
+                            <input class="form-check-input" type="checkbox" id="m_mon">
+                            <label class="form-check-label small" for="m_mon">Mon</label>
+                        </div>
+                        <div class="form-check form-check-inline m-0">
+                            <input class="form-check-input" type="checkbox" id="m_tue">
+                            <label class="form-check-label small" for="m_tue">Tue</label>
+                        </div>
+                        <div class="form-check form-check-inline m-0">
+                            <input class="form-check-input" type="checkbox" id="m_wed">
+                            <label class="form-check-label small" for="m_wed">Wed</label>
+                        </div>
+                        <div class="form-check form-check-inline m-0">
+                            <input class="form-check-input" type="checkbox" id="m_thu">
+                            <label class="form-check-label small" for="m_thu">Thu</label>
+                        </div>
+                        <div class="form-check form-check-inline m-0">
+                            <input class="form-check-input" type="checkbox" id="m_fri">
+                            <label class="form-check-label small" for="m_fri">Fri</label>
+                        </div>
+                        <div class="form-check form-check-inline m-0">
+                            <input class="form-check-input" type="checkbox" id="m_sat">
+                            <label class="form-check-label small" for="m_sat">Sat</label>
+                        </div>
+                        <div class="form-check form-check-inline m-0">
+                            <input class="form-check-input" type="checkbox" id="m_sun">
+                            <label class="form-check-label small" for="m_sun">Sun</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer bg-light py-2">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" onclick="confirmAddClaimRow()">
+                    <i class="fas fa-plus me-1"></i> Add to Checklist
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
 @endsection

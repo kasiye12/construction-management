@@ -29,10 +29,12 @@ class ContractualReportController extends Controller
     {
         $user = Auth::user();
         if (!$user) return [];
-        if ($user->isAdmin() || $user->is_super_admin) return Project::pluck('id')->toArray();
+        if ($user->isAdmin() || $user->is_super_admin || $user->role === 'Contract') {
+            return Project::withTrashed()->pluck('id')->toArray();
+        }
         $assigned = $user->projects()->where('project_user.is_active', true)->pluck('projects.id')->toArray();
         if (empty($assigned) && $user->hasPermission('contractual-reports.view')) {
-            return Project::pluck('id')->toArray();
+            return Project::withTrashed()->pluck('id')->toArray();
         }
         return $assigned;
     }
@@ -41,9 +43,11 @@ class ContractualReportController extends Controller
     {
         $user = Auth::user();
         if (!$user) return collect();
-        if ($user->isAdmin() || $user->is_super_admin) return Project::all();
+        if ($user->isAdmin() || $user->is_super_admin || $user->role === 'Contract') {
+            return Project::all();
+        }
         $ids = $this->getUserProjectIds();
-        return Project::whereIn('id', $ids)->get();
+        return Project::withTrashed()->whereIn('id', $ids)->get();
     }
 
     // ==========================================
@@ -103,7 +107,7 @@ class ContractualReportController extends Controller
     public function create(Request $request)
     {
         $user = Auth::user();
-        if ($user && !$user->isAdmin() && !$user->isManager() && !WorkflowPermission::canUserAct($user->id, 'prepare_contractual_report')) {
+        if ($user && !$user->isAdmin() && !$user->isManager() && !$user->hasPermission('contractual-reports.create') && !WorkflowPermission::canUserAct($user->id, 'prepare_contractual_report')) {
             return redirect()->route('contractual-reports.index')
                 ->with('error', 'You do not have workflow permission to prepare contractual reports.');
         }
@@ -136,7 +140,7 @@ class ContractualReportController extends Controller
     public function store(Request $request)
     {
         $user = Auth::user();
-        if ($user && !$user->isAdmin() && !$user->isManager() && !WorkflowPermission::canUserAct($user->id, 'prepare_contractual_report')) {
+        if ($user && !$user->isAdmin() && !$user->isManager() && !$user->hasPermission('contractual-reports.create') && !WorkflowPermission::canUserAct($user->id, 'prepare_contractual_report')) {
             return redirect()->route('contractual-reports.index')
                 ->with('error', 'You do not have workflow permission to prepare contractual reports.');
         }
@@ -155,6 +159,11 @@ class ContractualReportController extends Controller
             'page2_remark' => 'nullable|string',
             'page3_remark' => 'nullable|string',
             'claims' => 'nullable|array',
+            'custom_claims' => 'nullable|array',
+            'custom_claims.*.category' => 'nullable|string|max:100',
+            'custom_claims.*.category_title' => 'nullable|string|max:255',
+            'custom_claims.*.item_code' => 'nullable|string|max:50',
+            'custom_claims.*.item_title' => 'nullable|string|max:255',
             'events' => 'nullable|array',
             'correspondences' => 'nullable|array',
             'attachments.*' => 'nullable|file|max:10240',
@@ -211,6 +220,33 @@ class ContractualReportController extends Controller
                         'friday' => !empty($itemInput['friday']),
                         'saturday' => !empty($itemInput['saturday']),
                         'sunday' => !empty($itemInput['sunday']),
+                        'sort_order' => $sort++,
+                    ]);
+                }
+            }
+
+            // Save Custom Claim Checks (Page 1)
+            $customClaims = $request->input('custom_claims', []);
+            if (is_array($customClaims)) {
+                foreach ($customClaims as $custom) {
+                    if (empty($custom['item_title'])) continue;
+                    $code = !empty($custom['item_code']) ? trim($custom['item_code']) : ('C-' . $sort);
+                    $catTitle = !empty($custom['category_title']) ? trim($custom['category_title']) : 'Other Contractual Causes';
+                    $catKey = !empty($custom['category']) ? trim($custom['category']) : \Illuminate\Support\Str::slug($catTitle, '_');
+
+                    ContractualClaimCheck::create([
+                        'contractual_report_id' => $report->id,
+                        'category' => $catKey,
+                        'category_title' => $catTitle,
+                        'item_code' => $code,
+                        'item_title' => trim($custom['item_title']),
+                        'monday' => !empty($custom['monday']),
+                        'tuesday' => !empty($custom['tuesday']),
+                        'wednesday' => !empty($custom['wednesday']),
+                        'thursday' => !empty($custom['thursday']),
+                        'friday' => !empty($custom['friday']),
+                        'saturday' => !empty($custom['saturday']),
+                        'sunday' => !empty($custom['sunday']),
                         'sort_order' => $sort++,
                     ]);
                 }
@@ -305,7 +341,7 @@ class ContractualReportController extends Controller
         ]);
 
         $user = Auth::user();
-        $canSubmit = $user && ($user->isAdmin() || $user->isManager() || WorkflowPermission::canUserAct($user->id, 'prepare_contractual_report') || $contractualReport->prepared_by === $user->id);
+        $canSubmit = $user && ($user->isAdmin() || $user->isManager() || $user->hasPermission('contractual-reports.create') || $user->role === 'Contract' || WorkflowPermission::canUserAct($user->id, 'prepare_contractual_report') || $contractualReport->prepared_by === $user->id);
         $canCheck = $user && ($user->isAdmin() || $user->isManager() || WorkflowPermission::canUserAct($user->id, 'check_contractual_report'));
         $canApprove = $user && ($user->isAdmin() || $user->isManager() || WorkflowPermission::canUserAct($user->id, 'approve_contractual_report'));
         $canReject = $user && ($user->isAdmin() || $user->isManager() || WorkflowPermission::canUserAct($user->id, 'reject_contractual_report') || WorkflowPermission::canUserAct($user->id, 'check_contractual_report'));
@@ -318,9 +354,11 @@ class ContractualReportController extends Controller
     // ==========================================
     public function edit(ContractualReport $contractualReport)
     {
-        if (!$contractualReport->isDraft() && !$contractualReport->isRejected() && !Auth::user()->isAdmin()) {
+        $user = Auth::user();
+        $canEdit = $user && ($user->isAdmin() || $user->isManager() || $user->hasPermission('contractual-reports.edit') || $contractualReport->prepared_by === $user->id || $user->role === 'Contract');
+        if ((!$contractualReport->isDraft() && !$contractualReport->isRejected()) || !$canEdit) {
             return redirect()->route('contractual-reports.show', $contractualReport)
-                ->with('error', 'Only draft or rejected reports can be edited.');
+                ->with('error', 'Only draft or rejected reports can be edited by authorized users.');
         }
 
         $contractualReport->load(['project', 'claimChecks', 'claimEvents', 'correspondenceChecks', 'documents']);
@@ -328,8 +366,19 @@ class ContractualReportController extends Controller
         $claimCategories = ContractualReport::CLAIM_CATEGORIES;
         $correspondenceCategories = ContractualReport::CORRESPONDENCE_CATEGORIES;
 
+        // Separate standard and custom claim checks
+        $standardCodes = [];
+        foreach ($claimCategories as $cat) {
+            foreach (array_keys($cat['items']) as $code) {
+                $standardCodes[] = (string)$code;
+            }
+        }
+        $customClaimChecks = $contractualReport->claimChecks->filter(function ($chk) use ($standardCodes) {
+            return !in_array((string)$chk->item_code, $standardCodes);
+        });
+
         return view('contractual-reports.edit', compact(
-            'contractualReport', 'projects', 'claimCategories', 'correspondenceCategories'
+            'contractualReport', 'projects', 'claimCategories', 'correspondenceCategories', 'customClaimChecks'
         ));
     }
 
@@ -357,6 +406,11 @@ class ContractualReportController extends Controller
             'page2_remark' => 'nullable|string',
             'page3_remark' => 'nullable|string',
             'claims' => 'nullable|array',
+            'custom_claims' => 'nullable|array',
+            'custom_claims.*.category' => 'nullable|string|max:100',
+            'custom_claims.*.category_title' => 'nullable|string|max:255',
+            'custom_claims.*.item_code' => 'nullable|string|max:50',
+            'custom_claims.*.item_title' => 'nullable|string|max:255',
             'events' => 'nullable|array',
             'correspondences' => 'nullable|array',
             'attachments.*' => 'nullable|file|max:10240',
@@ -379,20 +433,60 @@ class ContractualReportController extends Controller
                 'page3_remark' => $validated['page3_remark'] ?? null,
             ]);
 
-            // Update Claim Checks
+            // Update Standard Claim Checks
+            $claimCategories = ContractualReport::CLAIM_CATEGORIES;
+            $standardCodes = [];
+            foreach ($claimCategories as $c) {
+                foreach (array_keys($c['items']) as $code) {
+                    $standardCodes[] = (string)$code;
+                }
+            }
+
             $claimsInput = $request->input('claims', []);
             $claimChecks = $contractualReport->claimChecks()->get()->keyBy('item_code');
-            foreach ($claimChecks as $code => $check) {
+            foreach ($standardCodes as $code) {
+                $check = $claimChecks->get($code);
                 $itemInput = $claimsInput[$code] ?? [];
-                $check->update([
-                    'monday' => !empty($itemInput['monday']),
-                    'tuesday' => !empty($itemInput['tuesday']),
-                    'wednesday' => !empty($itemInput['wednesday']),
-                    'thursday' => !empty($itemInput['thursday']),
-                    'friday' => !empty($itemInput['friday']),
-                    'saturday' => !empty($itemInput['saturday']),
-                    'sunday' => !empty($itemInput['sunday']),
-                ]);
+                if ($check) {
+                    $check->update([
+                        'monday' => !empty($itemInput['monday']),
+                        'tuesday' => !empty($itemInput['tuesday']),
+                        'wednesday' => !empty($itemInput['wednesday']),
+                        'thursday' => !empty($itemInput['thursday']),
+                        'friday' => !empty($itemInput['friday']),
+                        'saturday' => !empty($itemInput['saturday']),
+                        'sunday' => !empty($itemInput['sunday']),
+                    ]);
+                }
+            }
+
+            // Sync Custom Claim Checks (delete non-standard and recreate from custom_claims)
+            $contractualReport->claimChecks()->whereNotIn('item_code', $standardCodes)->delete();
+            $customClaims = $request->input('custom_claims', []);
+            $cSort = 50;
+            if (is_array($customClaims)) {
+                foreach ($customClaims as $custom) {
+                    if (empty($custom['item_title'])) continue;
+                    $code = !empty($custom['item_code']) ? trim($custom['item_code']) : ('C-' . $cSort);
+                    $catTitle = !empty($custom['category_title']) ? trim($custom['category_title']) : 'Other Contractual Causes';
+                    $catKey = !empty($custom['category']) ? trim($custom['category']) : \Illuminate\Support\Str::slug($catTitle, '_');
+
+                    ContractualClaimCheck::create([
+                        'contractual_report_id' => $contractualReport->id,
+                        'category' => $catKey,
+                        'category_title' => $catTitle,
+                        'item_code' => $code,
+                        'item_title' => trim($custom['item_title']),
+                        'monday' => !empty($custom['monday']),
+                        'tuesday' => !empty($custom['tuesday']),
+                        'wednesday' => !empty($custom['wednesday']),
+                        'thursday' => !empty($custom['thursday']),
+                        'friday' => !empty($custom['friday']),
+                        'saturday' => !empty($custom['saturday']),
+                        'sunday' => !empty($custom['sunday']),
+                        'sort_order' => $cSort++,
+                    ]);
+                }
             }
 
             // Sync Claim Events (delete old and re-create)

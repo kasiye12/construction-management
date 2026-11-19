@@ -311,18 +311,6 @@ class NotificationService
                         route('contractual-reports.index')
                     );
                     $syncedCount++;
-                } else {
-                    $approvedCad = ContractualReport::where('status', 'approved')->count();
-                    if ($approvedCad > 0) {
-                        Notification::sendOrUpdate(
-                            $user->id,
-                            'contractual_report_approved',
-                            "✅ CAD-01 Contractual Reports Current ({$approvedCad} Approved)",
-                            "All submitted monthly CAD-01 contractual follow-up reports have been verified and officially approved.",
-                            route('contractual-reports.index')
-                        );
-                        $syncedCount++;
-                    }
                 }
             }
 
@@ -338,18 +326,6 @@ class NotificationService
                         route('ipcs.index')
                     );
                     $syncedCount++;
-                } else {
-                    $paidIpc = Ipc::where('status', 'paid')->count();
-                    if ($paidIpc > 0) {
-                        Notification::sendOrUpdate(
-                            $user->id,
-                            'ipc_paid',
-                            "💵 {$paidIpc} Payment Certificates Certified & Settled",
-                            "All recorded interim payment certificates have been successfully settled and closed.",
-                            route('ipcs.index')
-                        );
-                        $syncedCount++;
-                    }
                 }
             }
 
@@ -396,21 +372,6 @@ class NotificationService
                         'deadline',
                         "⏱️ Project Milestone Alert: {$nearDeadline} Project(s) Near Deadline",
                         "{$nearDeadline} active construction projects have target completion dates within 30 days. Review critical path schedule.",
-                        route('projects.index')
-                    );
-                    $syncedCount++;
-                }
-            }
-
-            // 8. Project Documents News
-            if ($user->hasPermission('documents.view')) {
-                $totalDocs = Document::count();
-                if ($totalDocs > 0) {
-                    Notification::sendOrUpdate(
-                        $user->id,
-                        'document_uploaded',
-                        "📁 {$totalDocs} Project Documents & Drawing Files Active",
-                        "Centralized document repository contains {$totalDocs} verified architectural, structural, and contract files.",
                         route('projects.index')
                     );
                     $syncedCount++;

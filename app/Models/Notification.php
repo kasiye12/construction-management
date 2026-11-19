@@ -135,10 +135,14 @@ class Notification extends Model
     {
         $existing = self::where('user_id', $userId)
             ->where('type', $type)
-            ->where('is_read', false)
+            ->latest()
             ->first();
 
         if ($existing) {
+            // If already exists with identical title and message, do not recreate or alter read state
+            if ($existing->title === $title && $existing->message === $message) {
+                return $existing;
+            }
             $existing->update([
                 'title' => $title,
                 'message' => $message,
