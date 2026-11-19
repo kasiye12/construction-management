@@ -452,7 +452,8 @@ Route::middleware(['auth'])->group(function () {
 
         // Audit Trail
         Route::middleware('permission:audit.view')->group(function () {
-            Route::get('/audit', function () { return view('admin.audit.index'); })->name('audit.index');
+            Route::get('/audit', [App\Http\Controllers\Admin\AuditTrailController::class, 'index'])->name('audit.index');
+            Route::get('/audit/export', [App\Http\Controllers\Admin\AuditTrailController::class, 'export'])->name('audit.export');
         });
     });
 });
