@@ -608,21 +608,25 @@ class ContractualReportController extends Controller
     public function destroy(ContractualReport $contractualReport)
     {
         $user = Auth::user();
+        if (!$user) {
+            abort(401);
+        }
+
         $userProjectIds = $this->getUserProjectIds();
         if (!$user->isAdmin() && !$user->is_super_admin && !in_array($contractualReport->project_id, $userProjectIds)) {
             abort(403, 'Unauthorized access to this project report.');
         }
 
-        $canDelete = $user && (
-            $user->isAdmin() ||
-            $user->isManager() ||
-            $user->role === 'Contract' ||
-            $user->hasPermission('contractual-reports.delete') ||
-            $contractualReport->prepared_by === $user->id
-        );
+        // 1. Strict permission check: Must have contractual-reports.delete permission or be Admin
+        $hasPermission = $user->isAdmin() || $user->is_super_admin || $user->hasPermission('contractual-reports.delete');
+        if (!$hasPermission) {
+            return back()->with('error', 'Unauthorized: You do not have permission to delete contractual reports.');
+        }
 
-        if (!$canDelete) {
-            return back()->with('error', 'You do not have permission to delete this contractual report.');
+        // 2. Strict status check: Reports that are submitted, checked, or approved CANNOT be deleted
+        if (!$contractualReport->isDraft() && !$contractualReport->isRejected()) {
+            $statusLabel = ucfirst($contractualReport->status);
+            return back()->with('error', "Deletion blocked: Cannot delete a {$statusLabel} report. Only reports in 'Draft' status can be removed from the system.");
         }
 
         $reportNum = $contractualReport->report_number;

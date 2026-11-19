@@ -274,8 +274,9 @@
                                 <i class="fas fa-print"></i>
                             </a>
                             @php
-                                $canEdit = $r->isDraft() || $r->isRejected() || auth()->user()->isAdmin() || auth()->user()->isManager() || auth()->user()->role === 'Contract';
-                                $canDelete = auth()->user()->isAdmin() || auth()->user()->isManager() || auth()->user()->role === 'Contract' || auth()->user()->hasPermission('contractual-reports.delete') || $r->prepared_by === auth()->id();
+                                $isDraftOrRejected = $r->isDraft() || $r->isRejected();
+                                $canEdit = $isDraftOrRejected && (auth()->user()->isAdmin() || auth()->user()->isManager() || auth()->user()->hasPermission('contractual-reports.edit') || $r->prepared_by === auth()->id() || auth()->user()->role === 'Contract');
+                                $canDelete = $isDraftOrRejected && (auth()->user()->isAdmin() || auth()->user()->is_super_admin || auth()->user()->hasPermission('contractual-reports.delete'));
                             @endphp
                             @if($canEdit)
                                 <a href="{{ route('contractual-reports.edit', $r) }}" class="btn btn-outline-warning" title="Edit Report">

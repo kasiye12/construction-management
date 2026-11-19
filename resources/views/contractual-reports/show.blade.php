@@ -27,8 +27,9 @@
                 <i class="fas fa-print me-1"></i> Print / PDF
             </a>
             @php
-                $canEdit = $contractualReport->isDraft() || $contractualReport->isRejected() || auth()->user()->isAdmin() || auth()->user()->isManager() || auth()->user()->role === 'Contract';
-                $canDelete = auth()->user()->isAdmin() || auth()->user()->isManager() || auth()->user()->role === 'Contract' || auth()->user()->hasPermission('contractual-reports.delete') || $contractualReport->prepared_by === auth()->id();
+                $isDraftOrRejected = $contractualReport->isDraft() || $contractualReport->isRejected();
+                $canEdit = $isDraftOrRejected && (auth()->user()->isAdmin() || auth()->user()->isManager() || auth()->user()->hasPermission('contractual-reports.edit') || $contractualReport->prepared_by === auth()->id() || auth()->user()->role === 'Contract');
+                $canDelete = $isDraftOrRejected && (auth()->user()->isAdmin() || auth()->user()->is_super_admin || auth()->user()->hasPermission('contractual-reports.delete'));
             @endphp
             @if($canEdit)
                 <a href="{{ route('contractual-reports.edit', $contractualReport) }}" class="btn btn-warning">
@@ -101,6 +102,14 @@
                         <i class="fas fa-times me-1"></i> Reject
                     </button>
                 @endif
+                @if(auth()->user()->isAdmin())
+                    <form action="{{ route('contractual-reports.revert', $contractualReport) }}" method="POST" class="d-inline" onsubmit="return confirm('Admin: Revert this submitted report back to draft?')">
+                        @csrf
+                        <button type="submit" class="btn btn-outline-secondary btn-sm" title="Admin override: Revert back to Draft">
+                            <i class="fas fa-undo me-1"></i> Revert to Draft
+                        </button>
+                    </form>
+                @endif
             @elseif($contractualReport->isChecked())
                 @if($canApprove ?? true)
                     <form action="{{ route('contractual-reports.approve', $contractualReport) }}" method="POST" class="d-inline" onsubmit="return confirm('Approve this contractual report officially?')">
@@ -114,6 +123,14 @@
                     <button type="button" class="btn btn-outline-danger btn-sm" data-bs-toggle="modal" data-bs-target="#rejectModal">
                         <i class="fas fa-times me-1"></i> Reject
                     </button>
+                @endif
+                @if(auth()->user()->isAdmin())
+                    <form action="{{ route('contractual-reports.revert', $contractualReport) }}" method="POST" class="d-inline" onsubmit="return confirm('Admin: Revert this checked report back to draft?')">
+                        @csrf
+                        <button type="submit" class="btn btn-outline-secondary btn-sm" title="Admin override: Revert back to Draft">
+                            <i class="fas fa-undo me-1"></i> Revert to Draft
+                        </button>
+                    </form>
                 @endif
             @elseif($contractualReport->isApproved())
                 <span class="badge bg-success p-2"><i class="fas fa-check-circle me-1"></i> Officially Approved</span>
