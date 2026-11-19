@@ -74,13 +74,25 @@ class ContractualReportController extends Controller
         if ($request->filled('date_to')) {
             $query->where('week_end_date', '<=', $request->date_to);
         }
+        if ($request->filled('further_action')) {
+            $fa = strtolower($request->further_action);
+            if ($fa === 'yes' || $fa === '1') {
+                $query->where('needs_further_action', true);
+            } elseif ($fa === 'no' || $fa === '0') {
+                $query->where(function ($q) {
+                    $q->where('needs_further_action', false)
+                      ->orWhereNull('needs_further_action');
+                });
+            }
+        }
         if ($request->filled('search')) {
             $s = $request->search;
             $query->where(function ($q) use ($s) {
                 $q->where('report_number', 'LIKE', "%{$s}%")
                   ->orWhere('project_location', 'LIKE', "%{$s}%")
                   ->orWhere('client_name', 'LIKE', "%{$s}%")
-                  ->orWhere('consultant_name', 'LIKE', "%{$s}%");
+                  ->orWhere('consultant_name', 'LIKE', "%{$s}%")
+                  ->orWhere('further_action_notes', 'LIKE', "%{$s}%");
             });
         }
 
@@ -94,10 +106,11 @@ class ContractualReportController extends Controller
         $approvedCount = (clone $baseQuery)->where('status', 'approved')->count();
         $pendingCount = (clone $baseQuery)->whereIn('status', ['submitted', 'checked'])->count();
         $draftCount = (clone $baseQuery)->where('status', 'draft')->count();
+        $furtherActionCount = (clone $baseQuery)->where('needs_further_action', true)->count();
 
         return view('contractual-reports.index', compact(
             'reports', 'projects', 'projectId', 'totalReports',
-            'approvedCount', 'pendingCount', 'draftCount'
+            'approvedCount', 'pendingCount', 'draftCount', 'furtherActionCount'
         ));
     }
 
@@ -166,6 +179,8 @@ class ContractualReportController extends Controller
             'page1_notes' => 'nullable|string',
             'page2_remark' => 'nullable|string',
             'page3_remark' => 'nullable|string',
+            'needs_further_action' => 'nullable|in:0,1,true,false',
+            'further_action_notes' => 'nullable|string|max:1000',
             'claims' => 'nullable|array',
             'custom_claims' => 'nullable|array',
             'custom_claims.*.category' => 'nullable|string|max:100',
@@ -208,6 +223,8 @@ class ContractualReportController extends Controller
                 'page1_notes' => $validated['page1_notes'] ?? null,
                 'page2_remark' => $validated['page2_remark'] ?? null,
                 'page3_remark' => $validated['page3_remark'] ?? null,
+                'needs_further_action' => filter_var($request->input('needs_further_action', false), FILTER_VALIDATE_BOOLEAN),
+                'further_action_notes' => $request->input('further_action_notes'),
                 'created_by' => Auth::id(),
             ]);
 
@@ -434,6 +451,8 @@ class ContractualReportController extends Controller
             'page1_notes' => 'nullable|string',
             'page2_remark' => 'nullable|string',
             'page3_remark' => 'nullable|string',
+            'needs_further_action' => 'nullable|in:0,1,true,false',
+            'further_action_notes' => 'nullable|string|max:1000',
             'claims' => 'nullable|array',
             'custom_claims' => 'nullable|array',
             'custom_claims.*.category' => 'nullable|string|max:100',
@@ -460,6 +479,8 @@ class ContractualReportController extends Controller
                 'page1_notes' => $validated['page1_notes'] ?? null,
                 'page2_remark' => $validated['page2_remark'] ?? null,
                 'page3_remark' => $validated['page3_remark'] ?? null,
+                'needs_further_action' => filter_var($request->input('needs_further_action', false), FILTER_VALIDATE_BOOLEAN),
+                'further_action_notes' => $request->input('further_action_notes'),
             ]);
 
             // Update Standard Claim Checks
@@ -695,6 +716,30 @@ class ContractualReportController extends Controller
         ]);
 
         return back()->with('success', 'Report reverted to draft.');
+    }
+
+    public function toggleFurtherAction(Request $request, ContractualReport $contractualReport)
+    {
+        $user = Auth::user();
+        $userProjectIds = $this->getUserProjectIds();
+        if (!$user->isAdmin() && !$user->is_super_admin && !in_array($contractualReport->project_id, $userProjectIds)) {
+            abort(403, 'Unauthorized access to this project report.');
+        }
+
+        $request->validate([
+            'needs_further_action' => 'required|in:0,1,true,false',
+            'further_action_notes' => 'nullable|string|max:1000',
+        ]);
+
+        $needsAction = filter_var($request->input('needs_further_action'), FILTER_VALIDATE_BOOLEAN);
+
+        $contractualReport->update([
+            'needs_further_action' => $needsAction,
+            'further_action_notes' => $needsAction ? ($request->input('further_action_notes') ?? $contractualReport->further_action_notes) : null,
+        ]);
+
+        $statusText = $needsAction ? 'marked as requiring Further Action (Yes)' : 'marked as No Further Action (No)';
+        return back()->with('success', "Report {$contractualReport->report_number} {$statusText}.");
     }
 
     // ==========================================

@@ -199,6 +199,16 @@
         </div>
     @endif
 
+    <div style="border: 1px solid #ccc; padding: 6px 10px; font-size: 10px; margin-bottom: 15px; background-color: #f9f9f9;">
+        <strong>Further Action Required:</strong> 
+        <span style="display: inline-block; padding: 1px 6px; font-weight: bold; {{ $contractualReport->needs_further_action ? 'color: #b00; background: #ffebeb;' : 'color: #270; background: #ebffeb;' }}">
+            {{ $contractualReport->needs_further_action ? 'YES - Need Further Action' : 'NO - Not Need Further Action' }}
+        </span>
+        @if($contractualReport->needs_further_action && $contractualReport->further_action_notes)
+            <span style="margin-left: 15px;"><strong>Action Details:</strong> {{ $contractualReport->further_action_notes }}</span>
+        @endif
+    </div>
+
     <!-- Sign-off Block -->
     <table class="w-100" style="margin-top: 30px; font-size: 10.5px;">
         <tr>

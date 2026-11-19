@@ -31,7 +31,7 @@
 
 <!-- Stats Row -->
 <div class="row g-3 mb-4">
-    <div class="col-md-3">
+    <div class="col-md-3 col-lg">
         <div class="card card-stats h-100 shadow-sm border-0 border-start border-primary border-4">
             <div class="card-body">
                 <div class="d-flex justify-content-between align-items-center">
@@ -46,7 +46,7 @@
             </div>
         </div>
     </div>
-    <div class="col-md-3">
+    <div class="col-md-3 col-lg">
         <div class="card card-stats h-100 shadow-sm border-0 border-start border-success border-4">
             <div class="card-body">
                 <div class="d-flex justify-content-between align-items-center">
@@ -61,7 +61,7 @@
             </div>
         </div>
     </div>
-    <div class="col-md-3">
+    <div class="col-md-3 col-lg">
         <div class="card card-stats h-100 shadow-sm border-0 border-start border-warning border-4">
             <div class="card-body">
                 <div class="d-flex justify-content-between align-items-center">
@@ -76,7 +76,7 @@
             </div>
         </div>
     </div>
-    <div class="col-md-3">
+    <div class="col-md-3 col-lg">
         <div class="card card-stats h-100 shadow-sm border-0 border-start border-secondary border-4">
             <div class="card-body">
                 <div class="d-flex justify-content-between align-items-center">
@@ -90,6 +90,23 @@
                 </div>
             </div>
         </div>
+    </div>
+    <div class="col-md-12 col-lg">
+        <a href="{{ route('contractual-reports.index', array_merge(request()->query(), ['further_action' => 'yes'])) }}" class="text-decoration-none">
+            <div class="card card-stats h-100 shadow-sm border-0 border-start border-danger border-4">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <div class="text-danger small text-uppercase fw-bold">Action Needed</div>
+                            <h3 class="mb-0 mt-1 text-danger">{{ $furtherActionCount }}</h3>
+                        </div>
+                        <div class="rounded-circle bg-danger bg-opacity-10 p-3 text-danger">
+                            <i class="fas fa-exclamation-triangle fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </a>
     </div>
 </div>
 
@@ -118,19 +135,26 @@
                 </select>
             </div>
             <div class="col-md-2">
-                <label class="form-label small text-muted mb-1">Date From</label>
-                <input type="date" name="date_from" value="{{ request('date_from') }}" class="form-control form-control-sm" onchange="this.form.submit()">
+                <label class="form-label small text-muted mb-1">Further Action</label>
+                <select name="further_action" class="form-select form-select-sm" onchange="this.form.submit()">
+                    <option value="">All (Further Action)</option>
+                    <option value="yes" {{ request('further_action') === 'yes' ? 'selected' : '' }}>🚨 Yes - Need Further Action</option>
+                    <option value="no" {{ request('further_action') === 'no' ? 'selected' : '' }}>✅ No - Not Need Further Action</option>
+                </select>
             </div>
             <div class="col-md-2">
-                <label class="form-label small text-muted mb-1">Date To</label>
-                <input type="date" name="date_to" value="{{ request('date_to') }}" class="form-control form-control-sm" onchange="this.form.submit()">
+                <label class="form-label small text-muted mb-1">Date Range</label>
+                <div class="input-group input-group-sm">
+                    <input type="date" name="date_from" value="{{ request('date_from') }}" class="form-control" title="Date From" onchange="this.form.submit()">
+                    <input type="date" name="date_to" value="{{ request('date_to') }}" class="form-control" title="Date To" onchange="this.form.submit()">
+                </div>
             </div>
             <div class="col-md-3">
                 <label class="form-label small text-muted mb-1">Search</label>
                 <div class="input-group input-group-sm">
-                    <input type="text" name="search" value="{{ request('search') }}" class="form-control" placeholder="Search number, location...">
+                    <input type="text" name="search" value="{{ request('search') }}" class="form-control" placeholder="Search number, action note...">
                     <button class="btn btn-outline-secondary" type="submit"><i class="fas fa-search"></i></button>
-                    @if(request()->hasAny(['project_id', 'status', 'date_from', 'date_to', 'search']))
+                    @if(request()->hasAny(['project_id', 'status', 'further_action', 'date_from', 'date_to', 'search']))
                         <a href="{{ route('contractual-reports.index') }}" class="btn btn-outline-danger" title="Clear filters"><i class="fas fa-times"></i></a>
                     @endif
                 </div>
@@ -150,6 +174,7 @@
                     <th>Reporting Week</th>
                     <th class="text-center">Claim Flags</th>
                     <th class="text-center">Claim Events</th>
+                    <th class="text-center">Further Action</th>
                     <th class="text-center">Correspondence</th>
                     <th>Sign-offs</th>
                     <th>Status</th>
@@ -191,6 +216,20 @@
                             </span>
                         @else
                             <span class="text-muted small">-</span>
+                        @endif
+                    </td>
+                    <td class="text-center">
+                        @if($r->needs_further_action)
+                            <span class="badge bg-danger rounded-pill px-2 py-1" title="{{ $r->further_action_notes ?: 'Needs Further Action' }}">
+                                <i class="fas fa-exclamation-circle me-1"></i> Yes
+                            </span>
+                            @if($r->further_action_notes)
+                                <div><small class="text-danger text-truncate d-inline-block" style="max-width: 120px;" title="{{ $r->further_action_notes }}">{{ $r->further_action_notes }}</small></div>
+                            @endif
+                        @else
+                            <span class="badge bg-secondary bg-opacity-75 rounded-pill px-2 py-1" title="No Further Action Needed">
+                                <i class="fas fa-check me-1"></i> No
+                            </span>
                         @endif
                     </td>
                     <td class="text-center">
@@ -257,7 +296,7 @@
                 </tr>
                 @empty
                 <tr>
-                    <td colspan="9" class="text-center py-5 text-muted">
+                    <td colspan="10" class="text-center py-5 text-muted">
                         <i class="fas fa-file-contract fa-3x mb-3 text-secondary opacity-50"></i>
                         <p class="mb-2">No weekly contractual reports found.</p>
                         <a href="{{ route('contractual-reports.create') }}" class="btn btn-primary btn-sm">

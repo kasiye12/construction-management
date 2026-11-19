@@ -130,6 +130,49 @@
     </div>
 </div>
 
+<!-- Further Action Status & Action Card -->
+<div class="card mb-4 shadow-sm border-0 {{ $contractualReport->needs_further_action ? 'border-start border-danger border-4 bg-white' : 'border-start border-success border-4 bg-white' }}">
+    <div class="card-body py-3 d-flex flex-wrap justify-content-between align-items-center gap-3">
+        <div class="d-flex align-items-center gap-3">
+            <div class="rounded-circle {{ $contractualReport->needs_further_action ? 'bg-danger bg-opacity-10 text-danger' : 'bg-success bg-opacity-10 text-success' }} p-3">
+                <i class="fas {{ $contractualReport->needs_further_action ? 'fa-exclamation-triangle' : 'fa-clipboard-check' }} fa-2x"></i>
+            </div>
+            <div>
+                <div class="d-flex align-items-center gap-2">
+                    <span class="text-muted small text-uppercase fw-bold">Further Action:</span>
+                    @if($contractualReport->needs_further_action)
+                        <span class="badge bg-danger fs-6 px-3 py-1"><i class="fas fa-exclamation-circle me-1"></i> YES - Need Further Action</span>
+                    @else
+                        <span class="badge bg-success bg-opacity-75 fs-6 px-3 py-1"><i class="fas fa-check-circle me-1"></i> NO - Not Need Further Action</span>
+                    @endif
+                </div>
+                @if($contractualReport->needs_further_action && $contractualReport->further_action_notes)
+                    <div class="text-danger small mt-1">
+                        <i class="fas fa-info-circle me-1"></i><strong>Action Plan / Note:</strong> {{ $contractualReport->further_action_notes }}
+                    </div>
+                @endif
+            </div>
+        </div>
+
+        <div class="d-flex align-items-center gap-2">
+            <span class="text-muted small fw-bold me-1">Set Further Action:</span>
+            <!-- No Button -->
+            <form action="{{ route('contractual-reports.toggle-further-action', $contractualReport) }}" method="POST" class="d-inline">
+                @csrf
+                <input type="hidden" name="needs_further_action" value="0">
+                <button type="submit" class="btn btn-sm {{ !$contractualReport->needs_further_action ? 'btn-success fw-bold px-3 shadow-sm' : 'btn-outline-secondary' }}" title="Set Further Action to NO (Not Needed)">
+                    <i class="fas fa-check me-1"></i> No
+                </button>
+            </form>
+
+            <!-- Yes Button with Modal Trigger -->
+            <button type="button" class="btn btn-sm {{ $contractualReport->needs_further_action ? 'btn-danger fw-bold px-3 shadow-sm' : 'btn-outline-danger' }}" data-bs-toggle="modal" data-bs-target="#furtherActionModal" title="Set Further Action to YES (Need Further Action)">
+                <i class="fas fa-exclamation-triangle me-1"></i> Yes
+            </button>
+        </div>
+    </div>
+</div>
+
 <!-- Navigation Tabs for Document Views -->
 <ul class="nav nav-tabs mb-4" id="viewTabs" role="tablist">
     <li class="nav-item" role="presentation">
@@ -676,6 +719,33 @@
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
                     <button type="submit" class="btn btn-danger"><i class="fas fa-undo me-1"></i> Return Report</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Modal: Further Action (Yes) -->
+<div class="modal fade" id="furtherActionModal" tabindex="-1" aria-labelledby="furtherActionModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <form action="{{ route('contractual-reports.toggle-further-action', $contractualReport) }}" method="POST">
+            @csrf
+            <input type="hidden" name="needs_further_action" value="1">
+            <div class="modal-content">
+                <div class="modal-header bg-danger text-white">
+                    <h5 class="modal-title" id="furtherActionModalLabel"><i class="fas fa-exclamation-triangle me-2"></i> Flag as Needs Further Action (Yes)</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p class="text-muted small">Mark this weekly contractual report as requiring further contractual, legal, or site action.</p>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Action Details / Notes <small class="text-muted fw-normal">(Optional)</small></label>
+                        <textarea name="further_action_notes" class="form-control" rows="4" placeholder="e.g. Issue contractual delay notice to consultant, pursue BOQ variation order, follow up with design team...">{{ $contractualReport->further_action_notes }}</textarea>
+                    </div>
+                </div>
+                <div class="modal-footer bg-light">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-danger fw-bold"><i class="fas fa-check me-1"></i> Confirm: Yes (Need Further Action)</button>
                 </div>
             </div>
         </form>

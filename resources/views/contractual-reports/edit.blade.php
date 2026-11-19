@@ -115,6 +115,35 @@
                         <i class="fas fa-barcode me-2"></i><strong>{{ $contractualReport->report_number }}</strong>
                     </div>
                 </div>
+
+                <div class="col-md-6">
+                    <label class="form-label fw-bold d-flex justify-content-between align-items-center">
+                        <span><i class="fas fa-tasks text-primary me-1"></i> Further Action</span>
+                        <small class="text-muted fw-normal">Contractual follow-up required?</small>
+                    </label>
+                    <div class="btn-group w-100" role="group">
+                        <input type="radio" class="btn-check" name="needs_further_action" id="action_no" value="0" {{ old('needs_further_action', $contractualReport->needs_further_action ? '1' : '0') == '0' ? 'checked' : '' }} onchange="toggleFurtherActionNotes(this.value)">
+                        <label class="btn btn-outline-secondary fw-semibold py-2" for="action_no">
+                            <i class="fas fa-check-circle me-1 text-success"></i> No (Not Needed)
+                        </label>
+
+                        <input type="radio" class="btn-check" name="needs_further_action" id="action_yes" value="1" {{ old('needs_further_action', $contractualReport->needs_further_action ? '1' : '0') == '1' ? 'checked' : '' }} onchange="toggleFurtherActionNotes(this.value)">
+                        <label class="btn btn-outline-danger fw-semibold py-2" for="action_yes">
+                            <i class="fas fa-exclamation-triangle me-1"></i> Yes (Need Further Action)
+                        </label>
+                    </div>
+                </div>
+
+                <div class="col-12" id="further_action_notes_div" style="{{ old('needs_further_action', $contractualReport->needs_further_action ? '1' : '0') == '1' ? '' : 'display: none;' }}">
+                    <div class="p-3 bg-light rounded border border-danger border-opacity-50">
+                        <label class="form-label fw-bold text-danger mb-1">
+                            <i class="fas fa-pen me-1"></i> Further Action Description / Action Plan <small class="text-muted fw-normal">(Optional)</small>
+                        </label>
+                        <input type="text" name="further_action_notes" class="form-control" 
+                               value="{{ old('further_action_notes', $contractualReport->further_action_notes) }}" 
+                               placeholder="e.g. Issue contractual delay notice to consultant, pursue BOQ variation order, follow up with design team...">
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -496,6 +525,17 @@
 </form>
 
 <script>
+function toggleFurtherActionNotes(val) {
+    const div = document.getElementById('further_action_notes_div');
+    if (div) {
+        div.style.display = (val === '1' || val === 1) ? 'block' : 'none';
+        if (val === '1' || val === 1) {
+            const input = div.querySelector('input[name="further_action_notes"]');
+            if (input) input.focus();
+        }
+    }
+}
+
 let eventIndex = 0;
 const issueOptions = [
     { code: '1.1', title: '1.1 Miss drawing' },

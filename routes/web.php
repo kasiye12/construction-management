@@ -159,6 +159,7 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/contractual-reports/{contractual_report}/approve', [App\Http\Controllers\ContractualReportController::class, 'approve'])->name('contractual-reports.approve');
         Route::post('/contractual-reports/{contractual_report}/reject', [App\Http\Controllers\ContractualReportController::class, 'reject'])->name('contractual-reports.reject');
         Route::post('/contractual-reports/{contractual_report}/revert', [App\Http\Controllers\ContractualReportController::class, 'revert'])->name('contractual-reports.revert');
+        Route::post('/contractual-reports/{contractual_report}/toggle-further-action', [App\Http\Controllers\ContractualReportController::class, 'toggleFurtherAction'])->name('contractual-reports.toggle-further-action');
     });
     Route::middleware('permission:contractual-reports.delete')->group(function () {
         Route::delete('/contractual-reports/{contractual_report}', [App\Http\Controllers\ContractualReportController::class, 'destroy'])->name('contractual-reports.destroy');

@@ -37,12 +37,15 @@ class ContractualReport extends Model
         'page1_notes',
         'page2_remark',
         'page3_remark',
+        'needs_further_action',
+        'further_action_notes',
         'created_by',
     ];
 
     protected $casts = [
         'week_start_date' => 'date',
         'week_end_date' => 'date',
+        'needs_further_action' => 'boolean',
         'prepared_at' => 'datetime',
         'checked_at' => 'datetime',
         'approved_at' => 'datetime',
@@ -201,5 +204,19 @@ class ContractualReport extends Model
     public function getActiveCorrespondencesCountAttribute(): int
     {
         return $this->correspondenceChecks()->get()->filter(fn($c) => $c->hasAnyYes())->count();
+    }
+
+    public function needsFurtherAction(): bool
+    {
+        return (bool)$this->needs_further_action;
+    }
+
+    public function getFurtherActionBadgeAttribute(): string
+    {
+        if ($this->needs_further_action) {
+            $notes = e($this->further_action_notes ?? 'Further Action Required');
+            return '<span class="badge bg-danger rounded-pill" title="' . $notes . '"><i class="fas fa-exclamation-circle me-1"></i> Yes (Action Needed)</span>';
+        }
+        return '<span class="badge bg-secondary rounded-pill" title="No Further Action Needed"><i class="fas fa-check me-1"></i> No</span>';
     }
 }
