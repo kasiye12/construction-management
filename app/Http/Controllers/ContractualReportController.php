@@ -131,8 +131,7 @@ class ContractualReportController extends Controller
 
         // Preview report number
         $year = date('Y');
-        $count = ContractualReport::where('project_id', $projectId)->count() + 1;
-        $previewNumber = 'WCR-' . $year . '-' . str_pad($count, 4, '0', STR_PAD_LEFT);
+        $previewNumber = ContractualReport::generateNextReportNumber($year);
 
         $claimCategories = ContractualReport::CLAIM_CATEGORIES;
         $correspondenceCategories = ContractualReport::CORRESPONDENCE_CATEGORIES;
@@ -187,8 +186,7 @@ class ContractualReportController extends Controller
 
         // Generate report number
         $year = Carbon::parse($validated['week_start_date'])->format('Y');
-        $count = ContractualReport::where('project_id', $project->id)->count() + 1;
-        $reportNumber = 'WCR-' . $year . '-' . str_pad($count, 4, '0', STR_PAD_LEFT);
+        $reportNumber = ContractualReport::generateNextReportNumber($year);
 
         DB::beginTransaction();
         try {

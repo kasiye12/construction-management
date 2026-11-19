@@ -249,8 +249,8 @@ class ContractualReportExcelService
         }
 
         // Generate report number
-        $reportCount = ContractualReport::where('project_id', $projectId)->count() + 1;
-        $reportNumber = 'WCR-' . date('Y') . '-' . str_pad($reportCount, 4, '0', STR_PAD_LEFT);
+        $reportYear = $startDate ? $startDate->format('Y') : date('Y');
+        $reportNumber = ContractualReport::generateNextReportNumber($reportYear);
 
         $report = ContractualReport::create([
             'project_id' => $projectId,

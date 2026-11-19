@@ -136,6 +136,44 @@ class ContractualReport extends Model
         return $this->hasMany(ContractualCorrespondenceCheck::class)->orderBy('sort_order');
     }
 
+    /**
+     * Generate the next globally unique report number for a given year.
+     * Scans all records including soft-deleted ones to avoid unique constraint collisions.
+     * Format: WCR-YYYY-XXXX (e.g. WCR-2026-0004)
+     */
+    public static function generateNextReportNumber(?string $year = null): string
+    {
+        $year = $year ?: date('Y');
+        $prefix = "WCR-{$year}-";
+
+        // Fetch all existing numbers for the given year (including soft-deleted)
+        $existing = self::withTrashed()
+            ->where('report_number', 'LIKE', "{$prefix}%")
+            ->pluck('report_number')
+            ->toArray();
+
+        $maxNum = 0;
+        foreach ($existing as $num) {
+            if (preg_match('/^WCR-\d{4}-(\d+)$/', $num, $matches)) {
+                $val = (int)$matches[1];
+                if ($val > $maxNum) {
+                    $maxNum = $val;
+                }
+            }
+        }
+
+        $nextNum = $maxNum + 1;
+        do {
+            $candidate = $prefix . str_pad($nextNum, 4, '0', STR_PAD_LEFT);
+            $collision = in_array($candidate, $existing) || self::withTrashed()->where('report_number', $candidate)->exists();
+            if ($collision) {
+                $nextNum++;
+            }
+        } while ($collision);
+
+        return $candidate;
+    }
+
     // Status helpers
     public function isDraft(): bool { return $this->status === 'draft'; }
     public function isSubmitted(): bool { return $this->status === 'submitted'; }
