@@ -553,17 +553,28 @@ class ContractualReportController extends Controller
     }
 
     // ==========================================
-    // DESTROY
+    // DESTROY / REMOVE FROM LIST
     // ==========================================
     public function destroy(ContractualReport $contractualReport)
     {
-        if ($contractualReport->isApproved() && !Auth::user()->isAdmin()) {
-            return back()->with('error', 'Only system administrators can delete approved reports.');
+        $user = Auth::user();
+        $canDelete = $user && (
+            $user->isAdmin() ||
+            $user->isManager() ||
+            $user->role === 'Contract' ||
+            $user->hasPermission('contractual-reports.delete') ||
+            $contractualReport->prepared_by === $user->id
+        );
+
+        if (!$canDelete) {
+            return back()->with('error', 'You do not have permission to delete this contractual report.');
         }
 
+        $reportNum = $contractualReport->report_number;
         $contractualReport->delete();
+
         return redirect()->route('contractual-reports.index')
-            ->with('success', 'Report deleted successfully.');
+            ->with('success', "Contractual report {$reportNum} has been removed successfully.");
     }
 
     // ==========================================

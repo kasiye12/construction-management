@@ -11,7 +11,7 @@
                 {!! $contractualReport->status_badge !!}
             </div>
             <p class="text-muted mb-0 mt-1">
-                <strong>{{ $contractualReport->project->name }}</strong> • 
+                <strong>{{ $contractualReport->project?->name ?? 'Unknown / Archived Project' }}</strong> • 
                 Period: {{ $contractualReport->week_start_date->format('M d, Y') }} to {{ $contractualReport->week_end_date->format('M d, Y') }} •
                 Document: <span class="badge bg-light text-dark border">{{ $contractualReport->document_code }} (Issue {{ $contractualReport->issue_no }})</span>
             </p>
@@ -26,10 +26,23 @@
             <a href="{{ route('contractual-reports.print', $contractualReport) }}" target="_blank" class="btn btn-secondary">
                 <i class="fas fa-print me-1"></i> Print / PDF
             </a>
-            @if($contractualReport->isDraft() || $contractualReport->isRejected() || auth()->user()->isAdmin())
+            @php
+                $canEdit = $contractualReport->isDraft() || $contractualReport->isRejected() || auth()->user()->isAdmin() || auth()->user()->isManager() || auth()->user()->role === 'Contract';
+                $canDelete = auth()->user()->isAdmin() || auth()->user()->isManager() || auth()->user()->role === 'Contract' || auth()->user()->hasPermission('contractual-reports.delete') || $contractualReport->prepared_by === auth()->id();
+            @endphp
+            @if($canEdit)
                 <a href="{{ route('contractual-reports.edit', $contractualReport) }}" class="btn btn-warning">
                     <i class="fas fa-edit me-1"></i> Edit
                 </a>
+            @endif
+            @if($canDelete)
+                <form action="{{ route('contractual-reports.destroy', $contractualReport) }}" method="POST" class="d-inline" onsubmit="return confirm('Are you sure you want to remove report {{ $contractualReport->report_number }} from the list?')">
+                    @csrf
+                    @method('DELETE')
+                    <button type="submit" class="btn btn-outline-danger" title="Remove Report">
+                        <i class="fas fa-trash-alt me-1"></i> Remove
+                    </button>
+                </form>
             @endif
         </div>
     </div>
@@ -181,7 +194,7 @@
             <!-- Project Details Strip -->
             <div class="card-body bg-light border-bottom py-2">
                 <div class="row g-2 small">
-                    <div class="col-md-6"><strong>Project:</strong> {{ $contractualReport->project->name }}</div>
+                    <div class="col-md-6"><strong>Project:</strong> {{ $contractualReport->project?->name ?? 'Unknown / Archived Project' }}</div>
                     <div class="col-md-6"><strong>Project Location:</strong> {{ $contractualReport->project_location ?: 'Site' }}</div>
                     <div class="col-md-6"><strong>Client:</strong> {{ $contractualReport->client_name ?: 'N/A' }}</div>
                     <div class="col-md-6"><strong>Consultant:</strong> {{ $contractualReport->consultant_name ?: 'N/A' }}</div>
@@ -314,7 +327,7 @@
             <!-- Project Details Strip -->
             <div class="card-body bg-light border-bottom py-2">
                 <div class="row g-2 small">
-                    <div class="col-md-6"><strong>Project:</strong> {{ $contractualReport->project->name }}</div>
+                    <div class="col-md-6"><strong>Project:</strong> {{ $contractualReport->project?->name ?? 'Unknown / Archived Project' }}</div>
                     <div class="col-md-6"><strong>Project Location:</strong> {{ $contractualReport->project_location ?: 'Site' }}</div>
                     <div class="col-md-6"><strong>Client:</strong> {{ $contractualReport->client_name ?: 'N/A' }}</div>
                     <div class="col-md-6"><strong>Consultant:</strong> {{ $contractualReport->consultant_name ?: 'N/A' }}</div>

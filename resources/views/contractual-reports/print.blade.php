@@ -127,7 +127,7 @@
 
     <!-- Project Info Block -->
     <div class="mb-2">
-        <div class="meta-line"><strong>Project:</strong> {{ $contractualReport->project->name }}</div>
+        <div class="meta-line"><strong>Project:</strong> {{ $contractualReport->project?->name ?? 'Unknown / Archived Project' }}</div>
         <div class="meta-line"><strong>Project Location:</strong> {{ $contractualReport->project_location ?: 'Site Location' }}</div>
         <div class="meta-line"><strong>Client:</strong> {{ $contractualReport->client_name ?: 'N/A' }}</div>
         <div class="meta-line"><strong>Consultant:</strong> {{ $contractualReport->consultant_name ?: 'N/A' }}</div>
@@ -254,7 +254,7 @@
 
     <!-- Project Info Block -->
     <div class="mb-2">
-        <div class="meta-line"><strong>Project:</strong> {{ $contractualReport->project->name }}</div>
+        <div class="meta-line"><strong>Project:</strong> {{ $contractualReport->project?->name ?? 'Unknown / Archived Project' }}</div>
         <div class="meta-line"><strong>Project Location:</strong> {{ $contractualReport->project_location ?: 'Site Location' }}</div>
         <div class="meta-line"><strong>Client:</strong> {{ $contractualReport->client_name ?: 'N/A' }}</div>
         <div class="meta-line"><strong>Consultant:</strong> {{ $contractualReport->consultant_name ?: 'N/A' }}</div>

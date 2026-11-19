@@ -164,8 +164,8 @@
                         <span class="badge bg-light text-dark border">{{ $r->document_code }} (Iss {{ $r->issue_no }})</span>
                     </td>
                     <td>
-                        <div class="fw-bold">{{ Str::limit($r->project->name, 35) }}</div>
-                        <small class="text-muted"><i class="fas fa-map-marker-alt me-1"></i>{{ $r->project_location ?: ($r->project->location ?: 'Site') }}</small>
+                        <div class="fw-bold">{{ Str::limit($r->project?->name ?? 'Unknown / Archived Project', 35) }}</div>
+                        <small class="text-muted"><i class="fas fa-map-marker-alt me-1"></i>{{ $r->project_location ?: ($r->project?->location ?: 'Site') }}</small>
                     </td>
                     <td>
                         <div class="fw-semibold">
@@ -234,17 +234,21 @@
                             <a href="{{ route('contractual-reports.print', $r) }}" target="_blank" class="btn btn-outline-secondary" title="Print 3-Page Format">
                                 <i class="fas fa-print"></i>
                             </a>
-                            @if($r->isDraft() || $r->isRejected() || auth()->user()->isAdmin())
+                            @php
+                                $canEdit = $r->isDraft() || $r->isRejected() || auth()->user()->isAdmin() || auth()->user()->isManager() || auth()->user()->role === 'Contract';
+                                $canDelete = auth()->user()->isAdmin() || auth()->user()->isManager() || auth()->user()->role === 'Contract' || auth()->user()->hasPermission('contractual-reports.delete') || $r->prepared_by === auth()->id();
+                            @endphp
+                            @if($canEdit)
                                 <a href="{{ route('contractual-reports.edit', $r) }}" class="btn btn-outline-warning" title="Edit Report">
                                     <i class="fas fa-edit"></i>
                                 </a>
                             @endif
-                            @if(!$r->isApproved() || auth()->user()->isAdmin())
-                                <form action="{{ route('contractual-reports.destroy', $r) }}" method="POST" class="d-inline" onsubmit="return confirm('Are you sure you want to delete this report?')">
+                            @if($canDelete)
+                                <form action="{{ route('contractual-reports.destroy', $r) }}" method="POST" class="d-inline" onsubmit="return confirm('Are you sure you want to remove report {{ $r->report_number }} from the list?')">
                                     @csrf
                                     @method('DELETE')
-                                    <button type="submit" class="btn btn-outline-danger" title="Delete Report">
-                                        <i class="fas fa-trash"></i>
+                                    <button type="submit" class="btn btn-outline-danger" title="Remove / Delete Report">
+                                        <i class="fas fa-trash-alt"></i>
                                     </button>
                                 </form>
                             @endif
