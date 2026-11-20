@@ -159,7 +159,7 @@
         <li class="nav-item" role="presentation">
             <button class="nav-link fw-bold py-3 shadow-sm border" id="page2-tab" data-bs-toggle="tab" data-bs-target="#page2" type="button" role="tab">
                 <i class="fas fa-list-ol me-2"></i> Page 2: Claim Event Details
-                <span class="badge bg-warning text-dark ms-1">Log & Action</span>
+                <span class="badge bg-warning text-dark ms-1" id="page2TabCount">0 events</span>
             </button>
         </li>
         <li class="nav-item" role="presentation">
@@ -188,6 +188,14 @@
                         <button type="button" class="btn btn-outline-secondary btn-sm" onclick="clearAllCheckboxes('claims')">
                             <i class="fas fa-undo me-1"></i> Clear All
                         </button>
+                    </div>
+                </div>
+                <div class="px-3 pt-3">
+                    <div class="alert alert-info border-info d-flex align-items-center mb-0 py-2 px-3 small">
+                        <i class="fas fa-magic text-primary fs-5 me-3"></i>
+                        <div>
+                            <strong>Smart Claim Event Sync Active:</strong> Checking <strong>"Yes"</strong> on any weekday automatically adds a corresponding entry to <strong>Page 2 (Detailed Information of the Claim Event)</strong> with the exact date, issue code, and description. Unchecking removes it.
+                        </div>
                     </div>
                 </div>
                 <div class="table-responsive">
@@ -222,7 +230,7 @@
                                     </td>
                                 </tr>
                                 @foreach($catData['items'] as $code => $title)
-                                    <tr class="claim-item-row" data-cat-key="{{ $catKey }}" data-code="{{ $code }}">
+                                    <tr class="claim-item-row" data-cat-key="{{ $catKey }}" data-code="{{ $code }}" data-title="{{ $title }}">
                                         <td class="text-start ps-4">
                                             <span class="badge bg-secondary me-2">{{ $code }}</span>
                                             {{ $title }}
@@ -232,12 +240,12 @@
                                                 $fieldYes = "claims[{$code}][{$day}]";
                                                 $isChecked = old("claims.{$code}.{$day}", false);
                                             @endphp
-                                            <td class="bg-light">
+                                            <td class="bg-light {{ $isChecked ? 'bg-warning bg-opacity-25' : '' }}">
                                                 <input type="checkbox" name="{{ $fieldYes }}" value="1" 
                                                        class="form-check-input claim-check border-danger" 
-                                                       data-day="{{ $day }}" data-code="{{ $code }}"
+                                                       data-day="{{ $day }}" data-code="{{ $code }}" data-title="{{ $title }}"
                                                        {{ $isChecked ? 'checked' : '' }}
-                                                       onchange="highlightChecked(this)">
+                                                       onchange="onClaimCheckChanged(this)">
                                             </td>
                                             <td class="text-muted small">
                                                 <i class="fas fa-times opacity-25"></i>
@@ -450,15 +458,70 @@ document.getElementById('project_select').addEventListener('change', function() 
     }
 });
 
-// Auto-adjust Sunday date when Monday changes
+// Day to Monday offset mapping
+const dayOffsetMap = {
+    'monday': 0,
+    'tuesday': 1,
+    'wednesday': 2,
+    'thursday': 3,
+    'friday': 4,
+    'saturday': 5,
+    'sunday': 6
+};
+
+// Calculate specific calendar date (YYYY-MM-DD) for a given weekday based on week_start_date
+function calculateEventDate(day) {
+    const weekStartInput = document.getElementById('week_start_date');
+    if (!weekStartInput || !weekStartInput.value) {
+        return '';
+    }
+    const offset = dayOffsetMap[day.toLowerCase()];
+    if (offset === undefined) return weekStartInput.value;
+
+    const parts = weekStartInput.value.split('-');
+    if (parts.length !== 3) return weekStartInput.value;
+
+    const year = parseInt(parts[0], 10);
+    const month = parseInt(parts[1], 10) - 1;
+    const date = parseInt(parts[2], 10);
+
+    const d = new Date(year, month, date);
+    d.setDate(d.getDate() + offset);
+
+    const yyyy = d.getFullYear();
+    const mm = String(d.getMonth() + 1).padStart(2, '0');
+    const dd = String(d.getDate()).padStart(2, '0');
+    return `${yyyy}-${mm}-${dd}`;
+}
+
+// Auto-adjust Sunday date when Monday changes and update synced claim events
 document.getElementById('week_start_date').addEventListener('change', function() {
     if (this.value) {
-        const start = new Date(this.value);
-        if (!isNaN(start.getTime())) {
-            const end = new Date(start);
-            end.setDate(start.getDate() + 6);
-            document.getElementById('week_end_date').value = end.toISOString().split('T')[0];
+        const parts = this.value.split('-');
+        if (parts.length === 3) {
+            const y = parseInt(parts[0], 10);
+            const m = parseInt(parts[1], 10) - 1;
+            const d = parseInt(parts[2], 10);
+            const end = new Date(y, m, d);
+            end.setDate(end.getDate() + 6);
+            const ey = end.getFullYear();
+            const em = String(end.getMonth() + 1).padStart(2, '0');
+            const ed = String(end.getDate()).padStart(2, '0');
+            document.getElementById('week_end_date').value = `${ey}-${em}-${ed}`;
         }
+
+        // Auto-recalculate dates on all synced claim event rows on Page 2
+        document.querySelectorAll('#claimEventsBody tr[data-sync-day]').forEach(tr => {
+            const day = tr.getAttribute('data-sync-day');
+            const newDate = calculateEventDate(day);
+            if (newDate) {
+                const dateInput = tr.querySelector('input[type="date"]');
+                if (dateInput) {
+                    dateInput.value = newDate;
+                    flashField(dateInput);
+                }
+            }
+        });
     }
 });
 
@@ -479,10 +542,47 @@ const issueOptions = [
     { code: 'Other', title: 'Other Issue' }
 ];
 
+function ensureIssueOptionExists(code, title) {
+    if (!code) return;
+    const exists = issueOptions.some(opt => opt.code === code);
+    if (!exists) {
+        issueOptions.push({
+            code: code,
+            title: title ? `${code} ${title}` : code
+        });
+    }
+}
+
+function isClaimEventRowBlank(tr) {
+    const select = tr.querySelector('select[name$="[issue_number]"]');
+    const causeDesc = tr.querySelector('textarea[name$="[cause_description]"]');
+    const effect = tr.querySelector('textarea[name$="[effect_on_progress]"]');
+    const action = tr.querySelector('textarea[name$="[action_taken]"]');
+    const remark = tr.querySelector('input[name$="[remark]"]');
+
+    const issueVal = select ? select.value.trim() : '';
+    const causeVal = causeDesc ? causeDesc.value.trim() : '';
+    const effectVal = effect ? effect.value.trim() : '';
+    const actionVal = action ? action.value.trim() : '';
+    const remarkVal = remark ? remark.value.trim() : '';
+
+    return !issueVal && !causeVal && !effectVal && !actionVal && !remarkVal;
+}
+
 function addClaimEventRow(data = {}) {
     const tbody = document.getElementById('claimEventsBody');
     const tr = document.createElement('tr');
     tr.id = 'event_row_' + eventIndex;
+
+    if (data.sync_key) {
+        tr.setAttribute('data-sync-key', data.sync_key);
+        tr.setAttribute('data-sync-day', data.sync_day);
+        tr.setAttribute('data-sync-code', data.sync_code);
+    }
+
+    if (data.issue_number) {
+        ensureIssueOptionExists(data.issue_number, data.cause_description);
+    }
 
     let optionsHtml = '<option value="">-- Issue # --</option>';
     issueOptions.forEach(opt => {
@@ -526,20 +626,138 @@ function addClaimEventRow(data = {}) {
 
 function removeClaimEventRow(idx) {
     const row = document.getElementById('event_row_' + idx);
-    if (row) row.remove();
-    updateEventCount();
+    if (row) {
+        const syncCode = row.getAttribute('data-sync-code');
+        const syncDay = row.getAttribute('data-sync-day');
+
+        row.remove();
+
+        // Reverse-sync: uncheck corresponding checkbox on Page 1
+        if (syncCode && syncDay) {
+            const cb = document.querySelector(`.claim-check[data-code="${syncCode}"][data-day="${syncDay}"]`);
+            if (cb && cb.checked) {
+                cb.checked = false;
+                highlightChecked(cb);
+            }
+        }
+        updateEventCount();
+    }
 }
 
 function updateEventCount() {
-    const count = document.getElementById('claimEventsBody').children.length;
-    document.getElementById('eventRowCount').innerText = count;
+    const tbody = document.getElementById('claimEventsBody');
+    const count = tbody ? tbody.children.length : 0;
+
+    const countEl = document.getElementById('eventRowCount');
+    if (countEl) countEl.innerText = count;
+
+    const tabBadge = document.getElementById('page2TabCount');
+    if (tabBadge) {
+        tabBadge.innerText = count + (count === 1 ? ' event' : ' events');
+        if (count > 0) {
+            tabBadge.className = 'badge bg-success text-white ms-1';
+        } else {
+            tabBadge.className = 'badge bg-warning text-dark ms-1';
+        }
+    }
+}
+
+function onClaimCheckChanged(cb) {
+    highlightChecked(cb);
+    syncClaimEventFromCheckbox(cb);
+}
+
+function syncClaimEventFromCheckbox(cb) {
+    const code = cb.getAttribute('data-code');
+    const day = cb.getAttribute('data-day');
+    const title = cb.getAttribute('data-title') || code;
+    if (!code || !day) return;
+
+    const syncKey = `claim_${code}_${day}`;
+    const tbody = document.getElementById('claimEventsBody');
+    if (!tbody) return;
+
+    if (cb.checked) {
+        // Prevent duplicate row for this code + day
+        const existing = tbody.querySelector(`tr[data-sync-key="${syncKey}"]`);
+        if (existing) return;
+
+        // If currently the only row in tbody is blank, remove it so the new event replaces the blank row
+        if (tbody.children.length === 1 && isClaimEventRowBlank(tbody.children[0])) {
+            tbody.children[0].remove();
+        }
+
+        const eventDate = calculateEventDate(day);
+        ensureIssueOptionExists(code, title);
+
+        addClaimEventRow({
+            event_date: eventDate,
+            issue_number: code,
+            cause_description: title,
+            effect_on_progress: '',
+            action_taken: '',
+            remark: '',
+            sync_key: syncKey,
+            sync_day: day,
+            sync_code: code
+        });
+
+        const dayName = day.charAt(0).toUpperCase() + day.slice(1);
+        showSyncToast(`Synced to Page 2: ${code} - ${title} (${dayName} ${eventDate})`);
+    } else {
+        const existing = tbody.querySelector(`tr[data-sync-key="${syncKey}"]`);
+        if (existing) {
+            existing.remove();
+            updateEventCount();
+            const dayName = day.charAt(0).toUpperCase() + day.slice(1);
+            showSyncToast(`Removed from Page 2: ${code} (${dayName})`);
+        }
+    }
+}
+
+function showSyncToast(message) {
+    let toastContainer = document.getElementById('syncToastContainer');
+    if (!toastContainer) {
+        toastContainer = document.createElement('div');
+        toastContainer.id = 'syncToastContainer';
+        toastContainer.style.position = 'fixed';
+        toastContainer.style.bottom = '20px';
+        toastContainer.style.right = '20px';
+        toastContainer.style.zIndex = '9999';
+        toastContainer.style.display = 'flex';
+        toastContainer.style.flexDirection = 'column';
+        toastContainer.style.gap = '8px';
+        document.body.appendChild(toastContainer);
+    }
+
+    const toast = document.createElement('div');
+    toast.className = 'alert alert-primary py-2 px-3 shadow-lg border-primary d-flex align-items-center mb-0 fade show';
+    toast.style.minWidth = '300px';
+    toast.style.maxWidth = '440px';
+    toast.style.fontSize = '0.85rem';
+    toast.innerHTML = `
+        <i class="fas fa-bolt text-warning me-2 fs-6"></i>
+        <div class="flex-grow-1">${message}</div>
+        <button type="button" class="btn-close ms-2" style="font-size: 0.65rem;" onclick="this.parentElement.remove()"></button>
+    `;
+    toastContainer.appendChild(toast);
+
+    setTimeout(() => {
+        toast.classList.remove('show');
+        setTimeout(() => toast.remove(), 300);
+    }, 2800);
 }
 
 function clearAllCheckboxes(type) {
     const selector = type === 'claims' ? '.claim-check' : '.corresp-check';
     document.querySelectorAll(selector).forEach(cb => {
-        cb.checked = false;
-        highlightChecked(cb);
+        if (cb.checked) {
+            cb.checked = false;
+            highlightChecked(cb);
+            if (type === 'claims') {
+                syncClaimEventFromCheckbox(cb);
+            }
+        }
     });
 }
 
@@ -620,10 +838,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    if (document.getElementById('claimEventsBody').children.length === 0) {
-        addClaimEventRow();
-    }
-
     @if(old('custom_claims'))
         const oldCustomClaims = @json(old('custom_claims'));
         Object.values(oldCustomClaims).forEach(c => {
@@ -642,6 +856,45 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         });
     @endif
+
+    @if(old('events'))
+        const oldEvents = @json(old('events'));
+        Object.values(oldEvents).forEach(evt => {
+            const formattedDate = evt.event_date || '';
+            let syncKey = null;
+            let syncDay = null;
+            let syncCode = evt.issue_number;
+            if (formattedDate && evt.issue_number) {
+                for (const [dayName, offset] of Object.entries(dayOffsetMap)) {
+                    if (calculateEventDate(dayName) === formattedDate) {
+                        syncKey = `claim_${evt.issue_number}_${dayName}`;
+                        syncDay = dayName;
+                        break;
+                    }
+                }
+            }
+            addClaimEventRow({
+                event_date: formattedDate,
+                issue_number: evt.issue_number,
+                cause_description: evt.cause_description,
+                effect_on_progress: evt.effect_on_progress,
+                action_taken: evt.action_taken,
+                remark: evt.remark,
+                sync_key: syncKey,
+                sync_day: syncDay,
+                sync_code: syncCode
+            });
+        });
+    @else
+        if (document.getElementById('claimEventsBody').children.length === 0) {
+            addClaimEventRow();
+        }
+        // If checkboxes were restored via old('claims'), sync them to Page 2
+        document.querySelectorAll('#claimsTableBody .claim-check:checked').forEach(cb => {
+            syncClaimEventFromCheckbox(cb);
+        });
+    @endif
+    updateEventCount();
 });
 
 let customClaimIndex = 0;
@@ -792,6 +1045,9 @@ function appendCustomClaimRow(data) {
     tr.className = 'custom-claim-row table-warning bg-opacity-10';
     tr.setAttribute('data-cat-key', data.category);
     tr.setAttribute('data-code', data.item_code);
+    tr.setAttribute('data-title', data.item_title);
+
+    const safeTitle = (data.item_title || '').replace(/"/g, '&quot;');
 
     const days = [
         { key: 'monday', checked: data.monday },
@@ -811,7 +1067,8 @@ function appendCustomClaimRow(data) {
             <td class="bg-light ${bgCls}">
                 <input type="checkbox" name="custom_claims[${idx}][${d.key}]" value="1"
                        class="form-check-input claim-check border-danger" ${isChecked}
-                       onchange="highlightChecked(this)">
+                       data-day="${d.key}" data-code="${data.item_code}" data-title="${safeTitle}"
+                       onchange="onClaimCheckChanged(this)">
             </td>
             <td class="text-muted small">
                 <i class="fas fa-times opacity-25"></i>
@@ -844,6 +1101,11 @@ function appendCustomClaimRow(data) {
         nextEl = nextEl.nextElementSibling;
     }
     lastRow.insertAdjacentElement('afterend', tr);
+
+    // Sync any pre-checked days to Page 2
+    tr.querySelectorAll('.claim-check:checked').forEach(cb => {
+        syncClaimEventFromCheckbox(cb);
+    });
 }
 
 function removeCustomClaimRow(btn, code) {
@@ -851,6 +1113,14 @@ function removeCustomClaimRow(btn, code) {
         const row = btn.closest('tr');
         const catKey = row.getAttribute('data-cat-key');
         row.remove();
+
+        // Also remove any Page 2 claim events linked to this custom code
+        if (code) {
+            document.querySelectorAll(`#claimEventsBody tr[data-sync-code="${code}"]`).forEach(evtRow => {
+                evtRow.remove();
+            });
+            updateEventCount();
+        }
 
         const remaining = document.querySelectorAll(`#claimsTableBody tr[data-cat-key="${catKey}"]:not(.category-header-row)`);
         if (remaining.length === 0) {
