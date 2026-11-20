@@ -65,27 +65,39 @@
                 </div>
 
                 <div class="col-md-4">
-                    <label class="form-label fw-bold">Project Location</label>
-                    <input type="text" name="project_location" id="project_location" class="form-control" 
-                           value="{{ old('project_location', $contractualReport->project_location) }}">
+                    <label class="form-label fw-bold d-flex justify-content-between align-items-center">
+                        <span>Project Location</span>
+                        <small class="text-muted fw-normal"><i class="fas fa-lock me-1"></i>Auto</small>
+                    </label>
+                    <input type="text" name="project_location" id="project_location" class="form-control bg-light" 
+                           value="{{ old('project_location', $contractualReport->project_location) }}" placeholder="Auto-populated from project" readonly tabindex="-1" style="cursor: not-allowed;">
                 </div>
 
                 <div class="col-md-4">
-                    <label class="form-label fw-bold">Client</label>
-                    <input type="text" name="client_name" id="client_name" class="form-control" 
-                           value="{{ old('client_name', $contractualReport->client_name) }}">
+                    <label class="form-label fw-bold d-flex justify-content-between align-items-center">
+                        <span>Client</span>
+                        <small class="text-muted fw-normal"><i class="fas fa-lock me-1"></i>Auto</small>
+                    </label>
+                    <input type="text" name="client_name" id="client_name" class="form-control bg-light" 
+                           value="{{ old('client_name', $contractualReport->client_name) }}" placeholder="Auto-populated from project" readonly tabindex="-1" style="cursor: not-allowed;">
                 </div>
 
                 <div class="col-md-4">
-                    <label class="form-label fw-bold">Consultant</label>
-                    <input type="text" name="consultant_name" id="consultant_name" class="form-control" 
-                           value="{{ old('consultant_name', $contractualReport->consultant_name) }}">
+                    <label class="form-label fw-bold d-flex justify-content-between align-items-center">
+                        <span>Consultant</span>
+                        <small class="text-muted fw-normal"><i class="fas fa-lock me-1"></i>Auto</small>
+                    </label>
+                    <input type="text" name="consultant_name" id="consultant_name" class="form-control bg-light" 
+                           value="{{ old('consultant_name', $contractualReport->consultant_name) }}" placeholder="Auto-populated from project" readonly tabindex="-1" style="cursor: not-allowed;">
                 </div>
 
                 <div class="col-md-4">
-                    <label class="form-label fw-bold">Contractor</label>
-                    <input type="text" name="contractor_name" id="contractor_name" class="form-control" 
-                           value="{{ old('contractor_name', $contractualReport->contractor_name) }}">
+                    <label class="form-label fw-bold d-flex justify-content-between align-items-center">
+                        <span>Contractor</span>
+                        <small class="text-muted fw-normal"><i class="fas fa-lock me-1"></i>Auto</small>
+                    </label>
+                    <input type="text" name="contractor_name" id="contractor_name" class="form-control bg-light" 
+                           value="{{ old('contractor_name', $contractualReport->contractor_name ?? 'TNT Construction and Trading') }}" placeholder="Auto-populated from project" readonly tabindex="-1" style="cursor: not-allowed;">
                 </div>
 
                 <div class="col-md-4">
@@ -866,12 +878,20 @@ function applySelectedProjectDetails(isUserChange = false) {
     const select = document.getElementById('project_select');
     if (!select) return;
     const option = select.options[select.selectedIndex];
-    if (!option || !option.value) return;
+    if (!option || !option.value) {
+        if (isUserChange) {
+            document.getElementById('project_location').value = '';
+            document.getElementById('client_name').value = '';
+            document.getElementById('consultant_name').value = '';
+            document.getElementById('contractor_name').value = '';
+        }
+        return;
+    }
 
     const location = option.getAttribute('data-location') || '';
     const client = option.getAttribute('data-client') || '';
     const consultant = option.getAttribute('data-consultant') || '';
-    const contractor = option.getAttribute('data-contractor') || 'TNT CONSTRUCTION AND TRADING';
+    const contractor = option.getAttribute('data-contractor') || 'TNT Construction and Trading';
 
     const locInput = document.getElementById('project_location');
     const clientInput = document.getElementById('client_name');
@@ -910,6 +930,16 @@ document.addEventListener('DOMContentLoaded', function() {
         projectSelect.addEventListener('change', function() {
             applySelectedProjectDetails(true);
         });
+
+        // Ensure project details are auto-filled on load if not already set
+        if (projectSelect.value) {
+            const locInput = document.getElementById('project_location');
+            const clientInput = document.getElementById('client_name');
+            const consultantInput = document.getElementById('consultant_name');
+            if (!locInput || !locInput.value || !clientInput || !clientInput.value || !consultantInput || !consultantInput.value) {
+                applySelectedProjectDetails(false);
+            }
+        }
     }
 
     // Register existing custom claim codes into issueOptions for Page 2

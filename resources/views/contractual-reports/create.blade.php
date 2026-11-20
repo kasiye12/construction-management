@@ -63,27 +63,39 @@
                 </div>
 
                 <div class="col-md-4">
-                    <label class="form-label fw-bold">Project Location</label>
-                    <input type="text" name="project_location" id="project_location" class="form-control" 
-                           value="{{ old('project_location', $selectedProject?->location) }}" placeholder="e.g. Addis Ababa / Megenagna">
+                    <label class="form-label fw-bold d-flex justify-content-between align-items-center">
+                        <span>Project Location</span>
+                        <small class="text-muted fw-normal"><i class="fas fa-lock me-1"></i>Auto</small>
+                    </label>
+                    <input type="text" name="project_location" id="project_location" class="form-control bg-light" 
+                           value="{{ old('project_location', $selectedProject?->location) }}" placeholder="Auto-populated from project" readonly tabindex="-1" style="cursor: not-allowed;">
                 </div>
 
                 <div class="col-md-4">
-                    <label class="form-label fw-bold">Client</label>
-                    <input type="text" name="client_name" id="client_name" class="form-control" 
-                           value="{{ old('client_name', $selectedProject?->client_name) }}" placeholder="Client Name">
+                    <label class="form-label fw-bold d-flex justify-content-between align-items-center">
+                        <span>Client</span>
+                        <small class="text-muted fw-normal"><i class="fas fa-lock me-1"></i>Auto</small>
+                    </label>
+                    <input type="text" name="client_name" id="client_name" class="form-control bg-light" 
+                           value="{{ old('client_name', $selectedProject?->client_name) }}" placeholder="Auto-populated from project" readonly tabindex="-1" style="cursor: not-allowed;">
                 </div>
 
                 <div class="col-md-4">
-                    <label class="form-label fw-bold">Consultant</label>
-                    <input type="text" name="consultant_name" id="consultant_name" class="form-control" 
-                           value="{{ old('consultant_name', $selectedProject?->consultant_name) }}" placeholder="Consultant Name">
+                    <label class="form-label fw-bold d-flex justify-content-between align-items-center">
+                        <span>Consultant</span>
+                        <small class="text-muted fw-normal"><i class="fas fa-lock me-1"></i>Auto</small>
+                    </label>
+                    <input type="text" name="consultant_name" id="consultant_name" class="form-control bg-light" 
+                           value="{{ old('consultant_name', $selectedProject?->consultant_name) }}" placeholder="Auto-populated from project" readonly tabindex="-1" style="cursor: not-allowed;">
                 </div>
 
                 <div class="col-md-4">
-                    <label class="form-label fw-bold">Contractor</label>
-                    <input type="text" name="contractor_name" id="contractor_name" class="form-control" 
-                           value="{{ old('contractor_name', $selectedProject?->contractor_name ?? 'TNT CONSTRUCTION AND TRADING') }}">
+                    <label class="form-label fw-bold d-flex justify-content-between align-items-center">
+                        <span>Contractor</span>
+                        <small class="text-muted fw-normal"><i class="fas fa-lock me-1"></i>Auto</small>
+                    </label>
+                    <input type="text" name="contractor_name" id="contractor_name" class="form-control bg-light" 
+                           value="{{ old('contractor_name', $selectedProject?->contractor_name ?? 'TNT Construction and Trading') }}" placeholder="Auto-populated from project" readonly tabindex="-1" style="cursor: not-allowed;">
                 </div>
 
                 <div class="col-md-4">
@@ -447,17 +459,6 @@ function toggleFurtherActionNotes(val) {
     }
 }
 
-// Auto-fill project fields
-document.getElementById('project_select').addEventListener('change', function() {
-    const selected = this.options[this.selectedIndex];
-    if (selected && selected.value) {
-        document.getElementById('project_location').value = selected.dataset.location || '';
-        document.getElementById('client_name').value = selected.dataset.client || '';
-        document.getElementById('consultant_name').value = selected.dataset.consultant || '';
-        document.getElementById('contractor_name').value = selected.dataset.contractor || 'TNT CONSTRUCTION AND TRADING';
-    }
-});
-
 // Day to Monday offset mapping
 const dayOffsetMap = {
     'monday': 0,
@@ -779,7 +780,7 @@ function applySelectedProjectDetails(isUserChange = false) {
             document.getElementById('project_location').value = '';
             document.getElementById('client_name').value = '';
             document.getElementById('consultant_name').value = '';
-            document.getElementById('contractor_name').value = 'TNT CONSTRUCTION AND TRADING';
+            document.getElementById('contractor_name').value = '';
         }
         return;
     }
@@ -787,7 +788,7 @@ function applySelectedProjectDetails(isUserChange = false) {
     const location = option.getAttribute('data-location') || '';
     const client = option.getAttribute('data-client') || '';
     const consultant = option.getAttribute('data-consultant') || '';
-    const contractor = option.getAttribute('data-contractor') || 'TNT CONSTRUCTION AND TRADING';
+    const contractor = option.getAttribute('data-contractor') || 'TNT Construction and Trading';
 
     const locInput = document.getElementById('project_location');
     const clientInput = document.getElementById('client_name');
@@ -827,14 +828,9 @@ document.addEventListener('DOMContentLoaded', function() {
             applySelectedProjectDetails(true);
         });
 
-        // Auto-fill if project is pre-selected (via URL parameter or old input)
+        // Always auto-fill project details if a project is selected
         if (projectSelect.value) {
-            const locInput = document.getElementById('project_location');
-            const clientInput = document.getElementById('client_name');
-            const consultantInput = document.getElementById('consultant_name');
-            if (!locInput.value || !clientInput.value || !consultantInput.value) {
-                applySelectedProjectDetails(false);
-            }
+            applySelectedProjectDetails(false);
         }
     }
 

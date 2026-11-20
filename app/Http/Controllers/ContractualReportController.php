@@ -210,10 +210,10 @@ class ContractualReportController extends Controller
                 'report_number' => $reportNumber,
                 'document_code' => $validated['document_code'] ?? 'OF/TNT/CAD/01',
                 'issue_no' => $validated['issue_no'] ?? '1',
-                'project_location' => $validated['project_location'] ?? ($project->location ?? 'Site'),
-                'client_name' => $validated['client_name'] ?? $project->client_name,
-                'consultant_name' => $validated['consultant_name'] ?? $project->consultant_name,
-                'contractor_name' => $validated['contractor_name'] ?? 'TNT CONSTRUCTION AND TRADING',
+                'project_location' => $project->location ?: ($validated['project_location'] ?? 'Site'),
+                'client_name' => $project->client_name ?: ($validated['client_name'] ?? null),
+                'consultant_name' => $project->consultant_name ?: ($validated['consultant_name'] ?? null),
+                'contractor_name' => $project->contractor_name ?: ($validated['contractor_name'] ?? 'TNT Construction and Trading'),
                 'week_start_date' => $validated['week_start_date'],
                 'week_end_date' => $validated['week_end_date'],
                 'status' => 'draft',
@@ -466,14 +466,15 @@ class ContractualReportController extends Controller
 
         DB::beginTransaction();
         try {
+            $project = Project::findOrFail($validated['project_id']);
             $contractualReport->update([
-                'project_id' => $validated['project_id'],
+                'project_id' => $project->id,
                 'document_code' => $validated['document_code'] ?? 'OF/TNT/CAD/01',
                 'issue_no' => $validated['issue_no'] ?? '1',
-                'project_location' => $validated['project_location'] ?? $contractualReport->project_location,
-                'client_name' => $validated['client_name'] ?? $contractualReport->client_name,
-                'consultant_name' => $validated['consultant_name'] ?? $contractualReport->consultant_name,
-                'contractor_name' => $validated['contractor_name'] ?? 'TNT CONSTRUCTION AND TRADING',
+                'project_location' => $project->location ?: ($validated['project_location'] ?? $contractualReport->project_location),
+                'client_name' => $project->client_name ?: ($validated['client_name'] ?? $contractualReport->client_name),
+                'consultant_name' => $project->consultant_name ?: ($validated['consultant_name'] ?? $contractualReport->consultant_name),
+                'contractor_name' => $project->contractor_name ?: ($validated['contractor_name'] ?? $contractualReport->contractor_name),
                 'week_start_date' => $validated['week_start_date'],
                 'week_end_date' => $validated['week_end_date'],
                 'page1_notes' => $validated['page1_notes'] ?? null,
