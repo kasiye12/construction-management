@@ -21,21 +21,61 @@ class EquipmentBreakdownReportController extends Controller
         $this->excelService = $excelService;
     }
 
+    private function getUserProjectIds(): array
+    {
+        $user = Auth::user();
+        if (!$user) return [];
+        if ($user->isAdmin() || $user->is_super_admin) {
+            return Project::withTrashed()->pluck('id')->toArray();
+        }
+        return $user->projects()
+            ->withTrashed()
+            ->where('project_user.is_active', true)
+            ->pluck('projects.id')
+            ->toArray();
+    }
+
+    private function getUserProjects()
+    {
+        $user = Auth::user();
+        if (!$user) return collect();
+        if ($user->isAdmin() || $user->is_super_admin) {
+            return Project::orderBy('name')->get();
+        }
+        $ids = $this->getUserProjectIds();
+        return Project::whereIn('id', $ids)->orderBy('name')->get();
+    }
+
     public function index(Request $request)
     {
+        $user = Auth::user();
+        $userProjectIds = $this->getUserProjectIds();
+        $projects = $this->getUserProjects();
+
         $query = EquipmentBreakdownReport::with(['project', 'preparedByUser', 'checkedByUser', 'approvedByUser']);
 
+        // Scope to assigned projects (plus unassigned central workshop)
+        if (!$user->isAdmin() && !$user->is_super_admin) {
+            $query->where(function ($q) use ($userProjectIds) {
+                $q->whereIn('project_id', $userProjectIds)
+                  ->orWhereNull('project_id');
+            });
+        }
+
         if ($request->filled('project_id')) {
-            $query->where('project_id', $request->project_id);
+            $pId = $request->project_id;
+            if ($pId === 'central') {
+                $query->whereNull('project_id');
+            } elseif ($user->isAdmin() || $user->is_super_admin || in_array($pId, $userProjectIds)) {
+                $query->where('project_id', $pId);
+            }
         }
         if ($request->filled('status')) {
             $query->where('status', $request->status);
         }
 
         $reports = $query->latest('report_date')->paginate(15)->withQueryString();
-        $projects = Project::orderBy('name')->get();
 
-        $user = Auth::user();
         $canPrepare = WorkflowService::canUserPrepareMaintenanceReport($user);
         $canCheck = WorkflowService::canUserCheckMaintenanceReport($user);
         $canApprove = WorkflowService::canUserApproveMaintenanceReport($user);
@@ -57,11 +97,11 @@ class EquipmentBreakdownReportController extends Controller
                 ->with('error', 'You do not have permission to prepare Maintenance Reports.');
         }
 
-        $projects = Project::orderBy('name')->get();
+        $projects = $this->getUserProjects();
         $equipments = Equipment::orderBy('category')->orderBy('equipment_type')->get();
         $categories = EquipmentBreakdownReport::CATEGORIES;
         $repairStatuses = EquipmentBreakdownReport::REPAIR_STATUSES;
-        $code = 'MR-' . date('Y-') . str_pad(EquipmentBreakdownReport::count() + 1, 3, '0', STR_PAD_LEFT);
+        $code = EquipmentBreakdownReport::generateNextReportCode();
 
         return view('equipment-breakdowns.create', compact('projects', 'equipments', 'categories', 'repairStatuses', 'code'));
     }
@@ -74,7 +114,7 @@ class EquipmentBreakdownReportController extends Controller
         }
 
         $validated = $request->validate([
-            'report_code' => 'required|string|max:50|unique:equipment_breakdown_reports,report_code',
+            'report_code' => 'required|string|max:50',
             'title' => 'required|string|max:255',
             'report_date' => 'required|date',
             'project_id' => 'nullable|exists:projects,id',
@@ -95,10 +135,23 @@ class EquipmentBreakdownReportController extends Controller
             'items.*.remarks' => 'nullable|string',
         ]);
 
+        // Validate user project assignment
+        if (!empty($validated['project_id']) && !$user->isAdmin() && !$user->is_super_admin) {
+            if (!in_array($validated['project_id'], $this->getUserProjectIds())) {
+                abort(403, 'Unauthorized: You are not assigned to this project.');
+            }
+        }
+
+        // Ensure collision-free report code
+        $reportCode = $validated['report_code'] ?? null;
+        if (empty($reportCode) || EquipmentBreakdownReport::withTrashed()->where('report_code', $reportCode)->exists()) {
+            $reportCode = EquipmentBreakdownReport::generateNextReportCode();
+        }
+
         DB::beginTransaction();
         try {
             $report = EquipmentBreakdownReport::create([
-                'report_code' => $validated['report_code'],
+                'report_code' => $reportCode,
                 'title' => $validated['title'],
                 'document_code' => 'OF/TNT/ EAMD/030',
                 'issue_no' => '1',
@@ -159,14 +212,19 @@ class EquipmentBreakdownReportController extends Controller
 
     public function show(EquipmentBreakdownReport $equipmentBreakdown)
     {
+        $user = Auth::user();
+        if ($equipmentBreakdown->project_id && !$user->isAdmin() && !$user->is_super_admin && !in_array($equipmentBreakdown->project_id, $this->getUserProjectIds())) {
+            abort(403, 'Unauthorized access to this project report.');
+        }
+
         $equipmentBreakdown->load(['items.equipment', 'project', 'preparedByUser', 'checkedByUser', 'approvedByUser']);
         
-        $user = Auth::user();
-        $canSubmit = $equipmentBreakdown->isDraft() && WorkflowService::canUserPrepareMaintenanceReport($user);
+        $canSubmit = ($equipmentBreakdown->isDraft() || $equipmentBreakdown->isRejected()) && WorkflowService::canUserPrepareMaintenanceReport($user);
         $canCheck = $equipmentBreakdown->isSubmitted() && WorkflowService::canUserCheckMaintenanceReport($user);
         $canApprove = $equipmentBreakdown->isChecked() && WorkflowService::canUserApproveMaintenanceReport($user);
         $canReject = ($equipmentBreakdown->isSubmitted() || $equipmentBreakdown->isChecked()) && WorkflowService::canUserRejectMaintenanceReport($user);
-        $canEdit = $equipmentBreakdown->isDraft() || $user->isAdmin();
+        $canEdit = ($equipmentBreakdown->isDraft() || $equipmentBreakdown->isRejected()) || $user->isAdmin();
+        $canDelete = ($equipmentBreakdown->isDraft() || $equipmentBreakdown->isRejected()) && ($user->isAdmin() || $user->is_super_admin || $user->hasPermission('equipment-breakdowns.delete'));
 
         $itemsGrouped = $equipmentBreakdown->items->groupBy('category');
 
@@ -177,20 +235,25 @@ class EquipmentBreakdownReportController extends Controller
             'canCheck',
             'canApprove',
             'canReject',
-            'canEdit'
+            'canEdit',
+            'canDelete'
         ));
     }
 
     public function edit(EquipmentBreakdownReport $equipmentBreakdown)
     {
         $user = Auth::user();
-        if (!$equipmentBreakdown->isDraft() && !$user->isAdmin()) {
+        if ($equipmentBreakdown->project_id && !$user->isAdmin() && !$user->is_super_admin && !in_array($equipmentBreakdown->project_id, $this->getUserProjectIds())) {
+            abort(403, 'Unauthorized access to this project report.');
+        }
+
+        if (!$equipmentBreakdown->isDraft() && !$equipmentBreakdown->isRejected() && !$user->isAdmin()) {
             return redirect()->route('equipment-breakdowns.show', $equipmentBreakdown)
-                ->with('error', 'Only draft reports can be edited.');
+                ->with('error', 'Only draft or rejected reports can be edited.');
         }
 
         $equipmentBreakdown->load('items');
-        $projects = Project::orderBy('name')->get();
+        $projects = $this->getUserProjects();
         $equipments = Equipment::orderBy('category')->orderBy('equipment_type')->get();
         $categories = EquipmentBreakdownReport::CATEGORIES;
         $repairStatuses = EquipmentBreakdownReport::REPAIR_STATUSES;
@@ -207,8 +270,12 @@ class EquipmentBreakdownReportController extends Controller
     public function update(Request $request, EquipmentBreakdownReport $equipmentBreakdown)
     {
         $user = Auth::user();
-        if (!$equipmentBreakdown->isDraft() && !$user->isAdmin()) {
-            abort(403, 'Unauthorized.');
+        if ($equipmentBreakdown->project_id && !$user->isAdmin() && !$user->is_super_admin && !in_array($equipmentBreakdown->project_id, $this->getUserProjectIds())) {
+            abort(403, 'Unauthorized access to this project report.');
+        }
+
+        if (!$equipmentBreakdown->isDraft() && !$equipmentBreakdown->isRejected() && !$user->isAdmin()) {
+            abort(403, 'Unauthorized: Only draft or rejected reports can be edited.');
         }
 
         $validated = $request->validate([
@@ -276,6 +343,10 @@ class EquipmentBreakdownReportController extends Controller
     public function submit(EquipmentBreakdownReport $equipmentBreakdown)
     {
         $user = Auth::user();
+        if ($equipmentBreakdown->project_id && !$user->isAdmin() && !$user->is_super_admin && !in_array($equipmentBreakdown->project_id, $this->getUserProjectIds())) {
+            abort(403, 'Unauthorized access to this project report.');
+        }
+
         if (!WorkflowService::canUserPrepareMaintenanceReport($user)) {
             abort(403, 'Unauthorized.');
         }
@@ -294,6 +365,10 @@ class EquipmentBreakdownReportController extends Controller
     public function check(EquipmentBreakdownReport $equipmentBreakdown)
     {
         $user = Auth::user();
+        if ($equipmentBreakdown->project_id && !$user->isAdmin() && !$user->is_super_admin && !in_array($equipmentBreakdown->project_id, $this->getUserProjectIds())) {
+            abort(403, 'Unauthorized access to this project report.');
+        }
+
         if (!WorkflowService::canUserCheckMaintenanceReport($user)) {
             abort(403, 'Unauthorized.');
         }
@@ -311,6 +386,10 @@ class EquipmentBreakdownReportController extends Controller
     public function approve(EquipmentBreakdownReport $equipmentBreakdown)
     {
         $user = Auth::user();
+        if ($equipmentBreakdown->project_id && !$user->isAdmin() && !$user->is_super_admin && !in_array($equipmentBreakdown->project_id, $this->getUserProjectIds())) {
+            abort(403, 'Unauthorized access to this project report.');
+        }
+
         if (!WorkflowService::canUserApproveMaintenanceReport($user)) {
             abort(403, 'Unauthorized.');
         }
@@ -328,6 +407,10 @@ class EquipmentBreakdownReportController extends Controller
     public function reject(Request $request, EquipmentBreakdownReport $equipmentBreakdown)
     {
         $user = Auth::user();
+        if ($equipmentBreakdown->project_id && !$user->isAdmin() && !$user->is_super_admin && !in_array($equipmentBreakdown->project_id, $this->getUserProjectIds())) {
+            abort(403, 'Unauthorized access to this project report.');
+        }
+
         if (!WorkflowService::canUserRejectMaintenanceReport($user)) {
             abort(403, 'Unauthorized.');
         }
@@ -356,6 +439,11 @@ class EquipmentBreakdownReportController extends Controller
 
     public function export(EquipmentBreakdownReport $equipmentBreakdown)
     {
+        $user = Auth::user();
+        if ($equipmentBreakdown->project_id && !$user->isAdmin() && !$user->is_super_admin && !in_array($equipmentBreakdown->project_id, $this->getUserProjectIds())) {
+            abort(403, 'Unauthorized access to this project report.');
+        }
+
         $equipmentBreakdown->load(['items.equipment', 'project', 'preparedByUser', 'checkedByUser', 'approvedByUser']);
         $filePath = $this->excelService->exportBreakdownReport($equipmentBreakdown);
         $fileName = "TNT-OF-EAMD-030-MR-{$equipmentBreakdown->report_code}.xlsx";
@@ -375,6 +463,12 @@ class EquipmentBreakdownReportController extends Controller
             'project_id' => 'nullable|exists:projects,id',
         ]);
 
+        if ($request->filled('project_id') && !$user->isAdmin() && !$user->is_super_admin) {
+            if (!in_array($request->project_id, $this->getUserProjectIds())) {
+                abort(403, 'Unauthorized: You are not assigned to this project.');
+            }
+        }
+
         try {
             $result = $this->excelService->importBreakdownReport(
                 $request->file('excel_file'),
@@ -391,6 +485,11 @@ class EquipmentBreakdownReportController extends Controller
 
     public function print(EquipmentBreakdownReport $equipmentBreakdown)
     {
+        $user = Auth::user();
+        if ($equipmentBreakdown->project_id && !$user->isAdmin() && !$user->is_super_admin && !in_array($equipmentBreakdown->project_id, $this->getUserProjectIds())) {
+            abort(403, 'Unauthorized access to this project report.');
+        }
+
         $equipmentBreakdown->load(['items.equipment', 'project', 'preparedByUser', 'checkedByUser', 'approvedByUser']);
         $itemsGrouped = $equipmentBreakdown->items->groupBy('category');
 
@@ -399,10 +498,33 @@ class EquipmentBreakdownReportController extends Controller
 
     public function destroy(EquipmentBreakdownReport $equipmentBreakdown)
     {
+        $user = Auth::user();
+        if (!$user) {
+            abort(401);
+        }
+
+        // 1. Project authorization check
+        $userProjectIds = $this->getUserProjectIds();
+        if ($equipmentBreakdown->project_id && !$user->isAdmin() && !$user->is_super_admin && !in_array($equipmentBreakdown->project_id, $userProjectIds)) {
+            abort(403, 'Unauthorized access to this project report.');
+        }
+
+        // 2. Strict permission check: Must have equipment-breakdowns.delete permission or be Admin
+        $hasPermission = $user->isAdmin() || $user->is_super_admin || $user->hasPermission('equipment-breakdowns.delete');
+        if (!$hasPermission) {
+            return back()->with('error', 'Unauthorized: You do not have permission to delete breakdown reports.');
+        }
+
+        // 3. Strict status check: Reports that are submitted, checked, or approved CANNOT be deleted
+        if (!$equipmentBreakdown->isDraft() && !$equipmentBreakdown->isRejected()) {
+            $statusLabel = ucfirst($equipmentBreakdown->status);
+            return back()->with('error', "Deletion blocked: Cannot delete a {$statusLabel} breakdown report. Only reports in 'Draft' status can be removed from the system.");
+        }
+
         $code = $equipmentBreakdown->report_code;
         $equipmentBreakdown->delete();
 
         return redirect()->route('equipment-breakdowns.index')
-            ->with('success', "Report '{$code}' deleted successfully.");
+            ->with('success', "Breakdown report '{$code}' has been removed successfully.");
     }
 }

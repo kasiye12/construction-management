@@ -21,21 +21,61 @@ class PmScheduleController extends Controller
         $this->excelService = $excelService;
     }
 
+    private function getUserProjectIds(): array
+    {
+        $user = Auth::user();
+        if (!$user) return [];
+        if ($user->isAdmin() || $user->is_super_admin) {
+            return Project::withTrashed()->pluck('id')->toArray();
+        }
+        return $user->projects()
+            ->withTrashed()
+            ->where('project_user.is_active', true)
+            ->pluck('projects.id')
+            ->toArray();
+    }
+
+    private function getUserProjects()
+    {
+        $user = Auth::user();
+        if (!$user) return collect();
+        if ($user->isAdmin() || $user->is_super_admin) {
+            return Project::orderBy('name')->get();
+        }
+        $ids = $this->getUserProjectIds();
+        return Project::whereIn('id', $ids)->orderBy('name')->get();
+    }
+
     public function index(Request $request)
     {
+        $user = Auth::user();
+        $userProjectIds = $this->getUserProjectIds();
+        $projects = $this->getUserProjects();
+
         $query = PmSchedule::with(['project', 'preparedByUser', 'checkedByUser', 'approvedByUser']);
 
+        // Scope to assigned projects (plus unassigned central workshop)
+        if (!$user->isAdmin() && !$user->is_super_admin) {
+            $query->where(function ($q) use ($userProjectIds) {
+                $q->whereIn('project_id', $userProjectIds)
+                  ->orWhereNull('project_id');
+            });
+        }
+
         if ($request->filled('project_id')) {
-            $query->where('project_id', $request->project_id);
+            $pId = $request->project_id;
+            if ($pId === 'central') {
+                $query->whereNull('project_id');
+            } elseif ($user->isAdmin() || $user->is_super_admin || in_array($pId, $userProjectIds)) {
+                $query->where('project_id', $pId);
+            }
         }
         if ($request->filled('status')) {
             $query->where('status', $request->status);
         }
 
         $schedules = $query->latest('schedule_date')->paginate(15)->withQueryString();
-        $projects = Project::orderBy('name')->get();
 
-        $user = Auth::user();
         $canPrepare = WorkflowService::canUserPrepareEquipmentSchedule($user);
         $canCheck = WorkflowService::canUserCheckEquipmentSchedule($user);
         $canApprove = WorkflowService::canUserApproveEquipmentSchedule($user);
@@ -57,9 +97,9 @@ class PmScheduleController extends Controller
                 ->with('error', 'You do not have permission to prepare Preventive Maintenance Schedules.');
         }
 
-        $projects = Project::orderBy('name')->get();
+        $projects = $this->getUserProjects();
         $equipments = Equipment::where('status', '!=', 'idle')->orderBy('category')->orderBy('equipment_type')->get();
-        $code = 'PMS-' . date('Y-') . str_pad(PmSchedule::count() + 1, 3, '0', STR_PAD_LEFT);
+        $code = PmSchedule::generateNextScheduleCode();
 
         return view('pm-schedules.create', compact('projects', 'equipments', 'code'));
     }
@@ -72,7 +112,7 @@ class PmScheduleController extends Controller
         }
 
         $validated = $request->validate([
-            'schedule_code' => 'required|string|max:50|unique:pm_schedules,schedule_code',
+            'schedule_code' => 'required|string|max:50',
             'title' => 'required|string|max:255',
             'project_id' => 'nullable|exists:projects,id',
             'project_location' => 'nullable|string|max:150',
@@ -99,10 +139,23 @@ class PmScheduleController extends Controller
             'items.*.remark' => 'nullable|string',
         ]);
 
+        // Validate user project assignment
+        if (!empty($validated['project_id']) && !$user->isAdmin() && !$user->is_super_admin) {
+            if (!in_array($validated['project_id'], $this->getUserProjectIds())) {
+                abort(403, 'Unauthorized: You are not assigned to this project.');
+            }
+        }
+
+        // Ensure collision-free schedule code
+        $scheduleCode = $validated['schedule_code'] ?? null;
+        if (empty($scheduleCode) || PmSchedule::withTrashed()->where('schedule_code', $scheduleCode)->exists()) {
+            $scheduleCode = PmSchedule::generateNextScheduleCode();
+        }
+
         DB::beginTransaction();
         try {
             $schedule = PmSchedule::create([
-                'schedule_code' => $validated['schedule_code'],
+                'schedule_code' => $scheduleCode,
                 'title' => $validated['title'],
                 'document_code' => 'OF/EAMD/074',
                 'issue_no' => '1',
@@ -168,14 +221,19 @@ class PmScheduleController extends Controller
 
     public function show(PmSchedule $pmSchedule)
     {
+        $user = Auth::user();
+        if ($pmSchedule->project_id && !$user->isAdmin() && !$user->is_super_admin && !in_array($pmSchedule->project_id, $this->getUserProjectIds())) {
+            abort(403, 'Unauthorized access to this PM schedule.');
+        }
+
         $pmSchedule->load(['items.equipment', 'project', 'preparedByUser', 'checkedByUser', 'approvedByUser']);
         
-        $user = Auth::user();
-        $canSubmit = $pmSchedule->isDraft() && WorkflowService::canUserPrepareEquipmentSchedule($user);
+        $canSubmit = ($pmSchedule->isDraft() || $pmSchedule->isRejected()) && WorkflowService::canUserPrepareEquipmentSchedule($user);
         $canCheck = $pmSchedule->isSubmitted() && WorkflowService::canUserCheckEquipmentSchedule($user);
         $canApprove = $pmSchedule->isChecked() && WorkflowService::canUserApproveEquipmentSchedule($user);
         $canReject = ($pmSchedule->isSubmitted() || $pmSchedule->isChecked()) && WorkflowService::canUserRejectEquipmentSchedule($user);
-        $canEdit = $pmSchedule->isDraft() || $user->isAdmin();
+        $canEdit = ($pmSchedule->isDraft() || $pmSchedule->isRejected()) || $user->isAdmin();
+        $canDelete = ($pmSchedule->isDraft() || $pmSchedule->isRejected()) && ($user->isAdmin() || $user->is_super_admin || $user->hasPermission('pm-schedules.delete'));
 
         $itemsGrouped = $pmSchedule->items->groupBy('category');
 
@@ -186,20 +244,25 @@ class PmScheduleController extends Controller
             'canCheck',
             'canApprove',
             'canReject',
-            'canEdit'
+            'canEdit',
+            'canDelete'
         ));
     }
 
     public function edit(PmSchedule $pmSchedule)
     {
         $user = Auth::user();
-        if (!$pmSchedule->isDraft() && !$user->isAdmin()) {
+        if ($pmSchedule->project_id && !$user->isAdmin() && !$user->is_super_admin && !in_array($pmSchedule->project_id, $this->getUserProjectIds())) {
+            abort(403, 'Unauthorized access to this PM schedule.');
+        }
+
+        if (!$pmSchedule->isDraft() && !$pmSchedule->isRejected() && !$user->isAdmin()) {
             return redirect()->route('pm-schedules.show', $pmSchedule)
-                ->with('error', 'Only draft schedules can be edited.');
+                ->with('error', 'Only draft or rejected schedules can be edited.');
         }
 
         $pmSchedule->load('items');
-        $projects = Project::orderBy('name')->get();
+        $projects = $this->getUserProjects();
         $equipments = Equipment::orderBy('category')->orderBy('equipment_type')->get();
 
         return view('pm-schedules.edit', compact('pmSchedule', 'projects', 'equipments'));
@@ -208,8 +271,12 @@ class PmScheduleController extends Controller
     public function update(Request $request, PmSchedule $pmSchedule)
     {
         $user = Auth::user();
-        if (!$pmSchedule->isDraft() && !$user->isAdmin()) {
-            abort(403, 'Unauthorized.');
+        if ($pmSchedule->project_id && !$user->isAdmin() && !$user->is_super_admin && !in_array($pmSchedule->project_id, $this->getUserProjectIds())) {
+            abort(403, 'Unauthorized access to this PM schedule.');
+        }
+
+        if (!$pmSchedule->isDraft() && !$pmSchedule->isRejected() && !$user->isAdmin()) {
+            abort(403, 'Unauthorized: Only draft or rejected schedules can be modified.');
         }
 
         $validated = $request->validate([
@@ -300,6 +367,10 @@ class PmScheduleController extends Controller
     public function submit(PmSchedule $pmSchedule)
     {
         $user = Auth::user();
+        if ($pmSchedule->project_id && !$user->isAdmin() && !$user->is_super_admin && !in_array($pmSchedule->project_id, $this->getUserProjectIds())) {
+            abort(403, 'Unauthorized access to this PM schedule.');
+        }
+
         if (!WorkflowService::canUserPrepareEquipmentSchedule($user)) {
             abort(403, 'You do not have permission to submit PM schedules.');
         }
@@ -318,6 +389,10 @@ class PmScheduleController extends Controller
     public function check(PmSchedule $pmSchedule)
     {
         $user = Auth::user();
+        if ($pmSchedule->project_id && !$user->isAdmin() && !$user->is_super_admin && !in_array($pmSchedule->project_id, $this->getUserProjectIds())) {
+            abort(403, 'Unauthorized access to this PM schedule.');
+        }
+
         if (!WorkflowService::canUserCheckEquipmentSchedule($user)) {
             abort(403, 'You do not have permission to check and verify PM schedules.');
         }
@@ -335,6 +410,10 @@ class PmScheduleController extends Controller
     public function approve(PmSchedule $pmSchedule)
     {
         $user = Auth::user();
+        if ($pmSchedule->project_id && !$user->isAdmin() && !$user->is_super_admin && !in_array($pmSchedule->project_id, $this->getUserProjectIds())) {
+            abort(403, 'Unauthorized access to this PM schedule.');
+        }
+
         if (!WorkflowService::canUserApproveEquipmentSchedule($user)) {
             abort(403, 'You do not have permission to approve PM schedules.');
         }
@@ -352,6 +431,10 @@ class PmScheduleController extends Controller
     public function reject(Request $request, PmSchedule $pmSchedule)
     {
         $user = Auth::user();
+        if ($pmSchedule->project_id && !$user->isAdmin() && !$user->is_super_admin && !in_array($pmSchedule->project_id, $this->getUserProjectIds())) {
+            abort(403, 'Unauthorized access to this PM schedule.');
+        }
+
         if (!WorkflowService::canUserRejectEquipmentSchedule($user)) {
             abort(403, 'You do not have permission to reject PM schedules.');
         }
@@ -382,6 +465,11 @@ class PmScheduleController extends Controller
 
     public function export(PmSchedule $pmSchedule)
     {
+        $user = Auth::user();
+        if ($pmSchedule->project_id && !$user->isAdmin() && !$user->is_super_admin && !in_array($pmSchedule->project_id, $this->getUserProjectIds())) {
+            abort(403, 'Unauthorized access to this PM schedule.');
+        }
+
         $pmSchedule->load(['items.equipment', 'project', 'preparedByUser', 'checkedByUser', 'approvedByUser']);
         $filePath = $this->excelService->exportPmSchedule($pmSchedule);
         $fileName = "TNT-OF-EAMD-074-PMS-{$pmSchedule->schedule_code}.xlsx";
@@ -400,6 +488,12 @@ class PmScheduleController extends Controller
             'excel_file' => 'required|file|mimes:xlsx,xls|max:20480',
             'project_id' => 'nullable|exists:projects,id',
         ]);
+
+        if ($request->filled('project_id') && !$user->isAdmin() && !$user->is_super_admin) {
+            if (!in_array($request->project_id, $this->getUserProjectIds())) {
+                abort(403, 'Unauthorized: You are not assigned to this project.');
+            }
+        }
 
         try {
             $result = $this->excelService->importPmSchedule(
@@ -427,6 +521,11 @@ class PmScheduleController extends Controller
 
     public function print(PmSchedule $pmSchedule)
     {
+        $user = Auth::user();
+        if ($pmSchedule->project_id && !$user->isAdmin() && !$user->is_super_admin && !in_array($pmSchedule->project_id, $this->getUserProjectIds())) {
+            abort(403, 'Unauthorized access to this PM schedule.');
+        }
+
         $pmSchedule->load(['items.equipment', 'project', 'preparedByUser', 'checkedByUser', 'approvedByUser']);
         $itemsGrouped = $pmSchedule->items->groupBy('category');
 
@@ -435,10 +534,33 @@ class PmScheduleController extends Controller
 
     public function destroy(PmSchedule $pmSchedule)
     {
+        $user = Auth::user();
+        if (!$user) {
+            abort(401);
+        }
+
+        // 1. Project authorization check
+        $userProjectIds = $this->getUserProjectIds();
+        if ($pmSchedule->project_id && !$user->isAdmin() && !$user->is_super_admin && !in_array($pmSchedule->project_id, $userProjectIds)) {
+            abort(403, 'Unauthorized access to this PM schedule.');
+        }
+
+        // 2. Strict permission check: Must have pm-schedules.delete permission or be Admin
+        $hasPermission = $user->isAdmin() || $user->is_super_admin || $user->hasPermission('pm-schedules.delete');
+        if (!$hasPermission) {
+            return back()->with('error', 'Unauthorized: You do not have permission to delete PM schedules.');
+        }
+
+        // 3. Strict status check: Schedules that are submitted, checked, or approved CANNOT be deleted
+        if (!$pmSchedule->isDraft() && !$pmSchedule->isRejected()) {
+            $statusLabel = ucfirst($pmSchedule->status);
+            return back()->with('error', "Deletion blocked: Cannot delete a {$statusLabel} PM schedule. Only schedules in 'Draft' status can be removed from the system.");
+        }
+
         $code = $pmSchedule->schedule_code;
         $pmSchedule->delete();
 
         return redirect()->route('pm-schedules.index')
-            ->with('success', "Schedule '{$code}' deleted successfully.");
+            ->with('success', "Preventive Maintenance Schedule '{$code}' has been removed successfully.");
     }
 }

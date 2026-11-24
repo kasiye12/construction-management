@@ -33,6 +33,15 @@
                         <i class="fas fa-edit me-1"></i> Edit
                     </a>
                 @endif
+                @if($canDelete ?? false)
+                    <form action="{{ route('pm-schedules.destroy', $pmSchedule) }}" method="POST" class="d-inline" onsubmit="return confirm('Are you sure you want to remove draft schedule {{ $pmSchedule->schedule_code }}?')">
+                        @csrf
+                        @method('DELETE')
+                        <button type="submit" class="btn btn-outline-danger btn-sm">
+                            <i class="fas fa-trash-alt me-1"></i> Delete Draft
+                        </button>
+                    </form>
+                @endif
             @elseif($pmSchedule->isSubmitted())
                 @if($canCheck ?? true)
                     <form action="{{ route('pm-schedules.check', $pmSchedule) }}" method="POST" class="d-inline" onsubmit="return confirm('Verify and sign this schedule as Checked?')">

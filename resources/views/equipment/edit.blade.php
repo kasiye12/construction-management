@@ -74,16 +74,16 @@
 
                             <div class="col-md-4">
                                 <label class="form-label small fw-semibold">Assigned Project</label>
-                                <select name="project_id" class="form-select">
-                                    <option value="">Central Workshop / Depot (Unassigned)</option>
+                                <select name="project_id" id="projectSelect" class="form-select">
+                                    <option value="" data-location="Central Workshop">Central Workshop / Depot (Unassigned)</option>
                                     @foreach($projects as $p)
-                                        <option value="{{ $p->id }}" {{ old('project_id', $equipment->project_id) == $p->id ? 'selected' : '' }}>{{ $p->name }}</option>
+                                        <option value="{{ $p->id }}" data-location="{{ $p->location ?: $p->name }}" {{ old('project_id', $equipment->project_id) == $p->id ? 'selected' : '' }}>{{ $p->name }}</option>
                                     @endforeach
                                 </select>
                             </div>
                             <div class="col-md-4">
                                 <label class="form-label small fw-semibold">Location / Project Site Name</label>
-                                <input type="text" name="location_name" class="form-control" value="{{ old('location_name', $equipment->location_name) }}">
+                                <input type="text" name="location_name" id="locationInput" class="form-control" value="{{ old('location_name', $equipment->location_name) }}">
                             </div>
                             <div class="col-md-4">
                                 <label class="form-label small fw-semibold">Operational Condition <span class="text-danger">*</span></label>
@@ -137,9 +137,13 @@
                         </div>
 
                         <div class="d-flex justify-content-between align-items-center">
-                            <button type="button" class="btn btn-outline-danger" onclick="if(confirm('Are you sure you want to remove this equipment from active fleet?')) { document.getElementById('deleteForm').submit(); }">
-                                <i class="fas fa-trash me-1"></i> Delete Equipment
-                            </button>
+                            @if(auth()->user()?->isAdmin() || auth()->user()?->is_super_admin || auth()->user()?->hasPermission('equipment.delete'))
+                                <button type="button" class="btn btn-outline-danger" onclick="if(confirm('Are you sure you want to remove this equipment from active fleet?')) { document.getElementById('deleteForm').submit(); }">
+                                    <i class="fas fa-trash me-1"></i> Delete Equipment
+                                </button>
+                            @else
+                                <div></div>
+                            @endif
                             <div class="d-flex gap-2">
                                 <a href="{{ route('equipment.show', $equipment) }}" class="btn btn-secondary">Cancel</a>
                                 <button type="submit" class="btn btn-primary px-4">
@@ -149,13 +153,32 @@
                         </div>
                     </form>
 
-                    <form id="deleteForm" action="{{ route('equipment.destroy', $equipment) }}" method="POST" class="d-none">
-                        @csrf
-                        @method('DELETE')
-                    </form>
+                    @if(auth()->user()?->isAdmin() || auth()->user()?->is_super_admin || auth()->user()?->hasPermission('equipment.delete'))
+                        <form id="deleteForm" action="{{ route('equipment.destroy', $equipment) }}" method="POST" class="d-none">
+                            @csrf
+                            @method('DELETE')
+                        </form>
+                    @endif
                 </div>
             </div>
         </div>
     </div>
 </div>
+
+<script>
+// Auto-populate location from project selection
+const projectSelect = document.getElementById('projectSelect');
+const locationInput = document.getElementById('locationInput');
+if (projectSelect && locationInput) {
+    projectSelect.addEventListener('change', function() {
+        const selectedOpt = this.options[this.selectedIndex];
+        const loc = selectedOpt ? selectedOpt.getAttribute('data-location') : '';
+        if (loc) {
+            locationInput.value = loc;
+            locationInput.classList.add('bg-success', 'bg-opacity-10');
+            setTimeout(() => locationInput.classList.remove('bg-success', 'bg-opacity-10'), 800);
+        }
+    });
+}
+</script>
 @endsection

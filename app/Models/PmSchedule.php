@@ -123,4 +123,40 @@ class PmSchedule extends Model
     {
         return $this->items->where('service_status', 'Normal')->count();
     }
+
+    /**
+     * Generate guaranteed collision-free sequence code (e.g. PMS-2026-001)
+     */
+    public static function generateNextScheduleCode(?string $year = null): string
+    {
+        $year = $year ?: date('Y');
+        $prefix = "PMS-{$year}-";
+
+        // Fetch all existing schedule codes for the given year (including soft-deleted)
+        $existing = self::withTrashed()
+            ->where('schedule_code', 'LIKE', "{$prefix}%")
+            ->pluck('schedule_code')
+            ->toArray();
+
+        $maxNum = 0;
+        foreach ($existing as $code) {
+            if (preg_match('/^PMS-\d{4}-(\d+)$/', $code, $matches)) {
+                $val = (int)$matches[1];
+                if ($val > $maxNum) {
+                    $maxNum = $val;
+                }
+            }
+        }
+
+        $nextNum = $maxNum + 1;
+        do {
+            $candidate = $prefix . str_pad($nextNum, 3, '0', STR_PAD_LEFT);
+            $collision = in_array($candidate, $existing) || self::withTrashed()->where('schedule_code', $candidate)->exists();
+            if ($collision) {
+                $nextNum++;
+            }
+        } while ($collision);
+
+        return $candidate;
+    }
 }

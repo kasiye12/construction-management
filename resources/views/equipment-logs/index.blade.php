@@ -170,13 +170,15 @@
                                     <a href="{{ route('equipment-logs.edit', $item) }}" class="btn btn-outline-secondary p-1 px-2" title="Edit">
                                         <i class="fas fa-edit"></i>
                                     </a>
-                                    <form action="{{ route('equipment-logs.destroy', $item) }}" method="POST" class="d-inline" onsubmit="return confirm('Delete this maintenance record?')">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="submit" class="btn btn-outline-danger p-1 px-2" title="Delete">
-                                            <i class="fas fa-trash-alt"></i>
-                                        </button>
-                                    </form>
+                                    @if(auth()->user()?->isAdmin() || auth()->user()?->is_super_admin || auth()->user()?->hasPermission('equipment-logs.delete'))
+                                        <form action="{{ route('equipment-logs.destroy', $item) }}" method="POST" class="d-inline" onsubmit="return confirm('Delete this maintenance record?')">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit" class="btn btn-outline-danger p-1 px-2" title="Delete">
+                                                <i class="fas fa-trash-alt"></i>
+                                            </button>
+                                        </form>
+                                    @endif
                                 </div>
                             </td>
                         </tr>

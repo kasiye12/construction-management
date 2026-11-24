@@ -12,9 +12,46 @@ use Illuminate\Support\Facades\Auth;
 
 class EquipmentController extends Controller
 {
+    private function getUserProjectIds(): array
+    {
+        $user = Auth::user();
+        if (!$user) return [];
+        if ($user->isAdmin() || $user->is_super_admin) {
+            return Project::withTrashed()->pluck('id')->toArray();
+        }
+        return $user->projects()
+            ->withTrashed()
+            ->where('project_user.is_active', true)
+            ->pluck('projects.id')
+            ->toArray();
+    }
+
+    private function getUserProjects()
+    {
+        $user = Auth::user();
+        if (!$user) return collect();
+        if ($user->isAdmin() || $user->is_super_admin) {
+            return Project::orderBy('name')->get();
+        }
+        $ids = $this->getUserProjectIds();
+        return Project::whereIn('id', $ids)->orderBy('name')->get();
+    }
+
     public function index(Request $request)
     {
+        $user = Auth::user();
+        $userProjectIds = $this->getUserProjectIds();
+        $projects = $this->getUserProjects();
+
         $query = Equipment::with('project');
+
+        // Project scoping for non-admin users
+        if (!$user->isAdmin() && !$user->is_super_admin) {
+            $query->where(function ($q) use ($userProjectIds) {
+                $q->whereIn('project_id', $userProjectIds)
+                  ->orWhereNull('project_id');
+            });
+        }
 
         if ($request->filled('category')) {
             $query->where('category', $request->category);
@@ -23,7 +60,12 @@ class EquipmentController extends Controller
             $query->where('status', $request->status);
         }
         if ($request->filled('project_id')) {
-            $query->where('project_id', $request->project_id);
+            $pId = $request->project_id;
+            if ($pId === 'central') {
+                $query->whereNull('project_id');
+            } elseif ($user->isAdmin() || $user->is_super_admin || in_array($pId, $userProjectIds)) {
+                $query->where('project_id', $pId);
+            }
         }
         if ($request->filled('search')) {
             $s = $request->search;
@@ -39,8 +81,15 @@ class EquipmentController extends Controller
 
         $equipments = $query->orderBy('category')->orderBy('equipment_type')->paginate(20)->withQueryString();
 
-        // Calculate KPI Stats
-        $allEquipments = Equipment::all();
+        // Calculate KPI Stats scoped to permitted fleet
+        $statsQuery = Equipment::query();
+        if (!$user->isAdmin() && !$user->is_super_admin) {
+            $statsQuery->where(function ($q) use ($userProjectIds) {
+                $q->whereIn('project_id', $userProjectIds)
+                  ->orWhereNull('project_id');
+            });
+        }
+        $allEquipments = $statsQuery->get();
         $totalCount = $allEquipments->count();
         $activeCount = $allEquipments->where('status', 'active')->count();
         $downCount = $allEquipments->whereIn('status', ['breakdown', 'under_maintenance'])->count();
@@ -55,7 +104,6 @@ class EquipmentController extends Controller
             return $rem !== null && $rem < 0;
         })->count();
 
-        $projects = Project::orderBy('name')->get();
         $categories = Equipment::CATEGORIES;
 
         return view('equipment.index', compact(
@@ -72,13 +120,14 @@ class EquipmentController extends Controller
 
     public function create()
     {
-        $projects = Project::orderBy('name')->get();
+        $projects = $this->getUserProjects();
         $categories = Equipment::CATEGORIES;
         return view('equipment.create', compact('projects', 'categories'));
     }
 
     public function store(Request $request)
     {
+        $user = Auth::user();
         $validated = $request->validate([
             'equipment_type' => 'required|string|max:100',
             'category' => 'required|string|max:100',
@@ -100,6 +149,12 @@ class EquipmentController extends Controller
             'remarks' => 'nullable|string',
         ]);
 
+        if (!empty($validated['project_id']) && !$user->isAdmin() && !$user->is_super_admin) {
+            if (!in_array($validated['project_id'], $this->getUserProjectIds())) {
+                abort(403, 'Unauthorized: You are not assigned to this project.');
+            }
+        }
+
         $validated['created_by'] = Auth::id();
         $validated['code'] = $validated['plate_serial_no'] ?: ('EQ-' . rand(1000, 9999));
         $validated['current_reading_date'] = $validated['current_reading_date'] ?? now()->toDateString();
@@ -112,6 +167,11 @@ class EquipmentController extends Controller
 
     public function show(Equipment $equipment)
     {
+        $user = Auth::user();
+        if ($equipment->project_id && !$user->isAdmin() && !$user->is_super_admin && !in_array($equipment->project_id, $this->getUserProjectIds())) {
+            abort(403, 'Unauthorized access to this equipment record.');
+        }
+
         $equipment->load('project', 'creator');
         
         $pmItems = PmScheduleItem::with('schedule')
@@ -141,13 +201,23 @@ class EquipmentController extends Controller
 
     public function edit(Equipment $equipment)
     {
-        $projects = Project::orderBy('name')->get();
+        $user = Auth::user();
+        if ($equipment->project_id && !$user->isAdmin() && !$user->is_super_admin && !in_array($equipment->project_id, $this->getUserProjectIds())) {
+            abort(403, 'Unauthorized access to this equipment record.');
+        }
+
+        $projects = $this->getUserProjects();
         $categories = Equipment::CATEGORIES;
         return view('equipment.edit', compact('equipment', 'projects', 'categories'));
     }
 
     public function update(Request $request, Equipment $equipment)
     {
+        $user = Auth::user();
+        if ($equipment->project_id && !$user->isAdmin() && !$user->is_super_admin && !in_array($equipment->project_id, $this->getUserProjectIds())) {
+            abort(403, 'Unauthorized access to this equipment record.');
+        }
+
         $validated = $request->validate([
             'equipment_type' => 'required|string|max:100',
             'category' => 'required|string|max:100',
@@ -169,6 +239,12 @@ class EquipmentController extends Controller
             'remarks' => 'nullable|string',
         ]);
 
+        if (!empty($validated['project_id']) && !$user->isAdmin() && !$user->is_super_admin) {
+            if (!in_array($validated['project_id'], $this->getUserProjectIds())) {
+                abort(403, 'Unauthorized: You are not assigned to this project.');
+            }
+        }
+
         $equipment->update($validated);
 
         return redirect()->route('equipment.show', $equipment)
@@ -177,6 +253,11 @@ class EquipmentController extends Controller
 
     public function updateReading(Request $request, Equipment $equipment)
     {
+        $user = Auth::user();
+        if ($equipment->project_id && !$user->isAdmin() && !$user->is_super_admin && !in_array($equipment->project_id, $this->getUserProjectIds())) {
+            abort(403, 'Unauthorized access to this equipment record.');
+        }
+
         $validated = $request->validate([
             'current_reading' => 'required|numeric|min:' . (float)$equipment->current_reading,
             'current_reading_date' => 'required|date',
@@ -191,6 +272,20 @@ class EquipmentController extends Controller
 
     public function destroy(Equipment $equipment)
     {
+        $user = Auth::user();
+        if (!$user) {
+            abort(401);
+        }
+
+        if ($equipment->project_id && !$user->isAdmin() && !$user->is_super_admin && !in_array($equipment->project_id, $this->getUserProjectIds())) {
+            abort(403, 'Unauthorized access to this equipment record.');
+        }
+
+        $hasPermission = $user->isAdmin() || $user->is_super_admin || $user->hasPermission('equipment.delete');
+        if (!$hasPermission) {
+            return back()->with('error', 'Unauthorized: You do not have permission to delete equipment.');
+        }
+
         $name = $equipment->full_display_name;
         $equipment->delete();
         return redirect()->route('equipment.index')->with('success', "Equipment '{$name}' removed from active fleet.");

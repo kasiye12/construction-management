@@ -33,6 +33,15 @@
                         <i class="fas fa-edit me-1"></i> Edit
                     </a>
                 @endif
+                @if($canDelete ?? false)
+                    <form action="{{ route('equipment-breakdowns.destroy', $equipmentBreakdown) }}" method="POST" class="d-inline" onsubmit="return confirm('Are you sure you want to remove draft report {{ $equipmentBreakdown->report_code }}?')">
+                        @csrf
+                        @method('DELETE')
+                        <button type="submit" class="btn btn-outline-danger btn-sm">
+                            <i class="fas fa-trash-alt me-1"></i> Delete Draft
+                        </button>
+                    </form>
+                @endif
             @elseif($equipmentBreakdown->isSubmitted())
                 @if($canCheck ?? true)
                     <form action="{{ route('equipment-breakdowns.check', $equipmentBreakdown) }}" method="POST" class="d-inline" onsubmit="return confirm('Verify and sign this report as Checked?')">

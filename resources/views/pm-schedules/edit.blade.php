@@ -42,16 +42,16 @@
                     </div>
                     <div class="col-md-3">
                         <label class="form-label small fw-semibold">Project Site / Location</label>
-                        <select name="project_id" class="form-select form-select-sm">
-                            <option value="">All Projects / Central Workshop</option>
+                        <select name="project_id" id="projectSelect" class="form-select form-select-sm">
+                            <option value="" data-location="All Projects / Central Workshop">All Projects / Central Workshop</option>
                             @foreach($projects as $p)
-                                <option value="{{ $p->id }}" {{ old('project_id', $pmSchedule->project_id) == $p->id ? 'selected' : '' }}>{{ $p->name }}</option>
+                                <option value="{{ $p->id }}" data-location="{{ $p->location ?: $p->name }}" {{ old('project_id', $pmSchedule->project_id) == $p->id ? 'selected' : '' }}>{{ $p->name }}</option>
                             @endforeach
                         </select>
                     </div>
                     <div class="col-md-3">
                         <label class="form-label small fw-semibold">Location Name</label>
-                        <input type="text" name="project_location" class="form-control form-control-sm" value="{{ old('project_location', $pmSchedule->project_location) }}">
+                        <input type="text" name="project_location" id="projectLocationInput" class="form-control form-control-sm" value="{{ old('project_location', $pmSchedule->project_location) }}">
                     </div>
 
                     <div class="col-md-4">
@@ -202,6 +202,21 @@ document.addEventListener('click', function(e) {
 function updateCount() {
     let rows = document.querySelectorAll('#itemsTableBody tr');
     document.getElementById('rowCountDisplay').innerText = `Total items: ${rows.length}`;
+}
+
+// Auto-populate location from project selection
+const projectSelect = document.getElementById('projectSelect');
+const projectLocationInput = document.getElementById('projectLocationInput');
+if (projectSelect && projectLocationInput) {
+    projectSelect.addEventListener('change', function() {
+        const selectedOpt = this.options[this.selectedIndex];
+        const loc = selectedOpt ? selectedOpt.getAttribute('data-location') : '';
+        if (loc) {
+            projectLocationInput.value = loc;
+            projectLocationInput.classList.add('bg-success', 'bg-opacity-10');
+            setTimeout(() => projectLocationInput.classList.remove('bg-success', 'bg-opacity-10'), 800);
+        }
+    });
 }
 </script>
 @endsection

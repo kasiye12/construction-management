@@ -155,6 +155,19 @@
                                             <i class="fas fa-edit"></i>
                                         </a>
                                     @endif
+                                    @php
+                                        $isDraftOrRejected = $s->isDraft() || $s->isRejected();
+                                        $canDeleteSchedule = $isDraftOrRejected && (auth()->user()?->isAdmin() || auth()->user()?->is_super_admin || auth()->user()?->hasPermission('pm-schedules.delete'));
+                                    @endphp
+                                    @if($canDeleteSchedule)
+                                        <form action="{{ route('pm-schedules.destroy', $s) }}" method="POST" class="d-inline" onsubmit="return confirm('Are you sure you want to remove PM schedule {{ $s->schedule_code }}?')">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit" class="btn btn-outline-danger" title="Delete Draft Schedule">
+                                                <i class="fas fa-trash-alt"></i>
+                                            </button>
+                                        </form>
+                                    @endif
                                 </div>
                             </td>
                         </tr>

@@ -18,15 +18,57 @@ class EquipmentMaintenanceLogController extends Controller
         $this->excelService = $excelService;
     }
 
+    private function getUserProjectIds(): array
+    {
+        $user = Auth::user();
+        if (!$user) return [];
+        if ($user->isAdmin() || $user->is_super_admin) {
+            return Project::withTrashed()->pluck('id')->toArray();
+        }
+        return $user->projects()
+            ->withTrashed()
+            ->where('project_user.is_active', true)
+            ->pluck('projects.id')
+            ->toArray();
+    }
+
+    private function getUserProjects()
+    {
+        $user = Auth::user();
+        if (!$user) return collect();
+        if ($user->isAdmin() || $user->is_super_admin) {
+            return Project::orderBy('name')->get();
+        }
+        $ids = $this->getUserProjectIds();
+        return Project::whereIn('id', $ids)->orderBy('name')->get();
+    }
+
     public function index(Request $request)
     {
+        $user = Auth::user();
+        $userProjectIds = $this->getUserProjectIds();
+        $projects = $this->getUserProjects();
+
         $query = EquipmentMaintenanceLog::with(['equipment', 'project', 'loggedByUser']);
+
+        // Project scoping
+        if (!$user->isAdmin() && !$user->is_super_admin) {
+            $query->where(function ($q) use ($userProjectIds) {
+                $q->whereIn('project_id', $userProjectIds)
+                  ->orWhereNull('project_id');
+            });
+        }
 
         if ($request->filled('equipment_id')) {
             $query->where('equipment_id', $request->equipment_id);
         }
         if ($request->filled('project_id')) {
-            $query->where('project_id', $request->project_id);
+            $pId = $request->project_id;
+            if ($pId === 'central') {
+                $query->whereNull('project_id');
+            } elseif ($user->isAdmin() || $user->is_super_admin || in_array($pId, $userProjectIds)) {
+                $query->where('project_id', $pId);
+            }
         }
         if ($request->filled('search')) {
             $s = $request->search;
@@ -50,7 +92,6 @@ class EquipmentMaintenanceLogController extends Controller
 
         $logs = $query->latest('log_date')->paginate(25)->withQueryString();
         $equipments = Equipment::orderBy('equipment_type')->get();
-        $projects = Project::orderBy('name')->get();
 
         return view('equipment-logs.index', compact(
             'logs',
@@ -64,13 +105,14 @@ class EquipmentMaintenanceLogController extends Controller
     public function create()
     {
         $equipments = Equipment::orderBy('category')->orderBy('equipment_type')->get();
-        $projects = Project::orderBy('name')->get();
+        $projects = $this->getUserProjects();
 
         return view('equipment-logs.create', compact('equipments', 'projects'));
     }
 
     public function store(Request $request)
     {
+        $user = Auth::user();
         $validated = $request->validate([
             'equipment_id' => 'nullable|exists:equipment,id',
             'equipment_type' => 'required|string|max:100',
@@ -87,6 +129,12 @@ class EquipmentMaintenanceLogController extends Controller
             'location_name' => 'nullable|string|max:150',
             'remarks' => 'nullable|string',
         ]);
+
+        if (!empty($validated['project_id']) && !$user->isAdmin() && !$user->is_super_admin) {
+            if (!in_array($validated['project_id'], $this->getUserProjectIds())) {
+                abort(403, 'Unauthorized: You are not assigned to this project.');
+            }
+        }
 
         $validated['logged_by'] = Auth::id();
 
@@ -112,14 +160,24 @@ class EquipmentMaintenanceLogController extends Controller
 
     public function edit(EquipmentMaintenanceLog $equipmentLog)
     {
+        $user = Auth::user();
+        if ($equipmentLog->project_id && !$user->isAdmin() && !$user->is_super_admin && !in_array($equipmentLog->project_id, $this->getUserProjectIds())) {
+            abort(403, 'Unauthorized access to this maintenance log.');
+        }
+
         $equipments = Equipment::orderBy('category')->orderBy('equipment_type')->get();
-        $projects = Project::orderBy('name')->get();
+        $projects = $this->getUserProjects();
 
         return view('equipment-logs.edit', compact('equipmentLog', 'equipments', 'projects'));
     }
 
     public function update(Request $request, EquipmentMaintenanceLog $equipmentLog)
     {
+        $user = Auth::user();
+        if ($equipmentLog->project_id && !$user->isAdmin() && !$user->is_super_admin && !in_array($equipmentLog->project_id, $this->getUserProjectIds())) {
+            abort(403, 'Unauthorized access to this maintenance log.');
+        }
+
         $validated = $request->validate([
             'equipment_id' => 'nullable|exists:equipment,id',
             'equipment_type' => 'required|string|max:100',
@@ -137,6 +195,12 @@ class EquipmentMaintenanceLogController extends Controller
             'remarks' => 'nullable|string',
         ]);
 
+        if (!empty($validated['project_id']) && !$user->isAdmin() && !$user->is_super_admin) {
+            if (!in_array($validated['project_id'], $this->getUserProjectIds())) {
+                abort(403, 'Unauthorized: You are not assigned to this project.');
+            }
+        }
+
         if (empty($validated['total_cost_with_vat'])) {
             $validated['total_cost_with_vat'] = round($validated['quantity'] * $validated['unit_cost'] * 1.15, 2);
         }
@@ -149,13 +213,28 @@ class EquipmentMaintenanceLogController extends Controller
 
     public function export(Request $request)
     {
+        $user = Auth::user();
+        $userProjectIds = $this->getUserProjectIds();
+
         $query = EquipmentMaintenanceLog::with(['equipment', 'project']);
+
+        if (!$user->isAdmin() && !$user->is_super_admin) {
+            $query->where(function ($q) use ($userProjectIds) {
+                $q->whereIn('project_id', $userProjectIds)
+                  ->orWhereNull('project_id');
+            });
+        }
 
         if ($request->filled('equipment_id')) {
             $query->where('equipment_id', $request->equipment_id);
         }
         if ($request->filled('project_id')) {
-            $query->where('project_id', $request->project_id);
+            $pId = $request->project_id;
+            if ($pId === 'central') {
+                $query->whereNull('project_id');
+            } elseif ($user->isAdmin() || $user->is_super_admin || in_array($pId, $userProjectIds)) {
+                $query->where('project_id', $pId);
+            }
         }
         if ($request->filled('date_from')) {
             $query->where('log_date', '>=', $request->date_from);
@@ -173,10 +252,17 @@ class EquipmentMaintenanceLogController extends Controller
 
     public function import(Request $request)
     {
+        $user = Auth::user();
         $request->validate([
             'excel_file' => 'required|file|mimes:xlsx,xls|max:20480',
             'project_id' => 'nullable|exists:projects,id',
         ]);
+
+        if ($request->filled('project_id') && !$user->isAdmin() && !$user->is_super_admin) {
+            if (!in_array($request->project_id, $this->getUserProjectIds())) {
+                abort(403, 'Unauthorized: You are not assigned to this project.');
+            }
+        }
 
         try {
             $result = $this->excelService->importDailyLogs(
@@ -194,6 +280,20 @@ class EquipmentMaintenanceLogController extends Controller
 
     public function destroy(EquipmentMaintenanceLog $equipmentLog)
     {
+        $user = Auth::user();
+        if (!$user) {
+            abort(401);
+        }
+
+        if ($equipmentLog->project_id && !$user->isAdmin() && !$user->is_super_admin && !in_array($equipmentLog->project_id, $this->getUserProjectIds())) {
+            abort(403, 'Unauthorized access to this maintenance log.');
+        }
+
+        $hasPermission = $user->isAdmin() || $user->is_super_admin || $user->hasPermission('equipment-logs.delete');
+        if (!$hasPermission) {
+            return back()->with('error', 'Unauthorized: You do not have permission to delete maintenance log records.');
+        }
+
         $equipmentLog->delete();
         return redirect()->route('equipment-logs.index')
             ->with('success', 'Maintenance log entry deleted.');

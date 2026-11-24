@@ -46,16 +46,16 @@
                     </div>
                     <div class="col-md-3">
                         <label class="form-label small fw-semibold">Project Site</label>
-                        <select name="project_id" class="form-select form-select-sm">
-                            <option value="">All Sites / Central Workshop</option>
+                        <select name="project_id" id="projectSelect" class="form-select form-select-sm">
+                            <option value="" data-location="Central Workshop & Project Sites">All Sites / Central Workshop</option>
                             @foreach($projects as $p)
-                                <option value="{{ $p->id }}" {{ old('project_id', $equipmentBreakdown->project_id) == $p->id ? 'selected' : '' }}>{{ $p->name }}</option>
+                                <option value="{{ $p->id }}" data-location="{{ $p->location ?: $p->name }}" {{ old('project_id', $equipmentBreakdown->project_id) == $p->id ? 'selected' : '' }}>{{ $p->name }}</option>
                             @endforeach
                         </select>
                     </div>
                     <div class="col-md-6">
                         <label class="form-label small fw-semibold">Location / Scope Name</label>
-                        <input type="text" name="location_name" class="form-control form-control-sm" value="{{ old('location_name', $equipmentBreakdown->location_name) }}">
+                        <input type="text" name="location_name" id="locationInput" class="form-control form-control-sm" value="{{ old('location_name', $equipmentBreakdown->location_name) }}">
                     </div>
                     <div class="col-md-6">
                         <label class="form-label small fw-semibold">Notes & Remarks</label>
@@ -203,6 +203,21 @@ document.addEventListener('click', function(e) {
 function updateCount() {
     let rows = document.querySelectorAll('#itemsTableBody tr');
     document.getElementById('rowCountDisplay').innerText = `Total items: ${rows.length}`;
+}
+
+// Auto-populate location from project selection
+const projectSelect = document.getElementById('projectSelect');
+const locationInput = document.getElementById('locationInput');
+if (projectSelect && locationInput) {
+    projectSelect.addEventListener('change', function() {
+        const selectedOpt = this.options[this.selectedIndex];
+        const loc = selectedOpt ? selectedOpt.getAttribute('data-location') : '';
+        if (loc) {
+            locationInput.value = loc;
+            locationInput.classList.add('bg-success', 'bg-opacity-10');
+            setTimeout(() => locationInput.classList.remove('bg-success', 'bg-opacity-10'), 800);
+        }
+    });
 }
 </script>
 @endsection

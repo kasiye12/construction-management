@@ -134,4 +134,40 @@ class EquipmentBreakdownReport extends Model
     {
         return $this->items->where('repair_status', 'repaired')->count();
     }
+
+    /**
+     * Generate guaranteed collision-free sequence code (e.g. MR-2026-001)
+     */
+    public static function generateNextReportCode(?string $year = null): string
+    {
+        $year = $year ?: date('Y');
+        $prefix = "MR-{$year}-";
+
+        // Fetch all existing report codes for the given year (including soft-deleted)
+        $existing = self::withTrashed()
+            ->where('report_code', 'LIKE', "{$prefix}%")
+            ->pluck('report_code')
+            ->toArray();
+
+        $maxNum = 0;
+        foreach ($existing as $code) {
+            if (preg_match('/^MR-\d{4}-(\d+)$/', $code, $matches)) {
+                $val = (int)$matches[1];
+                if ($val > $maxNum) {
+                    $maxNum = $val;
+                }
+            }
+        }
+
+        $nextNum = $maxNum + 1;
+        do {
+            $candidate = $prefix . str_pad($nextNum, 3, '0', STR_PAD_LEFT);
+            $collision = in_array($candidate, $existing) || self::withTrashed()->where('report_code', $candidate)->exists();
+            if ($collision) {
+                $nextNum++;
+            }
+        } while ($collision);
+
+        return $candidate;
+    }
 }

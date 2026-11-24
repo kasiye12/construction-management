@@ -148,6 +148,19 @@
                                             <i class="fas fa-edit"></i>
                                         </a>
                                     @endif
+                                    @php
+                                        $isDraftOrRejected = $r->isDraft() || $r->isRejected();
+                                        $canDeleteBreakdown = $isDraftOrRejected && (auth()->user()?->isAdmin() || auth()->user()?->is_super_admin || auth()->user()?->hasPermission('equipment-breakdowns.delete'));
+                                    @endphp
+                                    @if($canDeleteBreakdown)
+                                        <form action="{{ route('equipment-breakdowns.destroy', $r) }}" method="POST" class="d-inline" onsubmit="return confirm('Are you sure you want to remove breakdown report {{ $r->report_code }}?')">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit" class="btn btn-outline-danger" title="Delete Draft Report">
+                                                <i class="fas fa-trash-alt"></i>
+                                            </button>
+                                        </form>
+                                    @endif
                                 </div>
                             </td>
                         </tr>
